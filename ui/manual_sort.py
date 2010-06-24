@@ -11,51 +11,51 @@ from numpy.random import rand
 import numpy as np
 import matplotlib.pyplot as plt
 
-class Datum:
-    colorin = colorConverter.to_rgba('red')
-    colorout = colorConverter.to_rgba('green')
-    def __init__(self, x, y, include=False):
-        self.x = x
-        self.y = y
-        if include: self.color = self.colorin
-        else: self.color = self.colorout
-
-
 class LassoManager:
-    def __init__(self, ax, data):
+    def __init__(self, ax, data,labels, color_on='r', color_off='k'):
         self.axes = ax
         self.canvas = ax.figure.canvas
         self.data = data
+        self.call_list = []
 
-        self.Nxy = len(data)
+        self.Nxy = data.shape[0]
+        self.color_on = colorConverter.to_rgba(color_on)
+        self.color_off = colorConverter.to_rgba(color_off)
 
-        facecolors = [d.color for d in data]
-        self.xys = [(d.x, d.y) for d in data]
+        facecolors = [self.color_on for d in range(self.Nxy)]
         fig = ax.figure
         self.collection = RegularPolyCollection(
             fig.dpi, 6, sizes=(100,),
             facecolors=facecolors,
-            offsets = self.xys,
+            offsets = self.data,
             transOffset = ax.transData)
 
         ax.add_collection(self.collection)
 
+        ax.set_xlabel(labels[0])
+        ax.set_ylabel(labels[1])
         self.cid = self.canvas.mpl_connect('button_press_event', self.onpress)
         self.ind = None
 
+    def register(self, callback_func):
+
+        self.call_list.append(callback_func)
     def callback(self, verts):
         facecolors = self.collection.get_facecolors()
-        ind = nonzero(points_inside_poly(self.xys, verts))[0]
+        ind = nonzero(points_inside_poly(self.data, verts))[0]
         for i in range(self.Nxy):
             if i in ind:
-                facecolors[i] = Datum.colorin
+                facecolors[i] = self.color_on 
             else:
-                facecolors[i] = Datum.colorout
+                facecolors[i] = self.color_off
 
         self.canvas.draw_idle()
         self.canvas.widgetlock.release(self.lasso)
         del self.lasso
         self.ind = ind
+
+        for func in self.call_list:
+            func(ind)
     def onpress(self, event):
         if self.canvas.widgetlock.locked(): return
         if event.inaxes is None: return
@@ -63,23 +63,54 @@ class LassoManager:
         # acquire a lock on the widget drawing
         self.canvas.widgetlock(self.lasso)
 
-def plot_features(features):
+class SpikeWaveform:
 
-    n_feats = features.shape[1]
+    def __init__(self, ax, sp_dict, color_on="r", color_off="k"):
 
-    fig = figure()
-    for i in range(n_feats):
-        for j in range(n_feats):
-            ax = fig.subplot(n_feats, n_feats, i*n_feats + j)
-            lman = LassoManager(ax, features[:,np.array([i,j])
-    show()
+        self.color_on = colorConverter.to_rgba(color_on)
+        self.color_off = colorConverter.to_rgba(color_off)
 
-if __name__ == '__main__':
+        self.canvas = ax.figure.canvas
+        
+        self.spikes =  sp_dict['data']
+        self.time = sp_dict['time']
+        self.lines = ax.plot(self.time, self.spikes, 'k', alpha=0.2)
+        
+        self.Nxy = self.spikes.shape[1]
 
-    data = [Datum(*xy) for xy in rand(100, 2)]
+    def callback(self, ind):
 
-    fig = figure()
-    ax = fig.add_subplot(111, xlim=(0,1), ylim=(0,1), autoscale_on=False)
-    lman = LassoManager(ax, data)
+        for i in range(self.Nxy):
+            if i in ind:
+                self.lines[i].set_color(self.color_on)
+            else:
+                self.lines[i].set_color(self.color_off)
 
-    show()
+        self.canvas.draw_idle()
+
+def cluster_spt(spt, idx):
+    """return the spike times belonging to the cluster and the rest"""
+
+    rest = np.asarray([spt[i] for i in range(len(spt)) if i not in idx])
+    clust = spt[idx]
+
+    return clust, rest
+
+
+def show(features_dict, sp_dict, feat_idx):
+    
+    features = features_dict['data']
+    names = features_dict['names']
+    ii = np.array(feat_idx)
+    fig = figure(figsize=(12,6))
+    ax = fig.add_subplot(121, xlim=(-0.1,1.1), ylim=(-0.1,1.1),
+            autoscale_on=False)
+    ax2 = fig.add_subplot(122)
+
+    sp_wave_plot = SpikeWaveform(ax2, sp_dict)
+    lman = LassoManager(ax, features[:,ii], names[ii])
+    lman.register(sp_wave_plot.callback)
+
+    plt.show()
+
+    return lman.ind
