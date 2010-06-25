@@ -72,6 +72,8 @@ def fetSpIdx(spikes_data):
 
     return np.arange(n_datapts)[:, np.newaxis], ["SpIdx"]
 
-def fetSpTime(spt):
+def fetSpTime(spt_dict):
+
+    spt = spt_dict['data']
 
     return spt[:, np.newaxis], ["SpTime"]

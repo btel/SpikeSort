@@ -88,13 +88,14 @@ class SpikeWaveform:
 
         self.canvas.draw_idle()
 
-def cluster_spt(spt, idx):
+def cluster_spt(spt_dict, idx):
     """return the spike times belonging to the cluster and the rest"""
 
+    spt = spt_dict['data']
     rest = np.asarray([spt[i] for i in range(len(spt)) if i not in idx])
     clust = spt[idx]
 
-    return clust, rest
+    return {"data": clust}, {"data":rest}
 
 
 def show(features_dict, sp_dict, feat_idx):

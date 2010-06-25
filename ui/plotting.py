@@ -67,16 +67,15 @@ def plot_features(features_dict, clust_idx=None, size=1):
             ax = fig.add_subplot(n_feats, n_feats, j*n_feats + i + 1)
             if i<>j:
                 for c in np.unique(clust_idx):
-                    plt.scatter(features[:,i], features[:,j], s=size, 
-                            c=cmap(norm(c)),edgecolors="none", 
-                            cmap=cmap, norm=norm)
+                    plt.plot(features[clust_idx==c,i],
+                             features[clust_idx==c,j],".", 
+                            color=cmap(norm(c)), markersize=size)
             else:
                 ax.set_frame_on(False)
                 for c in np.unique(clust_idx):
                     plt.hist(features[clust_idx==c,i],20, 
                             [0,1], ec="none", fc=cmap(norm(c)),
                             alpha=0.5, normed=True)
-               
             plt.xticks([])
             plt.yticks([])
     
@@ -86,6 +85,7 @@ def plot_features(features_dict, clust_idx=None, size=1):
         ax.xaxis.set_label_position("top")
         ax = plt.subplot(n_feats, n_feats, i*n_feats + 1)
         ax.set_ylabel(names[i])
+
 
 
 

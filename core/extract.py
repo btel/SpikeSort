@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import interpolate
 
-def extract_spikes(spike_data, spt, sp_win):
+def extract_spikes(spike_data, spt_dict, sp_win):
     """Returns spike wave shapes.
 
     Arguments:
@@ -18,13 +18,17 @@ def extract_spikes(spike_data, spt, sp_win):
 
     sp_data = spike_data['data']
     FS = spike_data['FS']
-    
+    spt = spt_dict['data']
+
     indices = (spt/1000.*FS).astype(np.int32)
     win = (np.asarray(sp_win)/1000*FS).astype(np.int32)
     noExt=win[1]-win[0]
+    
+    indices = indices[indices<(len(sp_data)-win[1])]
 
-    spWave = np.empty((noExt, len(spt)))
-    time = np.arange(noExt)*1000./FS + sp_win[0] 
+    spWave = np.zeros((noExt, len(spt)), dtype=sp_data.dtype)
+    time = np.arange(noExt)*1000./FS + sp_win[0]
+
     for i,sp in enumerate(indices):
         spWave[:,i] = sp_data[sp+win[0]:sp+win[1]]
 
@@ -49,11 +53,13 @@ def resample_spikes(spikes_dict, FS_new):
     
 
 
-def align_spikes(spike_data, spt, sp_win, type="max", resample=None):
+def align_spikes(spike_data, spt_dict, sp_win, type="max", resample=None):
+    
     """aligns spike waves and returns corrected spike times"""
 
-
-    sp_waves_dict = extract_spikes(spike_data, spt, sp_win)
+    spt = spt_dict['data']
+    
+    sp_waves_dict = extract_spikes(spike_data, spt_dict, sp_win)
 
     if resample:
         sp_waves_dict = resample_spikes(sp_waves_dict,
@@ -69,7 +75,7 @@ def align_spikes(spike_data, spt, sp_win, type="max", resample=None):
 
     spt_new = spt + time[i]
 
-    return spt_new
+    return {"data": spt_new}
 
 
 
