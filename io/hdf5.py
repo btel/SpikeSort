@@ -17,3 +17,27 @@ def read_sp(fname, dataset):
     FS = electrode_node.raw.attrs['sampfreq']
     
     return {"data": sp_raw, "FS": FS} 
+
+def read_spt(fname, dataset):
+
+    h5f = tables.openFile(fname, 'r')
+
+    cell_node = h5f.getNode(dataset)
+
+    spt = cell_node.read()
+    
+    return spt 
+
+def wite_spt(fname, dataset, spt file=None, array_node=None, title=""):
+    
+    assert file
+    assert array_node
+    
+    h5f = tables.openFile(fname, 'w')
+    
+    array = data['data']
+    
+    parts = dataset.split('/')
+    group = '/'.join(parts[:-1])
+    node_name = parts[-1]
+    file.createArray(group, node_name, spt, title=title, createparents=True)
