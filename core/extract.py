@@ -21,7 +21,7 @@ def extract_spikes(spike_data, spt_dict, sp_win):
     spt = spt_dict['data']
 
     indices = (spt/1000.*FS).astype(np.int32)
-    win = (np.asarray(sp_win)/1000*FS).astype(np.int32)
+    win = (np.asarray(sp_win)/1000.*FS).astype(np.int32)
     noExt=win[1]-win[0]
     
     indices = indices[indices<(len(sp_data)-win[1])]
