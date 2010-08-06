@@ -5,6 +5,63 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import interpolate
 
+
+def remove_spikes(spt_dict, remove_dict, tolerance):
+    spt_data = spt_dict['data']
+    spt_remove = remove_dict['data']
+
+    min, max = tolerance
+
+    for t in spt_remove:
+        spt_data = spt_data[(spt_data>(t+max)) | (spt_data<(t+min))]
+
+    spt_ret = spt_dict.copy()
+
+    spt_ret['data'] = spt_data
+
+    return spt_ret
+
+def detect_spikes(spike_data, thresh, edge="rising"):
+    """Detects spikes in extracellular data using amplitude thresholding.
+
+    Arguments:
+
+    -- spike_data : dict
+       extracellular waveforms
+
+    -- thresh : float or 'auto'
+       threshold for detection. if thresh is 'auto' it will be
+       estimated from the data.
+
+    -- edge : {"rising" or "falling"}
+       which edge to trigger on
+
+    Returns: 
+    dictionary with 'data' key which contains detected threshold
+    crossing in miliseconds
+
+    """
+    
+    sp_data = spike_data['data']
+    FS = spike_data['FS']
+
+    if thresh=='auto':
+        thresh = 8*np.sqrt(sp_data.var())
+        if edge == 'falling':
+            thresh = -thresh
+
+    if edge == "rising":
+        i, = np.where((sp_data[:-1]<thresh) & (sp_data[1:]>thresh))
+    elif edge == "falling":
+        i, = np.where((sp_data[:-1]>thresh) & (sp_data[1:]<thresh))
+    else:
+        raise "Edge must be 'rising' or 'falling'"
+    spt = i*1000./FS
+
+    spt_dict = {'data': spt}
+
+    return spt_dict
+
 def extract_spikes(spike_data, spt_dict, sp_win):
     """Returns spike wave shapes.
 
