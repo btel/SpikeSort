@@ -101,8 +101,8 @@ def calc_noise_threshold(spike_waves, sign=1, frac_spikes=0.02, frac_max=0.5):
 
     return threshold
 
-def calc_isolation_score(sp, spt, sp_win, spike_type='positive',
-        lam=10.):
+def calc_isolation_score(spike_waves, noise_waves, spike_type='positive',
+        lam=10., max_spikes=None):
     """Calculate isolation index according to Joshua et al. (2007)
     
     Arguments:
@@ -129,10 +129,17 @@ def calc_isolation_score(sp, spt, sp_win, spike_type='positive',
       a value from the range [0,1] indicating the quality of sorting
       (1=ideal isolation of spikes)
     """
-   
-    #Extract waveshapes of isolated spikes and noise
-    spike_waves = extract.extract_spikes(sp, spt, sp_win)
-    noise_waves = extract_noise_cluster(sp, spt, sp_win, spike_type) 
+    
+    #Memory issue: sample spikes if too many
+    if max_spikes is not None:
+        if spike_waves['data'].shape[1]>max_spikes:
+           i = np.random.rand(max_spikes).argsort()
+           spike_waves['data'] = spike_waves['data'][:, i]
+        if noise_waves['data'].shape[1]>max_spikes:
+           i = np.random.rand(max_spikes).argsort()
+           noise_waves['data'] = noise_waves['data'][:, i]
+
+
     n_spikes = spike_waves['data'].shape[1]
     
     #calculate distance between spikes and all other events
@@ -150,7 +157,7 @@ def calc_isolation_score(sp, spt, sp_win, spike_type='positive',
     
     p_x = similarity[:,:n_spikes].sum(1)
 
-    isolation_score = p_x.mean()
+    isolation_score = p_x[:n_spikes].mean()
 
     return isolation_score
 
