@@ -2,7 +2,7 @@
 #coding=utf-8
 
 import os
-
+import numpy as np
 import spike_sort as sort
 import spike_sort.io.hdf5
 from spike_sort.ui.manual_detect import find_spikes
@@ -14,20 +14,28 @@ if __name__ == "__main__":
     sp_win = [-0.2, 0.8]
     response_win = [8., 13.]
     
-    dataset = "/Joy/s3349a16/el7/cell1"
-    stim_node = "/Joy/s3349a16/stim"
+    dataset = "/Joy/s3349a16/el7/cell1_corrected"
+    stim_node = "/".join(dataset.split('/')[:3]+['stim'])
     
     sp = sort.io.hdf5.read_sp(h5_fname, dataset)
     spt = sort.io.hdf5.read_spt(h5_fname, dataset)
-    #stim = sort.io.hdf5.read_spt(h5_fname, stim_node)
+    stim = sort.io.hdf5.read_spt(h5_fname, stim_node)
+    #spt = sort.extract.detect_spikes(sp, -2000, 'falling')
+    spike_waves = sort.extract.extract_spikes(sp, spt, sp_win)
+    
+    snr_spike =  sort.evaluate.snr_spike(spike_waves)
+    isolation_score = sort.evaluate.calc_isolation_score(sp, spt,
+            sp_win, 'negative')
+    
+    noise_waves = sort.evaluate.extract_noise_cluster(sp, spt, sp_win,
+            'negative') 
+    sort.plotting.plot_spikes(noise_waves, n_spikes=200.)
+    sort.plotting.plot_spikes(spike_waves, n_spikes=200., ec='b')
 
-    spt_new = sort.extract.detect_spikes(sp, -1000., 'falling')
-    
-    spt_aligned = sort.extract.align_spikes(sp, spt_new, sp_win, 'min')
-    spt_aligned = sort.extract.remove_spikes(spt_aligned, spt, [-1,1])
-    sp_waves = sort.extract.extract_spikes(sp, spt_aligned, sp_win)
-    
-    sort.plotting.plot_spikes(sp_waves, n_spikes=200.)
+     
+    print "SNR_{spk} (spike) =", sort.evaluate.snr_spike(spike_waves)
+    print "SNR_{spk} (noise) =", sort.evaluate.snr_spike(noise_waves)
+    print "Isolation Score = ", isolation_score
 
 
     sort.plotting.show()

@@ -19,7 +19,7 @@ def label_normalize(labels):
     return map_func
 
 
-def plot_spikes(spike_data, clust_idx=None,ecolor='k', alpha=0.2,
+def plot_spikes(spike_data, clust_idx=None,ec=None, alpha=0.2,
         n_spikes='all'):
 
     spikes =  spike_data['data']
@@ -39,10 +39,12 @@ def plot_spikes(spike_data, clust_idx=None,ecolor='k', alpha=0.2,
         if not n_spikes=="all":
             i = np.random.rand(spikes_to_plot.shape[1]).argsort()
             spikes_to_plot = spikes_to_plot[:,i[:n_spikes]]
+        if ec is None:
+            ec = cmap(norm(c))
         plt.plot(time, spikes_to_plot,
-                color=cmap(norm(c)), alpha=alpha)
+                color=ec, alpha=alpha)
         plt.plot(time, spikes_to_plot.mean(1),
-                color=cmap(norm(c)), lw=2, label=str(c))
+                color=ec, lw=2, label=str(c))
 
     if legend:
         plt.legend()

@@ -1,4 +1,4 @@
 #!/usr/bin/env python
 #coding=utf-8
 
-__all__ = ["extract", "features"]
+__all__ = ["extract", "features", "cluster", "evaluate"]
