@@ -129,14 +129,15 @@ def calc_isolation_score(spike_waves, noise_waves, spike_type='positive',
       a value from the range [0,1] indicating the quality of sorting
       (1=ideal isolation of spikes)
     """
-    
     #Memory issue: sample spikes if too many
     if max_spikes is not None:
         if spike_waves['data'].shape[1]>max_spikes:
            i = np.random.rand(max_spikes).argsort()
+           spike_waves = spike_waves.copy()
            spike_waves['data'] = spike_waves['data'][:, i]
         if noise_waves['data'].shape[1]>max_spikes:
            i = np.random.rand(max_spikes).argsort()
+           noise_waves = noise_waves.copy()
            noise_waves['data'] = noise_waves['data'][:, i]
 
 
@@ -146,18 +147,31 @@ def calc_isolation_score(spike_waves, noise_waves, spike_type='positive',
     all_waves = {'data': np.hstack((spike_waves['data'],
                                     noise_waves['data']))}
     dist_matrix = cluster.dist_euclidean(spike_waves, all_waves)
-    d_0 = dist_matrix[:,:n_spikes].mean()
+    #d_0 = dist_matrix[:,:n_spikes].mean()
    
     #normalize distance and convert it to similarity
-    similarity = np.exp(-dist_matrix*lam/d_0)
-    similarity[dist_matrix==0]=0.
+    #similarity = np.exp(-dist_matrix*lam/d_0)
+    #similarity[dist_matrix==0]=0.
     
     #normalize probablity to 1 (softmax)
-    similarity = similarity/similarity.sum(1)[:, np.newaxis]
+    #similarity = similarity/similarity.sum(1)[:, np.newaxis]
     
-    p_x = similarity[:,:n_spikes].sum(1)
+    #p_x = similarity[:,:n_spikes].sum(1)
 
-    isolation_score = p_x[:n_spikes].mean()
+    #isolation_score = p_x[:n_spikes].mean()
 
+ 
+    distSS = dist_matrix[:, :n_spikes]
+    distSN = dist_matrix[:, n_spikes:] 
+
+    d0 = distSS.mean()
+    expSS = np.exp(-distSS*lam*1./d0);
+    expSN = np.exp(-distSN*lam*1./d0);
+ 
+    sumSS = np.sum(expSS - np.eye(n_spikes),1)
+    sumSN = np.sum(expSN, 1) 
+
+    correctProbS = sumSS /  (sumSS + sumSN)
+    isolation_score = correctProbS.mean()
     return isolation_score
 
