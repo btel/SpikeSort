@@ -25,13 +25,10 @@ if __name__ == "__main__":
     spt = sort.extract.align_spikes(sp, spt, sp_win, 'min')
    
     spike_waves = sort.extract.extract_spikes(sp, spt, sp_win)
-    #noise_waves = sort.evaluate.extract_noise_cluster(sp, spt, sp_win,
-    #        spike_type)
-    i = np.random.randint(spike_waves['data'].shape[1], size=5000)
-    noise_waves = {'data':spike_waves['data'][:,i],
-            'time':spike_waves['time']}
+    noise_waves = sort.evaluate.extract_noise_cluster(sp, spt, sp_win,
+            spike_type)
     isolation_score = sort.evaluate.calc_isolation_score(spike_waves,
-            noise_waves, spike_type, max_spikes=5000.)
+            noise_waves, spike_type, lam=20,max_spikes=5000.)
     snr_spike =  sort.evaluate.snr_spike(spike_waves)
     sort.plotting.plot_spikes(noise_waves, n_spikes=200.)
     sort.plotting.plot_spikes(spike_waves, n_spikes=200., ec='b')
