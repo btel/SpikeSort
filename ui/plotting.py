@@ -3,7 +3,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from matplotlib.pyplot import show, figure
+from matplotlib.pyplot import show, figure, close
+from matplotlib.collections import LineCollection
 
 cmap = plt.cm.jet
 
@@ -20,10 +21,18 @@ def label_normalize(labels):
 
 
 def plot_spikes(spike_data, clust_idx=None,ec=None, alpha=0.2,
-        n_spikes='all'):
+        n_spikes='all', plot_avg=True):
 
     spikes =  spike_data['data']
     time = spike_data['time']
+    
+    n_pts = len(time)
+    if n_spikes=='all':
+        n_spikes = spikes.shape[1]
+    else:
+        i = np.random.rand(spikes.shape[1]).argsort()
+        spikes = spikes[:,i[:n_spikes]]
+    
     
     if not clust_idx is None:
         norm = label_normalize(np.unique(clust_idx))
@@ -33,21 +42,46 @@ def plot_spikes(spike_data, clust_idx=None,ec=None, alpha=0.2,
         norm = plt.normalize(0,1)
         legend = False
 
+    if ec:
+        colors = ec
+    else:
+        colors = cmap(norm(clust_idx))
 
-    for c in np.unique(clust_idx): 
-        spikes_to_plot = spikes[:, clust_idx==c]
-        if not n_spikes=="all":
-            i = np.random.rand(spikes_to_plot.shape[1]).argsort()
-            spikes_to_plot = spikes_to_plot[:,i[:n_spikes]]
-        if ec is None:
-            ec = cmap(norm(c))
-        plt.plot(time, spikes_to_plot,
-                color=ec, alpha=alpha)
-        plt.plot(time, spikes_to_plot.mean(1),
-                color=ec, lw=2, label=str(c))
+    ax = plt.gca()
+    ax.set_xlim(time.min(), time.max())
+    ax.set_ylim(spikes.min(), spikes.max())
+    
+    segs = np.zeros((n_spikes, n_pts, 2))
+    segs[:,:,0] = time[np.newaxis,:]
+    segs[:,:,1] = spikes[:,:n_spikes].T
+    line_segments = LineCollection(segs,colors=colors, alpha=alpha)
+    ax.add_collection(line_segments)
+    
+    if plot_avg:
+        unique_labs = np.unique(clust_idx)
+        spikes_mean = np.array([spikes[:, clust_idx==l].mean(1) for l in
+            unique_labs])
+        segs = np.zeros((len(unique_labs), n_pts, 2))
+        segs[:,:,0] = time[np.newaxis,:]
+        segs[:,:,1] = spikes_mean[:,:]
+        ls_mean = LineCollection(segs, colors=cmap(norm(unique_labs)),
+                linewidths=2, zorder=10)
+        ax.add_collection(ls_mean)
+    return line_segments
+    #for c in np.unique(clust_idx): 
+    #    spikes_to_plot = spikes[:, clust_idx==c]
+    #    if not n_spikes=="all":
+    #        i = np.random.rand(spikes_to_plot.shape[1]).argsort()
+    #        spikes_to_plot = spikes_to_plot[:,i[:n_spikes]]
+    #    if ec is None:
+    #        ec = cmap(norm(c))
+    #    plt.plot(time, spikes_to_plot,
+    #            color=ec, alpha=alpha)
+    #    plt.plot(time, spikes_to_plot.mean(1),
+    #            color=ec, lw=2, label=str(c))
 
-    if legend:
-        plt.legend()
+    #if legend:
+    #    plt.legend()
 
 
 def plot_features(features_dict, clust_idx=None, size=1):

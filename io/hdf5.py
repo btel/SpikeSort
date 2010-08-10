@@ -45,7 +45,7 @@ def read_spt(fname, dataset):
     
     return ret_dict 
 
-def write_spt(spt_dict, fname, dataset):
+def write_spt(spt_dict, fname, dataset,overwrite=False):
     
     h5f = tables.openFile(fname, 'a')
     
@@ -54,6 +54,13 @@ def write_spt(spt_dict, fname, dataset):
     parts = dataset.split('/')
     group = '/'.join(parts[:-1])
     node_name = parts[-1]
+
+    if overwrite:
+        try:
+            h5f.removeNode(group, node_name)
+        except tables.exceptions.NodeError:
+            pass
+
     arr_node = h5f.createArray(group, node_name, spt, 
             title="SpikeTime" , createparents=True)
 
