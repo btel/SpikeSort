@@ -10,7 +10,7 @@ import spike_sort as sort
 import spike_sort.io.hdf5
 from spike_sort.ui.manual_detect import find_spikes
 
-from test_iso_lambda import calc_iso_score
+from spike_sort.core.evaluate import _iso_score_dist
 
 def get_aligned_waves(dataset, max_spikes=None):
 
@@ -39,7 +39,7 @@ def calc_iso_errors(dist, frac, n1, n2):
     dist2 = dist[:,i][i,:]
     dist2 = dist2[:n1, :] 
 
-    return calc_iso_score(dist2, lam, n1)
+    return _iso_score_dist(dist2, lam, n1)
 
 
 if __name__ == "__main__":

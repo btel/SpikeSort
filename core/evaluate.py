@@ -125,6 +125,43 @@ def isolation_score(sp, spt, sp_win, spike_type='positive', lam=10., max_spikes=
 
     return iso_score
 
+def _iso_score_dist(dist, lam, n_spikes):
+
+    """Calculate isolation score from a distance matrix
+
+    Arguments:
+    * dist : numpy array
+      NxM matrix, where N is number of spikes and M is number of all
+      events (spikes + noise)
+
+    * lam : float 
+      lambda parameter
+
+    * n_spikes : int
+      number of spikes (N)
+
+    Returns:
+    * isolation score
+    """
+
+
+    distSS = dist[:, :n_spikes]
+    distSN = dist[:, n_spikes:] 
+
+    d0 = distSS.mean()
+    expSS = np.exp(-distSS*lam*1./d0);
+    expSN = np.exp(-distSN*lam*1./d0);
+ 
+    sumSS = np.sum(expSS - np.eye(n_spikes),1)
+    sumSN = np.sum(expSN, 1) 
+
+    correctProbS = sumSS /  (sumSS + sumSN)
+    isolation_score = correctProbS.mean()
+
+    return isolation_score
+
+
+
 def calc_isolation_score(spike_waves, noise_waves, spike_type='positive',
         lam=10., max_spikes=None):
     """Calculate isolation index according to Joshua et al. (2007)
@@ -172,29 +209,8 @@ def calc_isolation_score(spike_waves, noise_waves, spike_type='positive',
     dist_matrix = cluster.dist_euclidean(spike_waves, all_waves)
     #d_0 = dist_matrix[:,:n_spikes].mean()
    
-    #normalize distance and convert it to similarity
-    #similarity = np.exp(-dist_matrix*lam/d_0)
-    #similarity[dist_matrix==0]=0.
-    
-    #normalize probablity to 1 (softmax)
-    #similarity = similarity/similarity.sum(1)[:, np.newaxis]
-    
-    #p_x = similarity[:,:n_spikes].sum(1)
+    isolation_score = _iso_score_dist(dist_matrix, lam,
+            n_spikes)
 
-    #isolation_score = p_x[:n_spikes].mean()
-
- 
-    distSS = dist_matrix[:, :n_spikes]
-    distSN = dist_matrix[:, n_spikes:] 
-
-    d0 = distSS.mean()
-    expSS = np.exp(-distSS*lam*1./d0);
-    expSN = np.exp(-distSN*lam*1./d0);
- 
-    sumSS = np.sum(expSS - np.eye(n_spikes),1)
-    sumSN = np.sum(expSN, 1) 
-
-    correctProbS = sumSS /  (sumSS + sumSN)
-    isolation_score = correctProbS.mean()
     return isolation_score
 
