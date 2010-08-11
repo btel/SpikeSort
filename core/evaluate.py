@@ -114,17 +114,26 @@ def calc_noise_threshold(spike_waves, sign=1, frac_spikes=0.02, frac_max=0.5):
 
     return threshold
 
+def isolation_score(sp, spt, sp_win, spike_type='positive', lam=10., max_spikes=None):
+    
+    spike_waves = extract.extract_spikes(sp, spt, sp_win)
+    spt_noise = detect_noise(sp, spt, sp_win, spike_type)
+    noise_waves = extract.extract_spikes(sp, spt_noise, sp_win)
+
+    iso_score = calc_isolation_score(spike_waves, noise_waves,
+            spike_type, lam=lam, max_spikes=max_spikes)
+
+    return iso_score
+
 def calc_isolation_score(spike_waves, noise_waves, spike_type='positive',
         lam=10., max_spikes=None):
     """Calculate isolation index according to Joshua et al. (2007)
     
     Arguments:
     
-    * sp : dict
-      raw extracellular recordings
+    * spike_waves : dict
       
-    * spt : dict
-      spike times
+    * noise_waves : dict
     
     * sp_win : list or tuple
       window used for spike extraction
@@ -142,6 +151,7 @@ def calc_isolation_score(spike_waves, noise_waves, spike_type='positive',
       a value from the range [0,1] indicating the quality of sorting
       (1=ideal isolation of spikes)
     """
+
     #Memory issue: sample spikes if too many
     if max_spikes is not None:
         if spike_waves['data'].shape[1]>max_spikes:

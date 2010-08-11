@@ -11,12 +11,12 @@ if __name__ == "__main__":
     
     DATAPATH = os.environ.get("DATAPATH")
     h5_fname = os.path.join(DATAPATH, "hdf5/data_microel.h5")
-    sp_win = [-0.5, 0.5]
+    sp_win = [-0.3, 0.8]
     response_win = [8., 13.]
     
-    dataset = "/Joy/s33136a/el7/cell1"
+    dataset = "/Poppy/s32105j/el4/cell1_corrected"
     #dataset = "/Poppy/s32103h/el8/cell1"
-    spike_type = "positive"
+    spike_type = "negative"
     stim_node = "/".join(dataset.split('/')[:3]+['stim'])
     
     sp = sort.io.hdf5.read_sp(h5_fname, dataset)
@@ -32,10 +32,8 @@ if __name__ == "__main__":
     noise_waves = sort.extract.extract_spikes(sp, spt_noise, sp_win)
 
     isolation_score = sort.evaluate.calc_isolation_score(spike_waves,
-            noise_waves, spike_type, lam=10,max_spikes=5000.)
+            noise_waves, spike_type, lam=10,max_spikes=2000.)
     snr_spike =  sort.evaluate.snr_spike(spike_waves)
-    sort.plotting.plot_spikes(noise_waves, n_spikes=200.)
-    sort.plotting.plot_spikes(spike_waves, n_spikes=200., ec='b')
 
     
     spt_all, clust_idx = sort.extract.merge_spiketimes(spt, spt_noise)
@@ -47,6 +45,8 @@ if __name__ == "__main__":
             sort.features.fetSpIdx(all_spikes),
             sort.features.fetP2P(all_spikes),
             sort.features.fetPCs(all_spikes)))
+
+    sort.plotting.plot_spikes(all_spikes, clust_idx, plot_avg=True, n_spikes=800.)
 
     sort.plotting.figure()
     sort.plotting.plot_features(features, clust_idx)
