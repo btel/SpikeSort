@@ -4,6 +4,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import extract, cluster
+import warnings
+
+def deprecation(message):
+    warnings.warn(message, DeprecationWarning, stacklevel=2)
 
 def snr_spike(spike_waves, scale=5.):
     """Estimate signal-to-noise ratio (SNR) as a ratio of
@@ -45,6 +49,16 @@ def snr_clust(spike_waves, noise_waves):
 
 def extract_noise_cluster(sp, spt, sp_win, type="positive"):
 
+
+    deprecation("extract_noise_cluster deprecated. Use"
+                " detect_noise and extract_spikes instead.")
+    spt_noise = detect_noise_spikes(sp, spt, sp_win, type)
+    sp_waves = extract.extract_spikes(sp, spt_noise, sp_win)
+
+    return sp_waves
+
+def detect_noise(sp, spt, sp_win, type="positive"):
+
     spike_waves = extract.extract_spikes(sp, spt, sp_win)
     
     if type == "positive":
@@ -57,9 +71,8 @@ def extract_noise_cluster(sp, spt, sp_win, type="positive"):
         spt_noise = extract.align_spikes(sp, spt_noise, sp_win, 'min')
 
     spt_noise = extract.remove_spikes(spt_noise, spt, sp_win)
-    sp_waves = extract.extract_spikes(sp, spt_noise, sp_win)
 
-    return sp_waves
+    return spt_noise
 
 def calc_noise_threshold(spike_waves, sign=1, frac_spikes=0.02, frac_max=0.5):
     """ Find threshold to extract noise cluster according to algorithm described in

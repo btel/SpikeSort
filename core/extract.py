@@ -5,7 +5,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import interpolate
 
-
 def remove_spikes(spt_dict, remove_dict, tolerance):
     spt_data = spt_dict['data']
     spt_remove = remove_dict['data']
@@ -138,5 +137,71 @@ def align_spikes(spike_data, spt_dict, sp_win, type="max", resample=None):
     return {"data": spt_new}
 
 
+def merge_spikes(spike_waves1, spike_waves2):
+    """Merges two sets of spike waves
+    
+    Arguments:
+    
+    * spike_waves1 : dictionary
+    * spike_waves2 : dictionary
+      both spike wave sets must be defined within the same time window
+      and with the same sampling frequency
+
+    Returns:
+
+    * spike_waves : dictionary
+      merged spike waveshapes
+
+    * clust_idx : array
+      labels denoting to which set the given spike originally belonged
+      to
+    
+    """
+
+    sp_data1 = spike_waves1['data']
+    sp_data2 = spike_waves2['data']
+
+    sp_data = np.hstack((sp_data1, sp_data2))
+    spike_waves = spike_waves1.copy()
+    spike_waves['data'] = sp_data
+
+    clust_idx = np.concatenate((np.ones(sp_data1.shape[1]),
+                               np.zeros(sp_data2.shape[1])))
+
+    return spike_waves, clust_idx
+
+def merge_spiketimes(spt1, spt2, sort=True):
+    """Merges two sets of spike times 
+    
+    Arguments:
+    
+    * spt1 : dictionary
+    * spt2 : dictionary
+    * sort : bool
+      False if you don't want to be the spike times sorted.
+
+    Returns:
+
+    * spt : dictionary
+      dictionary with merged spike time arrrays under data key
+
+    * clust_idx : array
+      labels denoting to which set the given spike originally belonged
+      to
+    
+    """
+
+    spt_data1 = spt1['data']
+    spt_data2 = spt2['data']
+
+    spt_data = np.concatenate((spt_data1, spt_data2))
+    i = spt_data.argsort()
+    spt_data = spt_data[i]
 
 
+    clust_idx = np.concatenate((np.ones(spt_data1.shape[0]),
+                               np.zeros(spt_data2.shape[0])))
+    clust_idx = clust_idx[i]
+    spt_dict = {"data": spt_data}
+
+    return spt_dict, clust_idx
