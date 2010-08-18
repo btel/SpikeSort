@@ -10,13 +10,12 @@ from spike_sort.ui.manual_detect import find_spikes
 if __name__ == "__main__":
     
     DATAPATH = os.environ.get("DATAPATH")
-    h5_fname = os.path.join(DATAPATH, "hdf5/data_microel.h5")
+    h5_fname = os.path.join(DATAPATH, "hdf5/gollum_test.h5")
     sp_win = [-0.3, 0.8]
     response_win = [8., 13.]
     
-    dataset = "/Poppy/s32105j/el4/cell1_corrected"
-    #dataset = "/Poppy/s32103h/el8/cell1"
-    spike_type = "negative"
+    dataset = "/Gollum/s39gollum01/el1/cell2"
+    spike_type = "positive"
     stim_node = "/".join(dataset.split('/')[:3]+['stim'])
     
     sp = sort.io.hdf5.read_sp(h5_fname, dataset)
@@ -28,7 +27,8 @@ if __name__ == "__main__":
         spt = sort.extract.align_spikes(sp, spt, sp_win, 'min')
    
     spike_waves = sort.extract.extract_spikes(sp, spt, sp_win)
-    spt_noise = sort.evaluate.detect_noise(sp, spt, sp_win, spike_type)
+    spt_noise = sort.evaluate.detect_noise(sp, spt, sp_win,
+            spike_type, 3000)
     noise_waves = sort.extract.extract_spikes(sp, spt_noise, sp_win)
 
     isolation_score = sort.evaluate.calc_isolation_score(spike_waves,

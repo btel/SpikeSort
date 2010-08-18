@@ -57,20 +57,37 @@ def extract_noise_cluster(sp, spt, sp_win, type="positive"):
 
     return sp_waves
 
-def detect_noise(sp, spt, sp_win, type="positive"):
+def rand_sample_spt(spt, max_spikes):
+    n_spikes = len(spt['data'])
+    spt_data = spt['data']
+    spt_new = spt.copy()
+    if max_spikes and n_spikes>max_spikes:
+        i = np.random.rand(n_spikes).argsort()[:max_spikes]
+        spt_new['data'] = spt_data[i]
+    return spt_new
+
+
+def detect_noise(sp, spt, sp_win, type="positive", max_spikes=None,
+        resample=1):
 
     spike_waves = extract.extract_spikes(sp, spt, sp_win)
     
     if type == "positive":
         threshold = calc_noise_threshold(spike_waves, 1)
         spt_noise = extract.detect_spikes(sp, threshold, 'rising')
-        spt_noise = extract.align_spikes(sp, spt_noise, sp_win, 'max')
+        spt_noise = rand_sample_spt(spt_noise, max_spikes)
+        spt_noise = extract.remove_spikes(spt_noise, spt, sp_win)
+        spt_noise = extract.align_spikes(sp, spt_noise, sp_win, 'max',
+                resample=resample)
     else:
         threshold = calc_noise_threshold(spike_waves, -1)
         spt_noise = extract.detect_spikes(sp, threshold, 'falling')
-        spt_noise = extract.align_spikes(sp, spt_noise, sp_win, 'min')
+        spt_noise = rand_sample_spt(spt_noise, max_spikes)
+        print spt_noise['data'].shape
+        spt_noise = extract.remove_spikes(spt_noise, spt, sp_win)
+        spt_noise = extract.align_spikes(sp, spt_noise, sp_win, 'min',
+                resample=resample)
 
-    spt_noise = extract.remove_spikes(spt_noise, spt, sp_win)
 
     return spt_noise
 
