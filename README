@@ -1,0 +1,10 @@
+Spike sorting library implemented in Python/NumPy/PyTables
+----------------------------------------------------------
+
+Requirements:
+
+* Python >= 2.6
+* PyTables
+* NumPy
+
+To see the library in actions see examples folder.
