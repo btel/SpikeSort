@@ -23,9 +23,13 @@ def read_sp(fname, dataset):
 
     sp_raw = electrode_node.raw
     FS = electrode_node.raw.attrs['sampfreq']
-    print sp_raw
+
+    try:
+        n_contacts = sp_raw.shape[1]
+    except IndexError:
+        n_contacts = 1
     
-    return {"data": sp_raw, "FS": FS} 
+    return {"data": sp_raw, "FS": FS, "n_contacts":n_contacts} 
 
 def read_spt(fname, dataset):
 
@@ -40,7 +44,7 @@ def read_spt(fname, dataset):
     ret_dict.update(extra_attrs)
    
     cell_node.flush()
-    h5f.close()
+    #h5f.close()
     
     return ret_dict 
 

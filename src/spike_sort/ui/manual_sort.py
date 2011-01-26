@@ -70,39 +70,39 @@ class LassoManager:
 
 class SpikeWaveform:
 
-    def __init__(self, ax, sp_dict, color_on="r", color_off="k"):
+    def __init__(self, fig, sp_dict, color_on="r", color_off="k",
+                 contact=0):
 
         self.color_on = color_on
         self.alpha = 1.
         self.color_off = color_off
+        self.figure = fig
 
-        plt.axes(ax)
-        self.ax=ax
-        self.canvas = ax.figure.canvas
+        self.canvas = self.figure.canvas
         
         #self.lines = ax.plot(self.time, self.spikes, 'k', alpha=0.2)
-        plotting.plot_spikes(sp_dict, plot_avg=False, ec=color_off)
-        self.lines = ax.collections[0]
+        self.lines = plotting.plot_spikes(sp_dict, plot_avg=False, ec=color_off)
+        #self.lines = ax.collections[0]
         
         self.Nxy = sp_dict['data'].shape[1]
         self.all_spikes = sp_dict['data']
         self.time = sp_dict['time']
         self.marked_lines = None
         
-        n_pts, n_spikes = self.all_spikes.shape
     def callback(self, ind):
-        #colors = np.repeat(self.color_off, self.Nxy)
-        #colors[ind] = self.color_on
-        #self.lines.set_color(colors.tolist())
-        if self.marked_lines:
-            self.ax.collections.remove(self.marked_lines)
-        segs = np.empty((len(ind), len(self.time), 2))
-        segs[:,:,0] = self.time[np.newaxis,:]
-        segs[:,:,1] = self.all_spikes[:,ind].T
-        self.marked_lines = LineCollection(segs,colors=self.color_on,
-                                           alpha=self.alpha,
-                zorder=10)
-        self.ax.add_collection(self.marked_lines)
+        colors = np.repeat(self.color_off, self.Nxy)
+        colors[ind] = self.color_on
+        for lines in self.lines:
+             lines.set_color(colors.tolist())
+        #if self.marked_lines:
+        #    self.ax.collections.remove(self.marked_lines)
+        #segs = np.empty((len(ind), len(self.time), 2))
+        #segs[:,:,0] = self.time[np.newaxis,:]
+        #segs[:,:,1] = self.all_spikes[:,ind].T
+        #self.marked_lines = LineCollection(segs,colors=self.color_on,
+        #                                   alpha=self.alpha,
+        #        zorder=10)
+        #self.ax.add_collection(self.marked_lines)
 
         self.canvas.draw_idle()
 
@@ -121,23 +121,16 @@ def show(features_dict, sp_dict, feat_idx,show_spikes=True):
     features = features_dict['data']
     names = features_dict['names']
     ii = np.array(feat_idx)
-    fig = figure(figsize=(12,6))
+    fig_cluster = figure(figsize=(6,6))
+    ax_cluster = fig_cluster.add_subplot(111, xlim=(-0.1,1.1), ylim=(-0.1,1.1),
+            autoscale_on=False)
+    lman = LassoManager(ax_cluster, features[:,ii], names[ii])
+
 
     if show_spikes:
-        ax = fig.add_subplot(121, xlim=(-0.1,1.1), ylim=(-0.1,1.1),
-            autoscale_on=False)
-        ax2 = fig.add_subplot(122)
-
-        sp_wave_plot = SpikeWaveform(ax2, sp_dict)
-        lman = LassoManager(ax, features[:,ii], names[ii])
+        fig_spikes = figure(figsize=(6,6))
+        sp_wave_plot = SpikeWaveform(fig_spikes, sp_dict)
         lman.register(sp_wave_plot.callback)
-    else:
-        ax = fig.add_subplot(111, xlim=(-0.1,1.1), ylim=(-0.1,1.1),
-            autoscale_on=False)
-        lman = LassoManager(ax, features[:,ii], names[ii])
-
-
-
 
     plt.show()
 

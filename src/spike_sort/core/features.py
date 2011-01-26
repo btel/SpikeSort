@@ -37,7 +37,7 @@ def fetPCs(spikes_data,ncomps=2):
 
     if spikes.ndim==3:
         sc=[_getPCs(sp_contact.T) for sp_contact in spikes.swapaxes(0,2)]
-        sc=vstack(sc)
+        sc=np.vstack(sc)
         n_channels = spikes.shape[2]
     else:
         sc=_getPCs(spikes)

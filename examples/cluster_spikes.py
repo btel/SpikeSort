@@ -27,11 +27,11 @@ if __name__ == "__main__":
     #spt = sort.io.bakerlab.read_spt(out_dir, spt_fname)
     sp = sort.io.hdf5.read_sp(h5_fname, dataset)
     #spt = sort.io.hdf5.read_spt(h5_fname, dataset)
-    spt = sort.extract.detect_spikes(sp, 'auto')
+    spt = sort.extract.detect_spikes(sp,  contact=0,
+                                     thresh=300)
     
-    spt = sort.extract.align_spikes(sp, spt, sp_win, type="max", resample=10)
+    #spt = sort.extract.align_spikes(sp, spt, sp_win, type="max", resample=10)
     sp_waves = sort.extract.extract_spikes(sp, spt, sp_win)
-
     features = sort.features.combine(
             (
             sort.features.fetSpIdx(sp_waves),
@@ -40,7 +40,8 @@ if __name__ == "__main__":
             normalize=True)
 
 
-    clust_idx = sort.ui.manual_sort.show(features, sp_waves, [1,2])
+    clust_idx = sort.ui.manual_sort.show(features, sp_waves, [1,2],
+                                         show_spikes=True)
 
     clust, rest = sort.ui.manual_sort.cluster_spt(spt, clust_idx)
 

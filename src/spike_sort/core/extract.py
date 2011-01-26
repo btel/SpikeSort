@@ -20,7 +20,8 @@ def remove_spikes(spt_dict, remove_dict, tolerance):
 
     return spt_ret
 
-def detect_spikes(spike_data, thresh='auto', edge="rising"):
+def detect_spikes(spike_data, thresh='auto', edge="rising",
+                  contact=0):
     """Detects spikes in extracellular data using amplitude thresholding.
 
     Arguments:
@@ -35,6 +36,8 @@ def detect_spikes(spike_data, thresh='auto', edge="rising"):
     -- edge : {"rising" or "falling"}
        which edge to trigger on
 
+    -- contact: index of tetrode contact to use for detection
+
     Returns: 
     dictionary with 'data' key which contains detected threshold
     crossing in miliseconds
@@ -42,6 +45,11 @@ def detect_spikes(spike_data, thresh='auto', edge="rising"):
     """
     
     sp_data = spike_data['data']
+    n_contacts = spike_data['n_contacts']
+
+    if n_contacts>1:
+        sp_data = sp_data[:,contact]
+
     FS = spike_data['FS']
 
     if thresh=='auto':
@@ -73,6 +81,8 @@ def extract_spikes(spike_data, spt_dict, sp_win, resample=1):
     """
 
     sp_data = spike_data['data']
+    n_contacts = spike_data['n_contacts']
+
 
     FS = spike_data['FS']
     spt = spt_dict['data']
@@ -80,7 +90,7 @@ def extract_spikes(spike_data, spt_dict, sp_win, resample=1):
     indices = (spt/1000.*FS).astype(np.int32)
     win = (np.asarray(sp_win)/1000.*FS).astype(np.int32)
    
-    isOutOfBound = ((indices>(len(sp_data)-win[1])) | (indices<-win[0]))
+    isOutOfBound = ((indices>(sp_data.shape[0]-win[1])) | (indices<-win[0]))
     correct_indices = indices[~isOutOfBound]
     truncated_indices = indices[isOutOfBound]
 
@@ -88,9 +98,9 @@ def extract_spikes(spike_data, spt_dict, sp_win, resample=1):
 
 
     if resample==1:
-        spWave = np.zeros((len(time), len(spt)), dtype=np.float32)
+        spWave = np.zeros((len(time), len(spt), n_contacts), dtype=np.float32)
         for i,sp in enumerate(correct_indices):
-            spWave[:,i] = sp_data[sp+win[0]:sp+win[1]]
+            spWave[:,i,:] = sp_data[sp+win[0]:sp+win[1],:]
         return {"data":spWave, "time": time, "FS": FS}
 
     else:
