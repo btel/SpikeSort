@@ -73,6 +73,7 @@ class SpikeWaveform:
     def __init__(self, ax, sp_dict, color_on="r", color_off="k"):
 
         self.color_on = color_on
+        self.alpha = 1.
         self.color_off = color_off
 
         plt.axes(ax)
@@ -99,7 +100,7 @@ class SpikeWaveform:
         segs[:,:,0] = self.time[np.newaxis,:]
         segs[:,:,1] = self.all_spikes[:,ind].T
         self.marked_lines = LineCollection(segs,colors=self.color_on,
-                alpha=0.6,
+                                           alpha=self.alpha,
                 zorder=10)
         self.ax.add_collection(self.marked_lines)
 

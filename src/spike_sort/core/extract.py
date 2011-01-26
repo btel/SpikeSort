@@ -20,7 +20,7 @@ def remove_spikes(spt_dict, remove_dict, tolerance):
 
     return spt_ret
 
-def detect_spikes(spike_data, thresh, edge="rising"):
+def detect_spikes(spike_data, thresh='auto', edge="rising"):
     """Detects spikes in extracellular data using amplitude thresholding.
 
     Arguments:
@@ -45,7 +45,7 @@ def detect_spikes(spike_data, thresh, edge="rising"):
     FS = spike_data['FS']
 
     if thresh=='auto':
-        thresh = 8*np.sqrt(sp_data.var())
+        thresh = 8*np.sqrt(np.var(sp_data[:10*FS]))
         if edge == 'falling':
             thresh = -thresh
 

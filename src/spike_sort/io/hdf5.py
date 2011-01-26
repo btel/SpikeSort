@@ -21,10 +21,9 @@ def read_sp(fname, dataset):
 
     electrode_node = h5f.getNode(electrode)
 
-    sp_raw = electrode_node.raw.read()
+    sp_raw = electrode_node.raw
     FS = electrode_node.raw.attrs['sampfreq']
-
-    h5f.close()
+    print sp_raw
     
     return {"data": sp_raw, "FS": FS} 
 
