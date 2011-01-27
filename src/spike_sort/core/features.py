@@ -17,13 +17,16 @@ def combine(args, normalize=True):
     return ret_dict
 
 def PCA(data,ncomps=2):
-    norm=data/np.std(data,1)[:,np.newaxis]
-    K=np.cov(norm)
+    #norm=data/np.std(data,1)[:,np.newaxis]
+    #norm[np.isnan(norm)]=0
+    #norm = data
+    K=np.cov(data)
     evals,evecs=np.linalg.eig(K)
     order=np.argsort(evals)[::-1]
-    evecs=evecs[order]
-    evals=evals[order]
-    score= np.dot(evecs[:,:ncomps].T,data)
+    evecs=np.real(evecs[:,order])
+    evals=np.real(evals[order])
+    score= np.dot(evecs[:,:ncomps].T/np.sqrt(evals[:ncomps,
+                                                   np.newaxis]),data)
     return evals,evecs,score
 
 def fetPCs(spikes_data,ncomps=2):
