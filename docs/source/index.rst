@@ -11,7 +11,7 @@ Modules:
 .. toctree::
    :maxdepth: 2
 
-   features
+   modules/features
 
 
 

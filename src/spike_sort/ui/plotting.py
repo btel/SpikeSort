@@ -87,7 +87,7 @@ def plot_spikes(spike_data, clust_idx=None,ec=None, alpha=0.2,
             unique_labs = np.unique(clust_idx)
             if ec is None:
                 colors = cmap(norm(unique_labs))
-            spikes_mean = np.array([spikes[:, clust_idx==l].mean(1) for l in
+            spikes_mean = np.array([spikes[:, clust_idx==l, contact_id].mean(1) for l in
                 unique_labs])
             segs_mean = np.zeros((len(unique_labs), n_pts, 2))
             segs_mean[:,:,0] = time[np.newaxis,:]

@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 #coding=utf-8
+"""
+Provides functions to calculate spike waveforms features
+
+"""
+
 
 import numpy as np
 import matplotlib.pyplot as plt

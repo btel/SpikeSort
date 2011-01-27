@@ -16,7 +16,6 @@ from utils import create_new_dir
 DATAPATH = "../data" 
 
 if __name__ == "__main__":
-    #main
     h5_fname = os.path.join(DATAPATH, "sample.h5")
     dataset = "/Gollum/s5gollum01/el3/cell3"
     out_dir = create_new_dir("Data/")
@@ -48,6 +47,7 @@ if __name__ == "__main__":
 
     if len(clust)>0:
         print "Exporting."
+        #TODO: write back to hdf5
         sort.io.bakerlab.write_spt(clust, out_dir, spt_fname+"_clus")
         sort.io.bakerlab.write_spt(rest, out_dir, spt_fname+"_rest")
 
