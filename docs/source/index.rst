@@ -6,10 +6,14 @@
 Welcome to SortSpikes's documentation!
 ======================================
 
-Contents:
+Modules:
 
 .. toctree::
    :maxdepth: 2
+
+   features
+
+
 
 Indices and tables
 ==================
@@ -17,4 +21,6 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+
 
