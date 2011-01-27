@@ -65,7 +65,7 @@ class TestFeatures:
         spikes_dict['data'] = spikes[:,:,np.newaxis]
 
         pcs, names = ss.features.fetPCs(spikes_dict, ncomps=1)
-        compare = np.logical_xor(pcs[:,0], amps[:,0])
+        compare = np.logical_xor(pcs[:,0].astype(int), amps[:,0])
         correct = np.sum(compare)
 
         eq_(n_spikes, correct)
