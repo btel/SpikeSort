@@ -120,7 +120,11 @@ def show(features_dict, sp_dict, feat_idx,show_spikes=True):
     
     features = features_dict['data']
     names = features_dict['names']
-    ii = np.array(feat_idx)
+    if type(feat_idx[0]) is int:
+        ii = np.array(feat_idx)
+    else:
+        ii = np.array([np.nonzero(names==f)[0][0] for f in feat_idx])
+        print ii
     fig_cluster = figure(figsize=(6,6))
     ax_cluster = fig_cluster.add_subplot(111, xlim=(-0.1,1.1), ylim=(-0.1,1.1),
             autoscale_on=False)

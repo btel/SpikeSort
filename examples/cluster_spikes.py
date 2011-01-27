@@ -40,7 +40,8 @@ if __name__ == "__main__":
             normalize=True)
 
 
-    clust_idx = sort.ui.manual_sort.show(features, sp_waves, [1,2],
+    clust_idx = sort.ui.manual_sort.show(features, sp_waves,
+                                         ['Ch0:P2P','Ch0:PC0'],
                                          show_spikes=True)
 
     clust, rest = sort.ui.manual_sort.cluster_spt(spt, clust_idx)
