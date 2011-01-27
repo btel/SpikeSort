@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 #coding=utf-8
 
+"""
+Based on raw recordings detect spikes, calculate features and do
+clustering by means of manual cluster-cutting.
+"""
+
 import numpy as np
 
 import os, sys
