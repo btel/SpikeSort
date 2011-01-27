@@ -30,7 +30,7 @@ if __name__ == "__main__":
     spt = sort.extract.detect_spikes(sp,  contact=0,
                                      thresh=300)
     
-    #spt = sort.extract.align_spikes(sp, spt, sp_win, type="max", resample=10)
+    spt = sort.extract.align_spikes(sp, spt, sp_win, type="max", resample=10)
     sp_waves = sort.extract.extract_spikes(sp, spt, sp_win)
     features = sort.features.combine(
             (
@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
 
     clust_idx = sort.ui.manual_sort.show(features, sp_waves,
-                                         ['Ch0:P2P','Ch0:PC0'],
+                                         ['Ch0:P2P','Ch1:P2P'],
                                          show_spikes=True)
 
     clust, rest = sort.ui.manual_sort.cluster_spt(spt, clust_idx)

@@ -69,7 +69,8 @@ def detect_spikes(spike_data, thresh='auto', edge="rising",
 
     return spt_dict
 
-def extract_spikes(spike_data, spt_dict, sp_win, resample=1):
+def extract_spikes(spike_data, spt_dict, sp_win, resample=None,
+                   contacts='all'):
     """Returns spike wave shapes.
 
     Arguments:
@@ -83,6 +84,12 @@ def extract_spikes(spike_data, spt_dict, sp_win, resample=1):
     sp_data = spike_data['data']
     n_contacts = spike_data['n_contacts']
 
+    if contacts == "all":
+        contacts = np.arange(n_contacts)
+    elif type(contacts) is int:
+        contacts = np.array([contacts])
+    else:
+        contacts = np.asarray(contacts)
 
     FS = spike_data['FS']
     spt = spt_dict['data']
@@ -97,22 +104,23 @@ def extract_spikes(spike_data, spt_dict, sp_win, resample=1):
     time = np.arange(win[1]-win[0])*1000./FS+sp_win[0]
 
 
-    if resample==1:
-        spWave = np.zeros((len(time), len(spt), n_contacts), dtype=np.float32)
+    if resample is None or resample==1:
+        spWave = np.zeros((len(time), len(spt), len(contacts)), dtype=np.float32)
         for i,sp in enumerate(correct_indices):
-            spWave[:,i,:] = sp_data[sp+win[0]:sp+win[1],:]
+            spWave[:,i,:] = sp_data[sp+win[0]:sp+win[1],contacts]
         return {"data":spWave, "time": time, "FS": FS}
 
     else:
         FS_new = FS*resample
         resamp_time = np.arange(sp_win[0], sp_win[1], 1000./FS_new)
-        spWave = np.zeros((len(resamp_time), len(spt)), dtype=np.float32)
+        spWave = np.zeros((len(resamp_time), len(spt), len(contacts)), dtype=np.float32)
        
         for i,sp in enumerate(correct_indices):
             time = np.arange(sp+win[0]-1, sp+win[1]+1)*1000./FS
-            new_wave  = sp_data[sp+win[0]-1:sp+win[1]+1]
-            tck = interpolate.splrep(time, new_wave, s=0)
-            spWave[:,i] = interpolate.splev(resamp_time+spt[i], tck, der=0)
+            for contact in contacts:
+                new_wave  = sp_data[sp+win[0]-1:sp+win[1]+1, contact]
+                tck = interpolate.splrep(time, new_wave, s=0)
+                spWave[:,i,contact] = interpolate.splev(resamp_time+spt[i], tck, der=0)
 
         return {"data":spWave, "time": resamp_time, "FS": FS_new}
 
@@ -123,28 +131,30 @@ def resample_spikes(spikes_dict, FS_new):
     FS = spikes_dict['FS']
 
     resamp_time = np.arange(time[0], time[-1], 1000./FS_new)
-    n_spikes = sp_waves.shape[1]
+    n_pts, n_spikes, n_contacts = sp_waves.shape
 
-    spike_resamp = np.empty((len(resamp_time), n_spikes))
+    spike_resamp = np.empty((len(resamp_time), n_spikes, n_contacts))
 
     for i in range(n_spikes):
-        tck = interpolate.splrep(time, sp_waves[:, i],s=0)
-        spike_resamp[:,i] = interpolate.splev(resamp_time, tck, der=0)
+        for contact in range(n_contacts):
+            tck = interpolate.splrep(time, sp_waves[:, i, contact],s=0)
+            spike_resamp[:,i, contact] = interpolate.splev(resamp_time, tck, der=0)
 
     return {"data":spike_resamp, "time":resamp_time, "FS":FS}
     
 
 
-def align_spikes(spike_data, spt_dict, sp_win, type="max", resample=1):
+def align_spikes(spike_data, spt_dict, sp_win, type="max", resample=1,
+                contact=0):
     
     """aligns spike waves and returns corrected spike times"""
 
     spt = spt_dict['data']
     
     sp_waves_dict = extract_spikes(spike_data, spt_dict, sp_win,
-            resample=resample)
+            resample=resample, contacts=contact)
 
-    sp_waves = sp_waves_dict['data']
+    sp_waves = sp_waves_dict['data'][:,:,0]
     time = sp_waves_dict['time']
 
     if type=="max":
