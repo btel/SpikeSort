@@ -11,6 +11,7 @@ setup(name='SpikeSort',
       url='http://neuroscience.telenczuk.pl',
       packages=['spike_sort', 'spike_sort.core', 'spike_sort.ui',
                 'spike_sort.io'],
-      package_dir = {"": "src"}
+      package_dir = {"": "src"},
+      test_suite='nose.collector'
      )
 

@@ -1,4 +1,4 @@
-:mod:`spikesort.core.features`
+:mod:`spikesort.features`
 ===============================
 
 .. automodule:: spike_sort.core.features

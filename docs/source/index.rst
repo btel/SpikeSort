@@ -6,6 +6,13 @@
 Welcome to SortSpikes's documentation!
 ======================================
 
+Contents:
+
+.. toctree::
+   :maxdepth: 2
+    
+   datastructures
+
 Modules:
 
 .. toctree::

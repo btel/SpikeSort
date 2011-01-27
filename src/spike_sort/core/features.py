@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 #coding=utf-8
 """
-Provides functions to calculate spike waveforms features
+Provides functions to calculate spike waveforms features.
+
+Functions starting with `fet` implement various features calculated
+from the spike waveshapes. They have usually one required argument
+:ref:`spikewave` structure.  
 
 """
 
@@ -59,10 +63,32 @@ def fetPCs(spikes_data,ncomps=2):
 
 def fetP2P(spikes_data):
     """Calculate peak-to-peak amplitudes of spike waveforms.
-    Input:
-    - spikes - 2D array of spikes (datapoints,spikes)
-    Output:
-    - p2p (int) - 1D array of peak-to-peak amplitudes (spikes,score)"""
+
+    :arguments:
+     
+     * spikes -- spikewave structure with spike waveshapes (see
+       documentation for detailed specification)
+
+    :output:
+
+     * p2p (int) -- 2D array of peak-to-peak amplitudes in subsequent
+       channels (contacts)
+     
+     * name -- feature labels (ex. Ch0:P2P, Ch1:P2P)
+
+    :example:
+
+     We will generate a spikewave structure containing only a single
+     spike on a single channel
+
+     >>> time = np.arange(0,2*np.pi,0.01) 
+     >>> spikes = np.sin(time)[:,np.newaxis, np.newaxis]
+     >>> spikewave = {"data": spikes, "time":time, "contacts":1, "FS":1}
+     >>> p2p, labels = fetP2P(spikewave)
+     >>> print p2p
+     [[ 1.99999683]]
+
+    """
 
     spikes = spikes_data["data"]
     p2p=spikes.max(axis=0)-spikes.min(axis=0)
