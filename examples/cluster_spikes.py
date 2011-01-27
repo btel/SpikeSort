@@ -31,7 +31,7 @@ if __name__ == "__main__":
     sp_win = [-0.2, 0.8]
 
     sp = sort.io.hdf5.read_sp(h5f, dataset)
-    spt = sort.extract.detect_spikes(sp,  contact=0,
+    spt = sort.extract.detect_spikes(sp,  contact=3,
                                      thresh=300)
     
     spt = sort.extract.align_spikes(sp, spt, sp_win, type="max", resample=10)
@@ -45,7 +45,7 @@ if __name__ == "__main__":
 
 
     clust_idx = sort.ui.manual_sort.show(features, sp_waves,
-                                         ['Ch0:P2P','Ch1:P2P'],
+                                         ['Ch0:P2P','Ch3:P2P'],
                                          show_spikes=True)
 
     clust, rest = sort.ui.manual_sort.cluster_spt(spt, clust_idx)

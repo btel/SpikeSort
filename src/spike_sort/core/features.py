@@ -102,7 +102,6 @@ def fetPCs(spikes_data,ncomps=2):
     spikes = spikes_data["data"]
     def _getPCs(data):
         s,v,sc=PCA(data[:,:],ncomps)
-        sc=(sc).astype(int)
         return sc
 
     if spikes.ndim==3:

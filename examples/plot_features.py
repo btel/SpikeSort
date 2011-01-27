@@ -29,7 +29,8 @@ if __name__ == "__main__":
             (
             sort.features.fetSpIdx(sp_waves),
             sort.features.fetP2P(sp_waves),
-            sort.features.fetPCs(sp_waves)))
+            sort.features.fetPCs(sp_waves)),
+    )
 
     selected_features = sort.features.select(features, ["Ch0:P2P",
                                                         "Ch1:P2P",
