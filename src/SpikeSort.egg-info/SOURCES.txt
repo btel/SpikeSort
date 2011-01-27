@@ -4,6 +4,7 @@ setup.py
 src/SpikeSort.egg-info/PKG-INFO
 src/SpikeSort.egg-info/SOURCES.txt
 src/SpikeSort.egg-info/dependency_links.txt
+src/SpikeSort.egg-info/requires.txt
 src/SpikeSort.egg-info/top_level.txt
 src/spike_sort/__init__.py
 src/spike_sort/core/__init__.py
