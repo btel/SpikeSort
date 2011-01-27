@@ -10,15 +10,21 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
-    
+
+   intro
    datastructures
 
 Modules:
 
 .. toctree::
    :maxdepth: 2
-
+   
+   modules/extract
    modules/features
+   modules/cluster
+   modules/evaluate
+   modules/io
+   modules/ui
 
 
 
