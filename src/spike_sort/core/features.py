@@ -13,6 +13,25 @@ from the spike waveshapes. They have usually one required argument
 import numpy as np
 import matplotlib.pyplot as plt
 
+def select(features_dict, features_ids):
+
+    """Choose selected features from the collection"""
+    
+    def _feat2idx(id):
+        if type(id) is str:
+            i = np.nonzero(names==id)[0][0]
+            return i
+        else:
+            return id
+   
+    names = features_dict['names']
+    features = features_dict['data']
+    ii = np.array([_feat2idx(id) for id in features_ids])
+
+    selected = {"data": features[:,ii], "names": names[ii]}
+
+    return selected
+
 def combine(args, normalize=True):
     """Combine features into a single structure
     
@@ -56,13 +75,14 @@ def PCA(data,ncomps=2):
     #norm=data/np.std(data,1)[:,np.newaxis]
     #norm[np.isnan(norm)]=0
     #norm = data
+    data = data.astype(np.float64)
     K=np.cov(data)
     evals,evecs=np.linalg.eig(K)
     order=np.argsort(evals)[::-1]
     evecs=np.real(evecs[:,order])
-    evals=np.real(evals[order])
-    score= np.dot(evecs[:,:ncomps].T/np.sqrt(evals[:ncomps,
-                                                   np.newaxis]),data)
+    evals=np.abs(evals[order])
+    score= np.dot(evecs[:,:ncomps].T,data)
+    score = score/np.sqrt(evals[:ncomps, np.newaxis])
     return evals,evecs,score
 
 def fetPCs(spikes_data,ncomps=2):
@@ -86,9 +106,10 @@ def fetPCs(spikes_data,ncomps=2):
         return sc
 
     if spikes.ndim==3:
-        sc=[_getPCs(sp_contact.T) for sp_contact in spikes.swapaxes(0,2)]
-        sc=np.vstack(sc)
         n_channels = spikes.shape[2]
+        for i in range(n_channels):
+            sc=[_getPCs(spikes[:,:,i])]
+        sc=np.vstack(sc)
     else:
         sc=_getPCs(spikes)
         n_channels = 1

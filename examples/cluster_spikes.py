@@ -4,33 +4,33 @@
 """
 Based on raw recordings detect spikes, calculate features and do
 clustering by means of manual cluster-cutting.
+
+After clustering the spike times are exported back to HDF5: 
+    
+    * selected cluster is exported to  {dataset}/cell1_clust
+    * the rest is exported to  {dataset}/cell1_rest
 """
 
 import numpy as np
 
 import os, sys
 
-sys.path.append("/Users/bartosz/SVN/personal/Libraries")
-
 import spike_sort as sort
 import spike_sort.io.bakerlab
 import spike_sort.io.hdf5
 import spike_sort.ui.manual_sort
-from utils import create_new_dir
+import tables
 
 DATAPATH = "../data" 
 
 if __name__ == "__main__":
     h5_fname = os.path.join(DATAPATH, "sample.h5")
-    dataset = "/Gollum/s5gollum01/el3/cell3"
-    out_dir = create_new_dir("Data/")
+    h5f = tables.openFile(h5_fname, 'a')
+
+    dataset = "/Gollum/s5gollum01/el3"
     sp_win = [-0.2, 0.8]
 
-    spt_fname = "missed_rest"
-
-    #spt = sort.io.bakerlab.read_spt(out_dir, spt_fname)
-    sp = sort.io.hdf5.read_sp(h5_fname, dataset)
-    #spt = sort.io.hdf5.read_spt(h5_fname, dataset)
+    sp = sort.io.hdf5.read_sp(h5f, dataset)
     spt = sort.extract.detect_spikes(sp,  contact=0,
                                      thresh=300)
     
@@ -51,10 +51,13 @@ if __name__ == "__main__":
     clust, rest = sort.ui.manual_sort.cluster_spt(spt, clust_idx)
 
     if len(clust)>0:
-        print "Exporting."
-        #TODO: write back to hdf5
-        sort.io.bakerlab.write_spt(clust, out_dir, spt_fname+"_clus")
-        sort.io.bakerlab.write_spt(rest, out_dir, spt_fname+"_rest")
+        cell_node = dataset+"/cell1"
+        print "Exporting to HDF5 (file %s) as %s_{clust,rest}" % (h5_fname,
+                                                     cell_node)
+        sort.io.hdf5.write_spt(clust, h5f, cell_node+"_clust",
+                               overwrite=True)
+        sort.io.hdf5.write_spt(rest, h5f, cell_node+"_rest",
+                               overwrite=True)
 
     else: 
         print "Exiting."

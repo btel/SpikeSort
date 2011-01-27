@@ -1,7 +1,7 @@
-:mod:`spike_sort.ui`
-===============================
+User Interface (:mod:`spike_sort.ui`)
+=====================================
 
-Plotting (:mod:`spike_sort.io.bakerlab`) 
+Plotting (:mod:`spike_sort.ui.plotting`) 
 ----------------------------------------
 
 .. automodule:: spike_sort.ui.plotting

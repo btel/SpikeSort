@@ -12,7 +12,7 @@ DATAPATH = "../data"
 if __name__ == "__main__":
 
     h5_fname = os.path.join(DATAPATH, "sample.h5")
-    dataset = "/Gollum/s5gollum01/el3/cell3"
+    dataset = "/Gollum/s5gollum01/el3/cell1_clust"
     sp_win = [-1, 1]
 
     spt = sort.io.hdf5.read_spt(h5_fname, dataset)
@@ -31,7 +31,11 @@ if __name__ == "__main__":
             sort.features.fetP2P(sp_waves),
             sort.features.fetPCs(sp_waves)))
 
-    sort.plotting.plot_features(features)
+    selected_features = sort.features.select(features, ["Ch0:P2P",
+                                                        "Ch1:P2P",
+                                                        "Ch0:PC0",
+                                                        "Ch1:PC0"])
+    sort.plotting.plot_features(selected_features)
 
     sort.plotting.show()
 

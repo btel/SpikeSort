@@ -12,6 +12,13 @@ setup(name='SpikeSort',
       packages=['spike_sort', 'spike_sort.core', 'spike_sort.ui',
                 'spike_sort.io'],
       package_dir = {"": "src"},
+      install_requires=[
+          'matplotlib',
+          'numpy',
+          'scipy',
+          'tables'
+                 ],
+      
       test_suite='nose.collector'
      )
 

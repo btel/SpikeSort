@@ -99,6 +99,18 @@ def plot_spikes(spike_data, clust_idx=None,ec=None, alpha=0.2,
 
 def plot_features(features_dict, clust_idx=None, size=1):
 
+    """Plot features and their histograms
+    
+    :arguments:
+        - features_dict --features data structure (dicitionary with
+          `data` and `names` keys)
+        - clust_idx (default: None) -- array of size (n_spikes,)
+          containing indices of clusters to which each spike was
+          classfied
+        - size (default: 1)
+    
+    """
+
     features = features_dict['data']
     names = features_dict['names']
 
