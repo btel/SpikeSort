@@ -55,7 +55,7 @@ class TestFeatures:
         spikes_dict = self.spikes_dict.copy()
         n_spikes = 200
         n_cells = 2
-        amp_var_fact = 0.5
+        amp_var_fact = 0.4
         amp_var = 1+amp_var_fact*np.random.rand(n_spikes,1)
         _amps = np.random.rand(n_spikes)>0.5
         amps = amp_var*np.vstack((_amps>=0.5,_amps<0.5)).T
@@ -65,7 +65,7 @@ class TestFeatures:
         spikes_dict['data'] = spikes[:,:,np.newaxis]
 
         pcs, names = ss.features.fetPCs(spikes_dict, ncomps=1)
-        compare = np.logical_xor(pcs[:,0].astype(int), amps[:,0])
+        compare = ~np.logical_xor(pcs[:,0].astype(int)+1, _amps)
         correct = np.sum(compare)
 
         eq_(n_spikes, correct)
