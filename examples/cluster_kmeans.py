@@ -48,9 +48,7 @@ if __name__ == "__main__":
     
     spike_sort.ui.plotting.plot_features(features, clust_idx)
     spike_sort.ui.plotting.figure()
-    start = time.time()
     spike_sort.ui.plotting.plot_spikes(sp_waves, clust_idx,n_spikes=200)
-    print time.time() - start, "s"
     
     
     spike_sort.ui.plotting.show()
