@@ -4,7 +4,7 @@ from matplotlib.nxutils import points_inside_poly
 from matplotlib.colors import colorConverter
 from matplotlib.collections import RegularPolyCollection, LineCollection
 
-from matplotlib.pyplot import figure, show
+from matplotlib.pyplot import figure
 from numpy import nonzero
 from numpy.random import rand
 
@@ -93,7 +93,7 @@ class SpikeWaveform:
         colors = np.repeat(self.color_off, self.Nxy)
         colors[ind] = self.color_on
         for lines in self.lines:
-             lines.set_color(colors.tolist())
+            lines.set_color(colors.tolist())
         #if self.marked_lines:
         #    self.ax.collections.remove(self.marked_lines)
         #segs = np.empty((len(ind), len(self.time), 2))

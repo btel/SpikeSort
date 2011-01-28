@@ -2,13 +2,11 @@
 #coding=utf-8
 
 """
-Based on raw recordings detect spikes, calculate features and do
-clustering by means of manual cluster-cutting.
+Based on raw recordings detect spikes, calculate features and do automatic 
+clustering with k-means.
 
-After clustering the spike times are exported back to HDF5: 
-    
-    * selected cluster is exported to  {dataset}/cell1_clust
-    * the rest is exported to  {dataset}/cell1_rest
+After clustering the spike times are exported back to HDF5 (cell_kmeansX, where 
+X is cluster index)
 """
 
 import numpy as np
@@ -40,28 +38,26 @@ if __name__ == "__main__":
     sp_waves = sort.extract.extract_spikes(sp, spt, sp_win)
     features = sort.features.combine(
             (
-            sort.features.fetSpIdx(sp_waves),
             sort.features.fetP2P(sp_waves),
             sort.features.fetPCs(sp_waves)),
             normalize=True
     )
 
-    stop = time.time()
 
-    clust_idx = sort.ui.manual_sort.show(features, sp_waves,
-                                         ['Ch0:P2P','Ch3:P2P'],
-                                         show_spikes=True)
+    clust_idx = sort.cluster.kmeans(features,4)
+    
+    spike_sort.ui.plotting.plot_features(features, clust_idx)
+    spike_sort.ui.plotting.figure()
+    start = time.time()
+    spike_sort.ui.plotting.plot_spikes(sp_waves, clust_idx,n_spikes=200)
+    print time.time() - start, "s"
+    
+    
+    spike_sort.ui.plotting.show()
 
-    clust, rest = sort.ui.manual_sort.cluster_spt(spt, clust_idx)
+    #TODO: export
+    #sort.io.hdf5.write_spt(clust, h5f, cell_node+"_clust",
+    #                           overwrite=True)
+    #sort.io.hdf5.write_spt(rest, h5f, cell_node+"_rest",
+    #                           overwrite=True)
 
-    if len(clust)>0:
-        cell_node = dataset+"/cell1"
-        print "Exporting to HDF5 (file %s) as %s_{clust,rest}" % (h5_fname,
-                                                     cell_node)
-        sort.io.hdf5.write_spt(clust, h5f, cell_node+"_clust",
-                               overwrite=True)
-        sort.io.hdf5.write_spt(rest, h5f, cell_node+"_rest",
-                               overwrite=True)
-
-    else: 
-        print "Exiting."

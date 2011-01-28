@@ -51,18 +51,20 @@ def plot_spikes(spike_data, clust_idx=None,ec=None, alpha=0.2,
     
     if not clust_idx is None:
         norm = label_normalize(np.unique(clust_idx))
-        legend = True
     else:
         clust_idx = np.ones(spikes.shape[1])
         norm = plt.normalize(0,1)
-        legend = False
+        
+    unique_labs = np.unique(clust_idx)
     
-    if n_spikes=='all':
-        n_spikes = spikes.shape[1]
-    else:
-        i = np.random.rand(spikes.shape[1]).argsort()
-        spikes = spikes[:,i[:n_spikes],:]
-        clust_idx = clust_idx[:,i[:n_spikes]]
+    if  not n_spikes=='all':
+        spikes_lab = [spikes[:,clust_idx==c,:][:,:n_spikes,:] 
+                      for c in unique_labs]
+        spikes = np.concatenate(spikes_lab,1)
+        new_idx = [np.repeat(c, np.min([n_spikes, np.sum(c==clust_idx)])) 
+                   for c in unique_labs]
+        clust_idx = np.concatenate(new_idx)
+    n_spikes = spikes.shape[1]
 
     if ec:
         colors = ec
@@ -84,15 +86,15 @@ def plot_spikes(spike_data, clust_idx=None,ec=None, alpha=0.2,
         ax.add_collection(collection)
         
         if plot_avg:
-            unique_labs = np.unique(clust_idx)
+            
             if ec is None:
-                colors = cmap(norm(unique_labs))
+                colors_mean = cmap(norm(unique_labs))
             spikes_mean = np.array([spikes[:, clust_idx==l, contact_id].mean(1) for l in
                 unique_labs])
             segs_mean = np.zeros((len(unique_labs), n_pts, 2))
             segs_mean[:,:,0] = time[np.newaxis,:]
             segs_mean[:,:,1] = spikes_mean
-            ls_mean = LineCollection(segs_mean, colors=colors,
+            ls_mean = LineCollection(segs_mean, colors=colors_mean,
                     linewidths=2, zorder=10, alpha=1)
             ax.add_collection(ls_mean)
     return line_segments
