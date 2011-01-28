@@ -69,4 +69,15 @@ class TestFeatures:
         correct = np.sum(compare)
 
         eq_(n_spikes, correct)
-
+        
+class TestCluster:
+    def test_k_means(self):
+        np.random.seed(1234)
+        K = 2
+        n_dim = 2
+        pts_in_clust = 100
+        data = np.vstack((np.random.rand(pts_in_clust,n_dim), 
+                  np.random.rand(pts_in_clust,n_dim)+np.ones(n_dim)))
+        cl = ss.cluster._k_means(data, K)
+        ok_((cl[:pts_in_clust]==1).all() and (cl[pts_in_clust:]==0).all())
+        
