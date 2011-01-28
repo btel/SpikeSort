@@ -12,11 +12,11 @@ def label_normalize(labels):
     """Map labels to number range [0,1]"""
     
     num_labels = np.linspace(0,1., len(labels))
-    map = dict(zip(labels, num_labels))
+    mapper = dict(zip(labels, num_labels))
    
     @np.vectorize
     def map_func(lab):
-        return map[lab]
+        return mapper[lab]
     return map_func
 
 

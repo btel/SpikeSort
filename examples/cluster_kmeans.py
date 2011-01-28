@@ -5,6 +5,7 @@
 Based on raw recordings detect spikes, calculate features and do automatic 
 clustering with k-means.
 
+TODO:
 After clustering the spike times are exported back to HDF5 (cell_kmeansX, where 
 X is cluster index)
 """
@@ -44,7 +45,7 @@ if __name__ == "__main__":
     )
 
 
-    clust_idx = sort.cluster.cluster(features,4)
+    clust_idx = sort.cluster.cluster("gmm",features,4)
     
     spike_sort.ui.plotting.plot_features(features, clust_idx)
     spike_sort.ui.plotting.figure()
