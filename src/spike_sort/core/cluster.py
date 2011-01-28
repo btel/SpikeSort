@@ -3,6 +3,31 @@
 
 import numpy as np
 
+def default_scikits(method):
+    def foo(*args):
+        raise NotImplementedError(
+                    "scikits.learn must be installed to use %s" % method
+                    )
+    return foo
+
+try:
+    import scikits.learn.cluster
+    from scikits.learn import mixture
+    
+    def k_means_plus(*args, **kwargs):
+        return scikits.learn.cluster.k_means(*args, **kwargs)[1]
+    
+    def gmm(data, k):
+        """cluster based on gaussian mixture models"""
+        clf = mixture.GMM(n_states=k, cvtype='full')
+        clf.fit(data)
+        cl = clf.predict(data)
+        return cl
+
+    
+except ImportError:
+    k_means_plus = default_scikits("k_means_plus")
+
 
 
 def _metric_euclidean(data1, data2):
@@ -43,8 +68,13 @@ def cluster(method, features,  *args, **kwargs):
     :output:
      * labels
     """
-    
-    cluster_func = eval(method)
+    try:
+        
+        cluster_func = eval(method)
+    except NameError:
+        raise NotImplementedError(
+                    "clustering method %s is not implemented" % method
+                    )
     
     data = features['data']
     cl = cluster_func(data, *args, **kwargs)
@@ -55,11 +85,13 @@ def k_means(data, K):
     Perform K means clustering
     
     :arguments:
-     * data -- data vectors (n,m) where n is the number of datapoints and m is the number of variables
+     * data -- data vectors (n,m) where n is the number of datapoints and m is 
+       the number of variables
      * K -- (required) number of distinct clusters to identify
      
     :output:
-     * partition -- vector of cluster labels (ints) for each datapoint from `data`
+     * partition -- vector of cluster labels (ints) for each datapoint from 
+       `data`
     """
     
     n_dim = data.shape[1]

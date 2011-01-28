@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import spike_sort as ss
 
-from nose.tools import ok_, eq_
+from nose.tools import ok_, eq_, raises
 
 class TestFeatures:
 
@@ -84,7 +84,7 @@ class TestCluster:
         pts_in_clust = 100
         np.random.seed(1234)
         data = np.vstack((np.random.rand(pts_in_clust,n_dim), 
-                  np.random.rand(pts_in_clust,n_dim)+np.ones(n_dim)))
+                  np.random.rand(pts_in_clust,n_dim)+2*np.ones(n_dim)))
         self.labels = np.concatenate((np.zeros(pts_in_clust, dtype=int),
                                             np.ones(pts_in_clust, dtype=int)))
         feature_labels = ["feat%d" % i for i in range(n_dim)]
@@ -96,8 +96,25 @@ class TestCluster:
         cl = ss.cluster.cluster('k_means', self.features, self.K)
         ok_(self._cmp_bin_partitions(cl, self.labels))
     
+    def test_k_means_plus(self):
+        """test own k-means algorithm"""
+        
+        cl = ss.cluster.cluster('k_means_plus', self.features, self.K)
+        ok_(self._cmp_bin_partitions(cl, self.labels))
+        
+    def test_gmm(self):
+        """test own k-means algorithm"""
+        
+        cl = ss.cluster.cluster('gmm', self.features, self.K)
+        ok_(self._cmp_bin_partitions(cl, self.labels))
+    
     def test_random(self):
         cl = np.random.rand(len(self.labels))>0.5
         ok_(~self._cmp_bin_partitions(cl, self.labels))
+        
+    @raises(NotImplementedError)
+    def test_method_notimplemented(self):
+        cl = ss.cluster.cluster("notimplemented", self.features)
+        
         
         

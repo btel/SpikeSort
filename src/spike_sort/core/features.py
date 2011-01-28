@@ -101,7 +101,7 @@ def fetPCs(spikes_data,ncomps=2):
    
     spikes = spikes_data["data"]
     def _getPCs(data):
-        s,v,sc=PCA(data[:,:],ncomps)
+        _, _, sc=PCA(data[:,:],ncomps)
         return sc
 
     if spikes.ndim==3:
@@ -112,7 +112,7 @@ def fetPCs(spikes_data,ncomps=2):
     else:
         sc=_getPCs(spikes)
         n_channels = 1
-    sc=sc.T
+    sc=np.asarray(sc).T
     
     names = ["Ch%d:PC%d" % (j,i) for i in range(ncomps) for j in
             range(n_channels)]
