@@ -15,10 +15,21 @@ try:
     from scikits.learn import mixture
     
     def k_means_plus(*args, **kwargs):
+        """k means with smart initialization.
+        
+        see also kmeans"""
         return scikits.learn.cluster.k_means(*args, **kwargs)[1]
     
     def gmm(data, k):
-        """cluster based on gaussian mixture models"""
+        """cluster based on gaussian mixture models (from scikits.learn)
+        
+        :arguments:
+         * data -- features structures
+         * k -- number of clusters
+         
+         :output:
+          * k -- number of clusters to fit
+        """
         clf = mixture.GMM(n_states=k, cvtype='full')
         clf.fit(data)
         cl = clf.predict(data)
