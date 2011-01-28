@@ -12,7 +12,6 @@ After clustering the spike times are exported back to HDF5:
 """
 
 import numpy as np
-
 import os, sys
 
 import spike_sort as sort
@@ -21,15 +20,18 @@ import spike_sort.io.hdf5
 import spike_sort.ui.manual_sort
 import tables
 
+import time
+
 DATAPATH = "../data" 
 
 if __name__ == "__main__":
-    h5_fname = os.path.join(DATAPATH, "sample.h5")
+    h5_fname = os.path.join(DATAPATH, "test_blosc.h5")
     h5f = tables.openFile(h5_fname, 'a')
 
     dataset = "/Gollum/s5gollum01/el3"
     sp_win = [-0.2, 0.8]
-
+    
+    start = time.time()
     sp = sort.io.hdf5.read_sp(h5f, dataset)
     spt = sort.extract.detect_spikes(sp,  contact=3,
                                      thresh=300)
@@ -41,8 +43,10 @@ if __name__ == "__main__":
             sort.features.fetSpIdx(sp_waves),
             sort.features.fetP2P(sp_waves),
             sort.features.fetPCs(sp_waves)),
-            normalize=True)
+            normalize=True
+    )
 
+    stop = time.time()
 
     clust_idx = sort.ui.manual_sort.show(features, sp_waves,
                                          ['Ch0:P2P','Ch3:P2P'],

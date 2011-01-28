@@ -2,7 +2,6 @@
 #coding=utf-8
 
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy import interpolate
 
 def remove_spikes(spt_dict, remove_dict, tolerance):
