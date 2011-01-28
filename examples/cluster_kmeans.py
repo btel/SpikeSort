@@ -44,7 +44,7 @@ if __name__ == "__main__":
     )
 
 
-    clust_idx = sort.cluster.kmeans(features,4)
+    clust_idx = sort.cluster.cluster(features,4)
     
     spike_sort.ui.plotting.plot_features(features, clust_idx)
     spike_sort.ui.plotting.figure()

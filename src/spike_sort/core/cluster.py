@@ -3,6 +3,8 @@
 
 import numpy as np
 
+
+
 def _metric_euclidean(data1, data2):
     n_pts1, n_dims1 = data1.shape
     n_pts2, n_dims2 = data2.shape
@@ -30,7 +32,7 @@ def dist_euclidean(spike_waves1, spike_waves2=None):
 
     return d
 
-def kmeans(features, n_clusters):
+def cluster(method, features,  *args, **kwargs):
     """
     Automatically cluster spikes using K means algorithm
     
@@ -42,17 +44,19 @@ def kmeans(features, n_clusters):
      * labels
     """
     
+    cluster_func = eval(method)
+    
     data = features['data']
-    cl = _k_means(data, n_clusters)
+    cl = cluster_func(data, *args, **kwargs)
     return cl
 
-def _k_means(data, K):
+def k_means(data, K):
     """
     Perform K means clustering
     
     :arguments:
      * data -- data vectors (n,m) where n is the number of datapoints and m is the number of variables
-     * K -- number of distinct clusters to identify
+     * K -- (required) number of distinct clusters to identify
      
     :output:
      * partition -- vector of cluster labels (ints) for each datapoint from `data`

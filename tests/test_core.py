@@ -71,13 +71,33 @@ class TestFeatures:
         eq_(n_spikes, correct)
         
 class TestCluster:
-    def test_k_means(self):
-        np.random.seed(1234)
-        K = 2
+    """test clustering algorithms"""
+    
+    def _cmp_bin_partitions(self, cl1, cl2):
+        return (~np.logical_xor(cl1, cl2)).all() or (np.logical_xor(cl1,cl2)).all()
+        
+    def setup(self):
+
+        self.K = 2
+        
         n_dim = 2
         pts_in_clust = 100
+        np.random.seed(1234)
         data = np.vstack((np.random.rand(pts_in_clust,n_dim), 
                   np.random.rand(pts_in_clust,n_dim)+np.ones(n_dim)))
-        cl = ss.cluster._k_means(data, K)
-        ok_((cl[:pts_in_clust]==1).all() and (cl[pts_in_clust:]==0).all())
+        self.labels = np.concatenate((np.zeros(pts_in_clust, dtype=int),
+                                            np.ones(pts_in_clust, dtype=int)))
+        feature_labels = ["feat%d" % i for i in range(n_dim)]
+        self.features = {"data":data, "names":feature_labels}
+        
+    def test_k_means(self):
+        """test own k-means algorithm"""
+        
+        cl = ss.cluster.cluster('k_means', self.features, self.K)
+        ok_(self._cmp_bin_partitions(cl, self.labels))
+    
+    def test_random(self):
+        cl = np.random.rand(len(self.labels))>0.5
+        ok_(~self._cmp_bin_partitions(cl, self.labels))
+        
         
