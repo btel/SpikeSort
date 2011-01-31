@@ -1,5 +1,5 @@
-Cluster (:mod:`spikesort.cluster`)
-==================================
+Cluster (:mod:`spike_sort.cluster`)
+===================================
 
 .. automodule:: spike_sort.core.cluster
    :members: 

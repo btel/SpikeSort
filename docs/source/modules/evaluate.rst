@@ -1,5 +1,5 @@
-Evaluate (:mod:`spikesort.evaluate`)
-====================================
+Evaluate (:mod:`spike_sort.evaluate`)
+=====================================
 
 .. automodule:: spike_sort.core.evaluate
    :members: 

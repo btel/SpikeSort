@@ -1,5 +1,5 @@
-Extract (:mod:`spikesort.extract`)
-==================================
+Extract (:mod:`spike_sort.extract`)
+===================================
 
 .. automodule:: spike_sort.core.extract
    :members: 

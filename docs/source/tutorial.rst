@@ -103,6 +103,7 @@ Tutorial
    
       >>> from spike_sort.ui import plotting
       >>> plotting.plot_spikes(sp_waves, n_spikes=200)
+      [<matplotlib.collections.LineCollection object...>]
    
    .. plot:: source/pyplots/tutorial_spikes.py
    
@@ -192,6 +193,7 @@ Tutorial
    .. doctest::
      
       >>> plotting.plot_spikes(sp_waves, clust_idx, n_spikes=200)
+      [<matplotlib.collections.LineCollection object...]
       >>> plotting.show()
 
    .. plot:: source/pyplots/tutorial_cells.py
