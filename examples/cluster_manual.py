@@ -25,10 +25,10 @@ import time
 DATAPATH = "../data" 
 
 if __name__ == "__main__":
-    h5_fname = os.path.join(DATAPATH, "test_blosc.h5")
+    h5_fname = os.path.join(DATAPATH, "tutorial.h5")
     h5f = tables.openFile(h5_fname, 'a')
 
-    dataset = "/Gollum/s5gollum01/el3"
+    dataset = "/SubjectA/session01/el1"
     sp_win = [-0.2, 0.8]
     
     start = time.time()
@@ -52,7 +52,7 @@ if __name__ == "__main__":
                                          ['Ch0:P2P','Ch3:P2P'],
                                          show_spikes=True)
 
-    clust, rest = sort.ui.manual_sort.cluster_spt(spt, clust_idx)
+    clust, rest = sort.cluster.cluster2spt(spt, clust_idx, [1,0])
 
     if len(clust)>0:
         cell_node = dataset+"/cell1"

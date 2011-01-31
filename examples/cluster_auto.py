@@ -24,16 +24,16 @@ import time
 DATAPATH = "../data" 
 
 if __name__ == "__main__":
-    h5_fname = os.path.join(DATAPATH, "test_blosc.h5")
+    h5_fname = os.path.join(DATAPATH, "tutorial.h5")
     h5f = tables.openFile(h5_fname, 'a')
 
-    dataset = "/Gollum/s5gollum01/el3"
+    dataset = "/SubjectA/session01/el1"
     sp_win = [-0.2, 0.8]
     
     start = time.time()
     sp = sort.io.hdf5.read_sp(h5f, dataset)
     spt = sort.extract.detect_spikes(sp,  contact=3,
-                                     thresh=300)
+                                     thresh='auto')
     
     spt = sort.extract.align_spikes(sp, spt, sp_win, type="max", resample=10)
     sp_waves = sort.extract.extract_spikes(sp, spt, sp_win)
