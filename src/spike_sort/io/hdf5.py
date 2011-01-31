@@ -21,8 +21,6 @@ TODO: implement custom layouts
 """
 
 import tables
-import numpy as np
-import matplotlib.pyplot as plt
 
 def _get_attrs(node):
     PYTABLES_ATTRS = ["VERSION", "TITLE", "FLAVOR", "CLASS"]
@@ -36,7 +34,11 @@ def _open_file(fname, mode='r'):
     if type(fname) is tables.File:
         h5f = fname
     else:
-        h5f = tables.openFile(fname, mode)
+        try:
+            h5f = tables.openFile(fname, mode)
+        except ValueError:
+            fname.close()
+            h5f = tables.openFile(fname, mode)
     return h5f
 
 def read_sp(fname, dataset):
@@ -47,7 +49,7 @@ def read_sp(fname, dataset):
         * dataset -- (string) path pointing to cell node
     """
     
-    h5f = _open_file(fname, 'r')
+    h5f = _open_file(fname, 'r+')
     electrode = "/".join(dataset.split('/')[:4])
 
     electrode_node = h5f.getNode(electrode)
@@ -70,7 +72,7 @@ def read_spt(fname, dataset):
         * dataset -- (string) with path pointing to cell node
     """
 
-    h5f = _open_file(fname, 'r')
+    h5f = _open_file(fname, 'r+')
 
     cell_node = h5f.getNode(dataset)
 

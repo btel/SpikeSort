@@ -139,10 +139,12 @@ def fetP2P(spikes_data):
      We will generate a spikewave structure containing only a single
      spike on a single channel
 
+     >>> import numpy as np
+     >>> from spike_sort import features
      >>> time = np.arange(0,2*np.pi,0.01) 
      >>> spikes = np.sin(time)[:,np.newaxis, np.newaxis]
      >>> spikewave = {"data": spikes, "time":time, "contacts":1, "FS":1}
-     >>> p2p, labels = fetP2P(spikewave)
+     >>> p2p, labels = features.fetP2P(spikewave)
      >>> print p2p
      [[ 1.99999683]]
 

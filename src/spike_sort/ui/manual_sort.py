@@ -106,15 +106,6 @@ class SpikeWaveform:
 
         self.canvas.draw_idle()
 
-def cluster_spt(spt_dict, idx):
-    """return the spike times belonging to the cluster and the rest"""
-
-    spt = spt_dict['data']
-    clust = spt[idx==1]
-    rest = spt[idx==0]
-
-    return {"data": clust}, {"data":rest}
-
 
 def show(features_dict, sp_dict, feat_idx,show_spikes=True):
     

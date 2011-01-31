@@ -121,3 +121,16 @@ def k_means(data, K):
             if np.sum(partition==i)>0:
                 centers_new[i, :] = data[partition==i, :].mean(0)
     return partition
+
+def cluster2spt(spt_dict, idx, which='all'):
+    """return the spike times belonging to the cluster and the rest"""
+
+    if which == 'all':
+        classes = np.unique(idx)
+    else:
+        classes = which
+    
+    spt = spt_dict['data']
+    spt_dicts = [{'data': spt[idx==cl], 'class': cl} for cl in classes]
+
+    return spt_dicts
