@@ -8,6 +8,7 @@ import spike_sort.io.hdf5
 import spike_sort.io.bakerlab
 import filecmp
 import json
+import glob
 
 class TestHDF:
     def setUp(self):
@@ -59,16 +60,17 @@ class TestBakerlab:
     def setup(self):
         file_descr = {"fspike":"{ses_id}{el_id}.sp",
                       "dirname":".",
-                      "FS":5.E3}
+                      "FS":5.E3,
+                      "n_contacts":1}
         self.el_node = '/Test/s32test01/el1'
         self.data = np.random.randint(-1000, 1000, (100,))/200.
-        self.spt = np.random.randint(0,100, (10,))
+        self.spt = np.random.randint(0,100, (10,file_descr['n_contacts']))
         self.conf_file = 'test.conf'
         self.fname = "32test011.sp"
         
         with open(self.conf_file, 'w') as fp:
              json.dump(file_descr, fp)
-          
+        
         (self.data*200).astype(np.int16).tofile(self.fname)
         
     def tearDown(self):
@@ -82,15 +84,47 @@ class TestBakerlab:
         pass
     def test_write_sp(self):
         el_node_tmp = '/Test/s32test01/el2'
-        spike_sort.io.bakerlab.write_sp({"data":self.data}, self.conf_file,
+        sp_dict = {'data':self.data[:,np.newaxis]}
+        spike_sort.io.bakerlab.write_sp(sp_dict, self.conf_file,
                                        el_node_tmp)
         files_eq = filecmp.cmp("32test011.sp","32test012.sp", shallow=0)
         os.unlink("32test012.sp")
         ok_(files_eq)
         
+    def test_write_multichan(self):
+        n_contacts = 4 
+        data = np.repeat(self.data[:,np.newaxis], n_contacts, 1)
+        sp_dict = {'data':data}
+        with open(self.conf_file,'r+') as fid:
+            file_desc = json.load(fid)
+            file_desc['n_contacts']=4
+            file_desc["fspike"]="test{contact_id}.sp"
+            fid.seek(0)
+            json.dump(file_desc, fid)
+        spike_sort.io.bakerlab.write_sp(sp_dict, self.conf_file,
+                                        self.el_node)
+        all_chan_files = glob.glob("test?.sp")
+        [os.unlink(p) for p in all_chan_files]
+        eq_(len(all_chan_files), n_contacts)
+        
+        
+        
     def test_read_sp(self):
         sp = spike_sort.io.bakerlab.read_sp(self.conf_file,
                                             self.el_node)
-        read_data = sp['data']
+        read_data = sp['data'][:,0]
+        print read_data.shape
         ok_((np.abs(read_data-self.data)<=1/200.).all())
+        
+    def test_sp_shape(self):
+        with open(self.conf_file,'r+') as fid:
+            file_desc = json.load(fid)
+            file_desc['n_contacts']=4
+            fid.seek(0)
+            json.dump(file_desc, fid)
+        sp = spike_sort.io.bakerlab.read_sp(self.conf_file,
+                                            self.el_node)
+        data = sp['data']
+        ok_(data.shape==(len(self.data),4))
+        
         
