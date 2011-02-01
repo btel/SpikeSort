@@ -15,6 +15,7 @@ def read_sp(conf_file, dataset, memmap=True):
     :arguments:
     - conf_file -- configuration file
     - dataset -- dataset path
+    - memmap -- use memmory mapped arrays to save some memory
     """
     with file(conf_file) as fid:
         conf_dict = json.load(fid)
@@ -46,7 +47,7 @@ def read_sp(conf_file, dataset, memmap=True):
         fname = full_path.format(**rec_dict)
         sp = np.fromfile(fname,dtype=np.int16)
         fp[:,i]=sp/200.
-    return {'data':fp, "FS":conf_dict['FS']} 
+    return {'data':fp, "FS":conf_dict['FS'], "n_contacts":n_contacts} 
 
 def write_sp(sp_dict, conf_file, dataset):
     """Write raw spike waveform to a file in bakerlab format

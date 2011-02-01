@@ -46,20 +46,20 @@ def detect_spikes(spike_data, thresh='auto', edge="rising",
     sp_data = spike_data['data']
     n_contacts = spike_data['n_contacts']
 
-    if n_contacts>1:
-        sp_data = sp_data[:,contact]
+    #if n_contacts>1:
+    #    sp_data = sp_data[:,contact]
 
     FS = spike_data['FS']
 
     if thresh=='auto':
-        thresh = 8*np.sqrt(np.var(sp_data[:10*FS]))
+        thresh = 8*np.sqrt(float(np.var(sp_data[:10*FS,contact])))
         if edge == 'falling':
             thresh = -thresh
 
     if edge == "rising":
-        i, = np.where((sp_data[:-1]<thresh) & (sp_data[1:]>thresh))
+        i, = np.where((sp_data[:-1,contact]<thresh) & (sp_data[1:,contact]>thresh))
     elif edge == "falling":
-        i, = np.where((sp_data[:-1]>thresh) & (sp_data[1:]<thresh))
+        i, = np.where((sp_data[:-1,contact]>thresh) & (sp_data[1:,contact]<thresh))
     else:
         raise "Edge must be 'rising' or 'falling'"
     spt = i*1000./FS
