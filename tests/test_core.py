@@ -97,13 +97,13 @@ class TestCluster:
         ok_(self._cmp_bin_partitions(cl, self.labels))
     
     def test_k_means_plus(self):
-        """test own k-means algorithm"""
+        """test scikits k-means plus algorithm"""
         
         cl = ss.cluster.cluster('k_means_plus', self.features, self.K)
         ok_(self._cmp_bin_partitions(cl, self.labels))
         
     def test_gmm(self):
-        """test own k-means algorithm"""
+        """test gmm clustering algorithm"""
         
         cl = ss.cluster.cluster('gmm', self.features, self.K)
         ok_(self._cmp_bin_partitions(cl, self.labels))
