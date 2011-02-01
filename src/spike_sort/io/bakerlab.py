@@ -5,10 +5,11 @@ import os
 import numpy as np
 import json
 import re
+from tempfile import mkdtemp
 
 _regexp="^/(?P<subject>[a-zA-z]+)/s(?P<ses_id>.+)/el(?P<el_id>[0-9]+)$"
 
-def read_sp(conf_file, dataset):
+def read_sp(conf_file, dataset, memmap=True):
     """Reads raw spike waveform from file in bakerlab format
     
     :arguments:
@@ -21,16 +22,31 @@ def read_sp(conf_file, dataset):
     rec_dict = m.groupdict()
     n_contacts = conf_dict['n_contacts']
     f_spike = conf_dict['fspike']
+    
     dirname = conf_dict['dirname']
     sp_list = []
-    for i in range(n_contacts):
-        rec_dict['contact_id']=i+1
-        fname = f_spike.format(**rec_dict)
-        full_path = os.path.join(dirname, fname)
-        sp = np.fromfile(full_path,dtype=np.int16)/200.
-        sp_list.append(sp)
-    sp_list = np.array(sp_list).T
-    return {'data':sp_list, "FS":conf_dict['FS']} 
+    rec_dict['contact_id']=1
+    
+    full_path = os.path.join(dirname, f_spike)
+    fname = full_path.format(**rec_dict)
+    sp = np.fromfile(fname, dtype=np.int16)
+
+    
+    if memmap:
+        #create temporary memmory mapped array
+        filename = os.path.join(mkdtemp(), 'newfile.dat')
+        fp = np.memmap(filename, dtype='float', mode='w+', 
+                       shape=(len(sp),n_contacts))
+    else:
+        fp = np.empty((len(sp), n_contacts), dtype='float')
+
+    fp[:,0]=sp/200.
+    for i in range(1,n_contacts):
+        rec_dict['contact']=i+1
+        fname = full_path.format(**rec_dict)
+        sp = np.fromfile(fname,dtype=np.int16)
+        fp[:,i]=sp/200.
+    return {'data':fp, "FS":conf_dict['FS']} 
 
 def write_sp(sp_dict, conf_file, dataset):
     """Write raw spike waveform to a file in bakerlab format
