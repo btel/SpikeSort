@@ -14,11 +14,10 @@ setup(name='SpikeSort',
       package_dir = {"": "src"},
       install_requires=[
           'matplotlib',
-          'numpy',
-          'scipy',
-          'tables'
-                 ],
+          'tables',
+          'numpy >= 1.4.1',
+          'scipy'
+        ]
       
-      test_suite='nose.collector'
      )
 
