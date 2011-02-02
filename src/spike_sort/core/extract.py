@@ -74,7 +74,7 @@ def extract_spikes(spike_data, spt_dict, sp_win, resample=None,
 
     Arguments:
 
-    -- spike_data: extracelluler waveforms
+    -- spike_data: extracelluler waveforms (n_pts, n_spikes, n_contacts)
     -- spt : spike times
     -- sp_win : temporal extent of the wave shape 
 

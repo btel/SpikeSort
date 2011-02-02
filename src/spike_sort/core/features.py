@@ -85,7 +85,18 @@ def PCA(data,ncomps=2):
     score = score/np.sqrt(evals[:ncomps, np.newaxis])
     return evals,evecs,score
 
-def fetPCs(spikes_data,ncomps=2):
+def _get_data(spk_dict, contacts):
+    spikes = spk_dict["data"]
+    if not contacts=="all":
+        contacts = np.asarray(contacts)
+        try:
+            spikes = spikes[:,:,contacts]
+        except IndexError:
+            raise IndexError("contacts must be either 'all' or a list of valid"+
+                             " contact indices" )
+    return spikes
+
+def fetPCs(spikes_data,ncomps=2, contacts='all'):
     """Calculate principal components (PCs).
     
     :arguments:
@@ -98,8 +109,8 @@ def fetPCs(spikes_data,ncomps=2):
      * pcs -- projection scores of size `(n_contacts*ncomps, n_spikes)`
      * names -- feature labels ("Ch0:PC0', "Ch0:PC1", "Ch1:PC0", etc.)
     """
-   
-    spikes = spikes_data["data"]
+
+    spikes = _get_data(spikes_data, contacts)
     def _getPCs(data):
         _, _, sc=PCA(data[:,:],ncomps)
         return sc
@@ -119,7 +130,7 @@ def fetPCs(spikes_data,ncomps=2):
     
     return sc, names
 
-def fetP2P(spikes_data):
+def fetP2P(spikes_data, contacts='all'):
     """Calculate peak-to-peak amplitudes of spike waveforms.
 
     :arguments:
@@ -150,7 +161,8 @@ def fetP2P(spikes_data):
 
     """
 
-    spikes = spikes_data["data"]
+    spikes = _get_data(spikes_data, contacts)
+            
     p2p=spikes.max(axis=0)-spikes.min(axis=0)
     if p2p.ndim<2:
         p2p=p2p[:,np.newaxis]
@@ -163,7 +175,8 @@ def fetSpIdx(spikes_data):
     """
     Spike sequential index (0,1,2, ...)
     """
-    spikes = spikes_data["data"]
+
+    spikes = _get_data(spikes_data, [0])
 
     n_datapts = spikes.shape[1]
 
