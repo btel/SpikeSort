@@ -6,10 +6,11 @@ import numpy as np
 import json
 import re
 from tempfile import mkdtemp
+import tables
 
 _regexp="^/(?P<subject>[a-zA-z]+)/s(?P<ses_id>.+)/el(?P<el_id>[0-9]+)$"
 
-def read_sp(conf_file, dataset, memmap=True):
+def read_sp(conf_file, dataset, memmap=None):
     """Reads raw spike waveform from file in bakerlab format
     
     :arguments:
@@ -30,23 +31,31 @@ def read_sp(conf_file, dataset, memmap=True):
     
     full_path = os.path.join(dirname, f_spike)
     fname = full_path.format(**rec_dict)
-    sp = np.fromfile(fname, dtype=np.int16)
+    sp = np.fromfile(fname, dtype=np.int16)/200.
 
     
-    if memmap:
+    if memmap=="numpy":
         #create temporary memmory mapped array
         filename = os.path.join(mkdtemp(), 'newfile.dat')
         fp = np.memmap(filename, dtype='float', mode='w+', 
                        shape=(len(sp),n_contacts))
+    elif memmap=="tables":
+        atom = tables.Atom.from_dtype(sp.dtype)
+        shape = (len(sp), n_contacts)
+        filters = tables.Filters(complevel=3, complib='blosc')
+        filename = os.path.join(mkdtemp(), 'newfile.dat')
+        h5f = tables.openFile(filename,'w')
+        fp = h5f.createCArray('/', "test", atom, shape, filters=filters)
     else:
         fp = np.empty((len(sp), n_contacts), dtype='float')
 
-    fp[:,0]=sp/200.
+    fp[:,0]=sp
     for i in range(1,n_contacts):
-        rec_dict['contact']=i+1
+        rec_dict['contact_id']=i+1
         fname = full_path.format(**rec_dict)
         sp = np.fromfile(fname,dtype=np.int16)
         fp[:,i]=sp/200.
+    del sp
     return {'data':fp, "FS":conf_dict['FS'], "n_contacts":n_contacts} 
 
 def write_sp(sp_dict, conf_file, dataset):
