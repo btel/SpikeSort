@@ -22,13 +22,15 @@ Tutorial
    I will assume that you downloaded this file and saved it to :file:`data` 
    directory.
    
-   You can load this file using :py:mod:`spike_sort.io.hdf5` module:
+   You can load this file using one of I/O fiters from 
+   :py:mod:`spike_sort.io.filter` module:
    
    .. doctest::
    
-      >>> import spike_sort.io.hdf5 as io
+      >>> from spike_sort.io.filters import PyTablesFilter
       >>> dataset = '/SubjectA/session01/el1'
-      >>> raw = io.read_sp('../data/tutorial.h5', dataset)
+      >>> io_filter = PyTablesFilter('../data/tutorial.h5')
+      >>> raw = io_filter.read_sp(dataset)
       
    :py:data:`raw` is a dictionary which contains the raw data (in this case it is
    a pytables compressed array) under :py:attr:`data`
@@ -229,12 +231,15 @@ Tutorial
    .. doctest::
    
       >>> cell = dataset + '/cell1'
-      >>> io.write_spt(spt_clust[0], '../data/tutorial.h5', cell,
+      >>> io_filter.write_spt(spt_clust[0], cell,
       ...                        overwrite=True)
+      ... io_filter.close()
       
-   This will create a new node in :file:`tutorial.h5`containing  spike times of 
+   This will create a new node in :file:`tutorial.h5` containing  spike times of 
    the discriminated cell ``/SubjectA/session01/el1/cell1``, 
    which you can use for further analysis.
+   
+   
    Good luck!!!
    
    TODO: this must be automated: rewrite io module to provide basic I/O functions

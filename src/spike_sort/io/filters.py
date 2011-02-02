@@ -24,9 +24,9 @@ class BakerlabFilter:
         """Reads raw spike waveform from file in bakerlab format
         
         :arguments:
-        - conf_file -- configuration file
-        - dataset -- dataset path
-        - memmap -- use memory mapped arrays to save some memory
+         - conf_file -- configuration file
+         - dataset -- dataset path
+         - memmap -- use memory mapped arrays to save some memory
         """
        
         conf_dict = self.conf_dict
@@ -71,9 +71,9 @@ class BakerlabFilter:
         """Write raw spike waveform to a file in bakerlab format
         
         :arguments:
-        - sp_dict -- spike waveform dict
-        - conf_file -- configuration file
-        - dataset -- dataset path
+         - sp_dict -- spike waveform dict
+         - conf_file -- configuration file
+         - dataset -- dataset path
         """
         sp = sp_dict['data']
         conf_dict = self.conf_dict
@@ -93,8 +93,8 @@ class BakerlabFilter:
         """Returns spike times in miliseconds:
         
         :arguments:
-        -- dir_name : directory names with the data
-        -- dataset : dataset path
+         * dir_name : directory names with the data
+         * dataset : dataset path
         """
         
         fname = os.path.join(dir_name, dataset+".spt")
@@ -105,9 +105,9 @@ class BakerlabFilter:
     def write_spt(self, spt_dict, dataset):
         """Returns spike times in miliseconds:
         
-        Arguments:
-        -- dir_name : directory names with the data
-        -- dataset : dataset name
+        :Arguments:
+         * dir_name : directory names with the data
+         * dataset : dataset name
         """
     
         spt = spt_dict['data']

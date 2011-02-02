@@ -22,23 +22,23 @@ def label_normalize(labels):
 
 def plot_spikes(spike_data, clust_idx=None,ec=None, alpha=0.2,
         n_spikes='all', contacts='all', plot_avg=True):
-
     """Plot Spike waveshapes
 
-    Arguments:
+    :arguments:
+    
+     * spike_data : dict
+     * clust_idx : sequence
+       sequence of the length equal to the number of spikes; labels of
+       clusters to which spikes belong
+     * n_spikes : int or "all"
+       number of spikes to plot; 'all' if all
+     * plot_avg: bool
+       plot waveform averages?
 
-    * spike_data : dict
-    * clust_idx : sequence
-      sequence of the length equal to the number of spikes; labels of
-      clusters to which spikes belong
-    * n_spikes : int or "all"
-      number of spikes to plot; 'all' if all
-    * plot_avg: bool
-      plot waveform averages?
-
-    Returns:
-    * lines_segments
-      matplotlib line collection of spike waveshapes
+    :output:
+    
+     * lines_segments
+       matplotlib line collection of spike waveshapes
     """
 
     spikes =  spike_data['data']
@@ -100,16 +100,15 @@ def plot_spikes(spike_data, clust_idx=None,ec=None, alpha=0.2,
     return line_segments
 
 def plot_features(features_dict, clust_idx=None, size=1):
-
     """Plot features and their histograms
     
     :arguments:
-        - features_dict --features data structure (dicitionary with
-          `data` and `names` keys)
-        - clust_idx (default: None) -- array of size (n_spikes,)
-          containing indices of clusters to which each spike was
-          classfied
-        - size (default: 1)
+     * features_dict --features data structure (dicitionary with
+       `data` and `names` keys)
+     * clust_idx (default: None) -- array of size (n_spikes,)
+       containing indices of clusters to which each spike was
+       classfied
+     * size (default: 1)
     
     """
 

@@ -110,9 +110,7 @@ class TestBakerlab:
         all_chan_files = glob.glob("test?.sp")
         [os.unlink(p) for p in all_chan_files]
         eq_(len(all_chan_files), n_contacts)
-        
-        
-        
+               
     def test_read_sp(self):
         filter = BakerlabFilter(self.conf_file)
         sp = filter.read_sp(self.el_node)

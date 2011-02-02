@@ -14,8 +14,7 @@ import numpy as np
 import os, sys
 
 import spike_sort as sort
-import spike_sort.io.bakerlab
-import spike_sort.io.hdf5
+from spike_sort.io.filters import PyTablesFilter, BakerlabFilter
 import spike_sort.ui.manual_sort
 import tables
 
@@ -24,14 +23,15 @@ import time
 DATAPATH = "../data" 
 
 if __name__ == "__main__":
+
     h5_fname = os.path.join(DATAPATH, "tutorial.h5")
-    h5f = tables.openFile(h5_fname, 'a')
+    h5filter = PyTablesFilter(h5_fname, 'a')
 
     dataset = "/SubjectA/session01/el1"
     sp_win = [-0.2, 0.8]
     
     start = time.time()
-    sp = sort.io.hdf5.read_sp(h5f, dataset)
+    sp = h5filter.read_sp(dataset)
     spt = sort.extract.detect_spikes(sp,  contact=3,
                                      thresh='auto')
     
@@ -53,6 +53,7 @@ if __name__ == "__main__":
     
     
     spike_sort.ui.plotting.show()
+    h5filter.close()
 
     #TODO: export
     #sort.io.hdf5.write_spt(clust, h5f, cell_node+"_clust",
