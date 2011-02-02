@@ -131,6 +131,6 @@ def cluster2spt(spt_dict, idx, which='all'):
         classes = which
     
     spt = spt_dict['data']
-    spt_dicts = [{'data': spt[idx==cl], 'clusterid': cl} for cl in classes]
+    spt_dicts = [{'data': spt[idx==cl], 'cell_id': cl} for cl in classes]
 
     return spt_dicts

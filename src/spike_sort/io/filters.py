@@ -1,4 +1,12 @@
 '''
+Filters are basic backends for read/write operations. They offer following 
+methods:
+
+ * read_spt -- read event times (such as spike times)
+ * write_spt -- write spike times
+ * read_sp -- read raw spike waveforms 
+ * write_sp -- write raw spike waveforms
+
 Created on Feb 2, 2011
 
 @author: bartosz

@@ -8,6 +8,8 @@ import filecmp
 import json
 import glob
 from spike_sort.io.filters import BakerlabFilter, PyTablesFilter
+from spike_sort.io import export
+import tempfile
 
 class TestHDF:
     def setUp(self):
@@ -140,5 +142,27 @@ class TestBakerlab:
         sp=filter.read_sp(self.el_node)
         data = sp['data']
         ok_(data.shape==(len(self.data),4))
+
+class TestExport:
+    
+    def test_export_cells(self):
+        self.spt_data = np.random.randint(0, 10000, (100,))
+        self.spt_data.sort()
+        n_cells = 4
+        self.cell_id = np.random.randint(0, n_cells, (self.spt_data.shape[0],))
+        self.spt_dict = {"data":self.spt_data, "cell_id":self.cell_id}
+        fname = os.path.join(tempfile.mkdtemp(), "test.h5")
+        filter = PyTablesFilter(fname)
+        tmpl = "/Subject/Session/Electrode/Cell{cell_id}"
+        export.export_cells(filter, tmpl, self.spt_dict)
+        test = []
+        for i in range(n_cells):
+            spt_dict = filter.read_spt(tmpl.format(cell_id=i))
+            test.append((spt_dict['data']==self.spt_data[self.cell_id==i]).all())
+        test = np.array(test)
+        filter.close()
+        os.unlink(fname)
+        ok_(test.all())
+            
         
         
