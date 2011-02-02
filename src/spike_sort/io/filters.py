@@ -13,7 +13,7 @@ import tables
 class BakerlabFilter:
     
     def __init__(self, conf_file):
-        self._regexp="^/(?P<subject>[a-zA-z]+)/s(?P<ses_id>.+)/el(?P<el_id>[0-9]+)$"
+        self._regexp="^/(?P<subject>[a-zA-z]+)/s(?P<ses_id>.+)/el(?P<el_id>[0-9]+)(/cell)?(?P<cell_id>[0-9]+)?$"
         self.conf_file = conf_file
         with file(conf_file) as fid:
             self.conf_dict = json.load(fid)
@@ -40,7 +40,7 @@ class BakerlabFilter:
         
         full_path = os.path.join(dirname, f_spike)
         fname = full_path.format(**rec_dict)
-        sp = np.fromfile(fname, dtype=np.int16)/200.
+        sp = np.fromfile(fname, dtype=np.int16)
     
         
         if memmap=="numpy":
@@ -56,14 +56,14 @@ class BakerlabFilter:
             h5f = tables.openFile(filename,'w')
             fp = h5f.createCArray('/', "test", atom, shape, filters=filters)
         else:
-            fp = np.empty((len(sp), n_contacts), dtype='float')
+            fp = np.empty((len(sp), n_contacts), dtype=sp.dtype)
     
         fp[:,0]=sp
         for i in range(1,n_contacts):
             rec_dict['contact_id']=i+1
             fname = full_path.format(**rec_dict)
             sp = np.fromfile(fname,dtype=np.int16)
-            fp[:,i]=sp/200.
+            fp[:,i]=sp
         del sp
         return {'data':fp, "FS":conf_dict['FS'], "n_contacts":n_contacts} 
     
@@ -86,8 +86,14 @@ class BakerlabFilter:
             rec_dict['contact_id']=i+1
             fname = conf_dict['fspike'].format(**rec_dict)
             full_path = os.path.join(conf_dict['dirname'], fname)
-            sp_int = (sp[:,i]*200).astype(np.int16)
+            sp_int = (sp[:,i]).astype(np.int16)
             sp_int.tofile(full_path)
+    
+    def _match_dataset(self, dataset):
+        m = re.match(self._regexp, dataset)
+        if not m:
+            StandardError("dataset id could not be parsed")
+        return m.groupdict()
     
     def read_spt(self,  dataset):
         """Returns spike times in miliseconds:
@@ -96,8 +102,10 @@ class BakerlabFilter:
          * dir_name : directory names with the data
          * dataset : dataset path
         """
+        conf_dict = self.conf_dict
+        rec = self._match_dataset(dataset)
         
-        fname = os.path.join(dir_name, dataset+".spt")
+        fname = conf_dict['fspt'].format(**rec)
         spt = np.fromfile(fname, dtype=np.int32)
         return {"data": spt/200.}
     
@@ -109,14 +117,15 @@ class BakerlabFilter:
          * dir_name : directory names with the data
          * dataset : dataset name
         """
-    
-        spt = spt_dict['data']
         
-        fname = os.path.join(dir_name, dataset+".spt")
+        conf_dict = self.conf_dict
+        rec = self._match_dataset(dataset)
+        spt = spt_dict['data']
+   
+        fname = conf_dict['fspt'].format(**rec)
         export_spt = (spt*200).astype(np.int32)
         export_spt.tofile(fname)
         
-
 class PyTablesFilter:
     """
     HDF5 is a hierarchical datafile -- data is organised in a tree. The

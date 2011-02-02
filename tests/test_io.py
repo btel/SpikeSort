@@ -4,8 +4,6 @@ from nose.tools import ok_, eq_, raises
 import tables
 import numpy as np
 import os
-import spike_sort.io.hdf5
-import spike_sort.io.bakerlab
 import filecmp
 import json
 import glob
@@ -63,29 +61,43 @@ class TestHDF:
 class TestBakerlab:
     def setup(self):
         file_descr = {"fspike":"{ses_id}{el_id}.sp",
+                      "fspt":"{ses_id}{el_id}{cell_id}.spt",
                       "dirname":".",
                       "FS":5.E3,
                       "n_contacts":1}
         self.el_node = '/Test/s32test01/el1'
-        self.data = np.random.randint(-1000, 1000, (100,))/200.
-        self.spt = np.random.randint(0,100, (10,file_descr['n_contacts']))
+        self.cell_node = self.el_node+'/cell1'
+        self.data = np.random.randint(-1000, 1000, (100,))
+        self.spt_data = np.random.randint(0,100, (10,))/200.
         self.conf_file = 'test.conf'
         self.fname = "32test011.sp"
+        self.spt_fname = "32test0111.spt"
         
         with open(self.conf_file, 'w') as fp:
              json.dump(file_descr, fp)
         
-        (self.data*200).astype(np.int16).tofile(self.fname)
+        (self.data).astype(np.int16).tofile(self.fname)
+        (self.spt_data*200).astype(np.int32).tofile(self.spt_fname)
         
     def tearDown(self):
         os.unlink(self.conf_file)
         os.unlink(self.fname)
         
     def test_write_spt(self):
-        pass
+        cell_node_tmp = '/Test/s32test01/el2/cell1'
+        spt_dict = {'data':self.spt_data}
+        filter = BakerlabFilter(self.conf_file)
+        filter.write_spt(spt_dict,  cell_node_tmp)
+        files_eq = filecmp.cmp(self.spt_fname,"32test0121.spt", shallow=0)
+        os.unlink("32test0121.spt")
+        ok_(files_eq)
+   
     def test_read_spt(self):
-        
-        pass
+        filter = BakerlabFilter(self.conf_file)
+        sp = filter.read_spt(self.cell_node)
+        read_data = sp['data']
+        ok_((np.abs(read_data-self.spt_data)<=1/200.).all())
+
     def test_write_sp(self):
         el_node_tmp = '/Test/s32test01/el2'
         sp_dict = {'data':self.data[:,np.newaxis]}
