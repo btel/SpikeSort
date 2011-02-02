@@ -25,7 +25,6 @@ class BakerlabFilter:
         """Reads raw spike waveform from file in bakerlab format
         
         :arguments:
-         - conf_file -- configuration file
          - dataset -- dataset path
          - memmap -- use memory mapped arrays to save some memory
         """
@@ -75,7 +74,6 @@ class BakerlabFilter:
         
         :arguments:
          - sp_dict -- spike waveform dict
-         - conf_file -- configuration file
          - dataset -- dataset path
         """
         sp = sp_dict['data']
@@ -102,7 +100,6 @@ class BakerlabFilter:
         """Returns spike times in miliseconds:
         
         :arguments:
-         * dir_name : directory names with the data
          * dataset : dataset path
         """
         conf_dict = self.conf_dict
@@ -117,7 +114,6 @@ class BakerlabFilter:
         """Returns spike times in miliseconds:
         
         :Arguments:
-         * dir_name : directory names with the data
          * dataset : dataset name
         """
         
