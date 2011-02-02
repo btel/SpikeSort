@@ -47,16 +47,16 @@ class BakerlabFilter:
         if memmap=="numpy":
             #create temporary memmory mapped array
             filename = os.path.join(mkdtemp(), 'newfile.dat')
-            self._tempfiles.append(filename)
             fp = np.memmap(filename, dtype='float', mode='w+', 
                            shape=(len(sp),n_contacts))
+            self._tempfiles.append(fp)
         elif memmap=="tables":
             atom = tables.Atom.from_dtype(sp.dtype)
             shape = (len(sp), n_contacts)
             filters = tables.Filters(complevel=3, complib='blosc')
             filename = os.path.join(mkdtemp(), 'newfile.dat')
-            self._tempfiles.append(filename)
             h5f = tables.openFile(filename,'w')
+            self._tempfiles.append(h5f)
             fp = h5f.createCArray('/', "test", atom, shape, filters=filters)
         else:
             fp = np.empty((len(sp), n_contacts), dtype=sp.dtype)
@@ -131,7 +131,9 @@ class BakerlabFilter:
         
     def close(self):
         for f in self._tempfiles:
-            os.unlink(f)
+            fname = f.filename
+            f.close()
+            os.unlink(fname)
         self._tempfiles = []
         
 class PyTablesFilter:
