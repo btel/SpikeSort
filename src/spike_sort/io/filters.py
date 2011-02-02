@@ -15,6 +15,7 @@ class BakerlabFilter:
     def __init__(self, conf_file):
         self._regexp="^/(?P<subject>[a-zA-z]+)/s(?P<ses_id>.+)/el(?P<el_id>[0-9]+)(/cell)?(?P<cell_id>[0-9]+)?$"
         self.conf_file = conf_file
+        self._tempfiles=[]
         with file(conf_file) as fid:
             self.conf_dict = json.load(fid)
             
@@ -46,6 +47,7 @@ class BakerlabFilter:
         if memmap=="numpy":
             #create temporary memmory mapped array
             filename = os.path.join(mkdtemp(), 'newfile.dat')
+            self._tempfiles.append(filename)
             fp = np.memmap(filename, dtype='float', mode='w+', 
                            shape=(len(sp),n_contacts))
         elif memmap=="tables":
@@ -53,6 +55,7 @@ class BakerlabFilter:
             shape = (len(sp), n_contacts)
             filters = tables.Filters(complevel=3, complib='blosc')
             filename = os.path.join(mkdtemp(), 'newfile.dat')
+            self._tempfiles.append(filename)
             h5f = tables.openFile(filename,'w')
             fp = h5f.createCArray('/', "test", atom, shape, filters=filters)
         else:
@@ -125,6 +128,11 @@ class BakerlabFilter:
         fname = conf_dict['fspt'].format(**rec)
         export_spt = (spt*200).astype(np.int32)
         export_spt.tofile(fname)
+        
+    def close(self):
+        for f in self._tempfiles:
+            os.unlink(f)
+        self._tempfiles = []
         
 class PyTablesFilter:
     """
