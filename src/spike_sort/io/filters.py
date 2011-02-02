@@ -113,10 +113,13 @@ class BakerlabFilter:
         conf_dict = self.conf_dict
         rec = self._match_dataset(dataset)
         
-        fname = conf_dict['fspt'].format(**rec)
+        dirname = conf_dict['dirname']
+        fspt = conf_dict['fspt']
+        full_path = os.path.join(dirname, fspt)
+        fname = full_path.format(**rec)
+        
         spt = np.fromfile(fname, dtype=np.int32)
         return {"data": spt/200.}
-    
     
     def write_spt(self, spt_dict, dataset):
         """Returns spike times in miliseconds:
@@ -128,8 +131,11 @@ class BakerlabFilter:
         conf_dict = self.conf_dict
         rec = self._match_dataset(dataset)
         spt = spt_dict['data']
-   
-        fname = conf_dict['fspt'].format(**rec)
+        dirname = conf_dict['dirname']
+        fspt = conf_dict['fspt']
+        full_path = os.path.join(dirname, fspt)
+        fname = full_path.format(**rec)
+        
         export_spt = (spt*200).astype(np.int32)
         export_spt.tofile(fname)
         
