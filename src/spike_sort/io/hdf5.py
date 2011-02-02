@@ -20,8 +20,6 @@ This layout may be adjusted by changing paths
 TODO: implement custom layouts
 """
 
-import tables
-
 _open_files = []
 
 def _get_attrs(node):

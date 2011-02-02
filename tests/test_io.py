@@ -9,6 +9,7 @@ import spike_sort.io.bakerlab
 import filecmp
 import json
 import glob
+from spike_sort.io.filters import BakerlabFilter, PyTablesFilter
 
 class TestHDF:
     def setUp(self):
@@ -35,25 +36,28 @@ class TestHDF:
         self.h5f.close()
         
     def tearDown(self):
-        spike_sort.io.hdf5.close_all()
+        self.filter.close()
         os.unlink(self.fname)
     
     def test_write(self):
         sp_dict = {'data':self.data,'FS':self.sampfreq}
         spt_dict = {'data':self.spt}
-        spike_sort.io.hdf5.write_sp(sp_dict, "test2.h5", self.el_node+"/raw")
-        spike_sort.io.hdf5.write_spt(spt_dict, "test2.h5", self.cell_node)
-        spike_sort.io.hdf5.close_all()
+        self.filter = PyTablesFilter("test2.h5")
+        self.filter.write_sp(sp_dict, self.el_node+"/raw")
+        self.filter.write_spt(spt_dict, self.cell_node)
+        self.filter.close()
         exit_code = os.system('h5diff ' + self.fname + ' test2.h5')
         os.unlink("test2.h5")
         ok_(exit_code==0)
         
     def test_read_sp(self):
-        sp = spike_sort.io.hdf5.read_sp(self.fname, self.el_node)
+        self.filter = PyTablesFilter(self.fname)
+        sp = self.filter.read_sp(self.el_node)
         ok_((sp['data'][:]==self.data).all())
     
     def test_read_spt(self):
-        spt = spike_sort.io.hdf5.read_spt(self.fname, self.cell_node)
+        self.filter = PyTablesFilter(self.fname)
+        spt = self.filter.read_spt(self.cell_node)
         ok_((spt['data']==self.spt).all())
         
 class TestBakerlab:
@@ -85,8 +89,8 @@ class TestBakerlab:
     def test_write_sp(self):
         el_node_tmp = '/Test/s32test01/el2'
         sp_dict = {'data':self.data[:,np.newaxis]}
-        spike_sort.io.bakerlab.write_sp(sp_dict, self.conf_file,
-                                       el_node_tmp)
+        filter = BakerlabFilter(self.conf_file)
+        filter.write_sp(sp_dict,  el_node_tmp)
         files_eq = filecmp.cmp("32test011.sp","32test012.sp", shallow=0)
         os.unlink("32test012.sp")
         ok_(files_eq)
@@ -101,8 +105,8 @@ class TestBakerlab:
             file_desc["fspike"]="test{contact_id}.sp"
             fid.seek(0)
             json.dump(file_desc, fid)
-        spike_sort.io.bakerlab.write_sp(sp_dict, self.conf_file,
-                                        self.el_node)
+        filter = BakerlabFilter(self.conf_file)
+        filter.write_sp(sp_dict, self.el_node)
         all_chan_files = glob.glob("test?.sp")
         [os.unlink(p) for p in all_chan_files]
         eq_(len(all_chan_files), n_contacts)
@@ -110,8 +114,8 @@ class TestBakerlab:
         
         
     def test_read_sp(self):
-        sp = spike_sort.io.bakerlab.read_sp(self.conf_file,
-                                            self.el_node)
+        filter = BakerlabFilter(self.conf_file)
+        sp = filter.read_sp(self.el_node)
         read_data = sp['data'][:,0]
         print read_data.shape
         ok_((np.abs(read_data-self.data)<=1/200.).all())
@@ -122,8 +126,8 @@ class TestBakerlab:
             file_desc['n_contacts']=4
             fid.seek(0)
             json.dump(file_desc, fid)
-        sp = spike_sort.io.bakerlab.read_sp(self.conf_file,
-                                            self.el_node)
+        filter = BakerlabFilter(self.conf_file)
+        sp=filter.read_sp(self.el_node)
         data = sp['data']
         ok_(data.shape==(len(self.data),4))
         
