@@ -8,16 +8,19 @@ from matplotlib.collections import LineCollection
 
 cmap = plt.cm.jet
 
-def label_normalize(labels):
+def label_color(labels):
     """Map labels to number range [0,1]"""
     
     num_labels = np.linspace(0,1., len(labels))
     mapper = dict(zip(labels, num_labels))
-   
+    
     @np.vectorize
     def map_func(lab):
         return mapper[lab]
-    return map_func
+    
+    def color_func(lab):
+        return cmap(map_func(lab))
+    return color_func
 
 
 def plot_spikes(spike_data, clust_idx=None,ec=None, alpha=0.2,
@@ -49,12 +52,10 @@ def plot_spikes(spike_data, clust_idx=None,ec=None, alpha=0.2,
     
     n_pts = len(time)
     
-    if not clust_idx is None:
-        norm = label_normalize(np.unique(clust_idx))
-    else:
+    if clust_idx is None:
         clust_idx = np.ones(spikes.shape[1])
-        norm = plt.normalize(0,1)
         
+    norm = label_color(np.unique(clust_idx))
     unique_labs = np.unique(clust_idx)
     
     if  not n_spikes=='all':
@@ -69,7 +70,7 @@ def plot_spikes(spike_data, clust_idx=None,ec=None, alpha=0.2,
     if ec:
         colors = ec
     else:
-        colors = cmap(norm(clust_idx))
+        colors = norm(clust_idx)
     
     line_segments = []
     for i, contact_id in enumerate(contacts): 
@@ -88,7 +89,7 @@ def plot_spikes(spike_data, clust_idx=None,ec=None, alpha=0.2,
         if plot_avg:
             
             if ec is None:
-                colors_mean = cmap(norm(unique_labs))
+                colors_mean = norm(unique_labs)
             spikes_mean = np.array([spikes[:, clust_idx==l, contact_id].mean(1) for l in
                 unique_labs])
             segs_mean = np.zeros((len(unique_labs), n_pts, 2))
@@ -117,12 +118,10 @@ def plot_features(features_dict, clust_idx=None, size=1):
 
     n_spikes, n_feats = features.shape
     
-    if not clust_idx is None:
-        norm = label_normalize(np.unique(clust_idx))
-    else:
+    if clust_idx is None:
         clust_idx = np.ones(n_spikes)
-        norm = plt.normalize(0,1)
-
+    
+    norm = label_color(np.unique(clust_idx))
     fig = plt.gcf()
     for i in range(n_feats):
         for j in range(n_feats):
@@ -131,12 +130,12 @@ def plot_features(features_dict, clust_idx=None, size=1):
                 for c in np.unique(clust_idx):
                     plt.plot(features[clust_idx==c,i],
                              features[clust_idx==c,j],".", 
-                            color=cmap(norm(c)), markersize=size)
+                            color=norm(c), markersize=size)
             else:
                 ax.set_frame_on(False)
                 for c in np.unique(clust_idx):
                     plt.hist(features[clust_idx==c,i],20, 
-                            [0,1], ec="none", fc=cmap(norm(c)),
+                            [0,1], ec="none", fc=norm(c),
                             alpha=0.5, normed=True)
             plt.xticks([])
             plt.yticks([])

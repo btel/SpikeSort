@@ -122,7 +122,7 @@ def k_means(data, K):
                 centers_new[i, :] = data[partition==i, :].mean(0)
     return partition
 
-def cluster2spt(spt_dict, idx, which='all'):
+def split_cells(spt_dict, idx, which='all'):
     """return the spike times belonging to the cluster and the rest"""
 
     if which == 'all':
@@ -131,6 +131,6 @@ def cluster2spt(spt_dict, idx, which='all'):
         classes = which
     
     spt = spt_dict['data']
-    spt_dicts = [{'data': spt[idx==cl], 'cell_id': cl} for cl in classes]
+    spt_dicts = dict([(cl, {'data': spt[idx==cl]}) for cl in classes])
 
     return spt_dicts

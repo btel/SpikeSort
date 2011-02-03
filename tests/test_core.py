@@ -31,9 +31,9 @@ class TestFeatures:
         amps = amps[:, np.newaxis]
         spikes = amps*self.cells[0,:]
         spikes_dict['data'] = spikes.T[:,:,np.newaxis]
-        p2p, names = ss.features.fetP2P(spikes_dict)
+        p2p = ss.features.fetP2P(spikes_dict)
         
-        ok_((p2p==amps*self.gain).all())
+        ok_((p2p['data']==amps*self.gain).all())
 
     def test_PCA(self):
         n_dim = 2
@@ -64,7 +64,8 @@ class TestFeatures:
         spikes = spikes.astype(np.float32)
         spikes_dict['data'] = spikes[:,:,np.newaxis]
 
-        pcs, names = ss.features.fetPCs(spikes_dict, ncomps=1)
+        pcs = ss.features.fetPCs(spikes_dict, ncomps=1)
+        pcs = pcs['data']
         compare = ~np.logical_xor(pcs[:,0].astype(int)+1, _amps)
         correct = np.sum(compare)
 

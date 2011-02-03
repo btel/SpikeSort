@@ -7,11 +7,31 @@ Functions starting with `fet` implement various features calculated
 from the spike waveshapes. They have usually one required argument
 :ref:`spikewave` structure (but there are exceptions!).  
 
+Each of the function returns a (mapping) object with following keys:
+
+ * data -- an array of shape (n_spikes, n_features)
+ * names -- a list of length n_features with feature labels
 """
 
 
 import numpy as np
 import matplotlib.pyplot as plt
+
+def split_cells(features, idx, which='all'):
+    """return the spike features splitted into separate cells"""
+
+    if which == 'all':
+        classes = np.unique(idx)
+    else:
+        classes = which
+    
+    data = features['data']
+    names = features['names']
+    feature_dict = dict([(cl, {'data': data[idx==cl, :],
+                               'names': names}) for cl in classes])
+
+    return feature_dict
+
 
 def select(features_dict, features_ids):
 
@@ -43,7 +63,8 @@ def combine(args, normalize=True):
           array of shape `(n_spikes, n_features)` and `names` -- feature labels
     """
 
-    features, names = zip(*args)
+    features = [d['data'] for d in args]
+    names = [d['names'] for d in args]
 
     data  = np.hstack(features)
     if normalize:
@@ -128,7 +149,7 @@ def fetPCs(spikes_data,ncomps=2, contacts='all'):
     names = ["Ch%d:PC%d" % (j,i) for i in range(ncomps) for j in
             range(n_channels)]
     
-    return sc, names
+    return {'data': sc, "names":names}
 
 def fetP2P(spikes_data, contacts='all'):
     """Calculate peak-to-peak amplitudes of spike waveforms.
@@ -155,8 +176,8 @@ def fetP2P(spikes_data, contacts='all'):
      >>> time = np.arange(0,2*np.pi,0.01) 
      >>> spikes = np.sin(time)[:,np.newaxis, np.newaxis]
      >>> spikewave = {"data": spikes, "time":time, "contacts":1, "FS":1}
-     >>> p2p, labels = features.fetP2P(spikewave)
-     >>> print p2p
+     >>> p2p = features.fetP2P(spikewave)
+     >>> print p2p['data']
      [[ 1.99999683]]
 
     """
@@ -169,7 +190,7 @@ def fetP2P(spikes_data, contacts='all'):
 
     names = ["Ch%d:P2P" % i for i in range(p2p.shape[1])]
 
-    return p2p, names
+    return {'data':p2p, 'names':names}
 
 def fetSpIdx(spikes_data):
     """
@@ -180,7 +201,7 @@ def fetSpIdx(spikes_data):
 
     n_datapts = spikes.shape[1]
 
-    return np.arange(n_datapts)[:, np.newaxis], ["SpIdx"]
+    return {'data':np.arange(n_datapts)[:, np.newaxis],'names':["SpIdx"]}
 
 def fetSpTime(spt_dict):
     """
@@ -195,4 +216,4 @@ def fetSpTime(spt_dict):
 
     spt = spt_dict['data']
 
-    return spt[:, np.newaxis], ["SpTime"]
+    return {'data': spt[:, np.newaxis], 'names':["SpTime"]}

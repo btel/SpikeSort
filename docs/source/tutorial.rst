@@ -2,6 +2,11 @@
 Tutorial
 ========
 
+.. testsetup::
+   
+   import numpy
+   numpy.random.seed(1221)
+
 1. **Read data**.
 
    Before you can start spike sorting you have to load data with raw extracellular
@@ -219,26 +224,40 @@ Tutorial
    for reading. Here, we will save the spike times of a selected cell
    back to the file we read the data from. 
    
-   First, we need to extract the spike 
-   of the discriminated cell (here cell 1):
+   First, we need to extract the spike times 
+   of the discriminated cells:
    
    .. doctest:: 
   
-      >>> spt_clust = cluster.cluster2spt(spt, clust_idx, [1])
+      >>> spt_clust = cluster.split_cells(spt, clust_idx)
+
+   It will create a dictionary whose keys are the cell labels pointing
+   to spike times of the specific cell. For example, to extract spike
+   times of cell 0:
+
+   .. doctest::
+
+      >>> print spt_clust[0]
+      {'data': array([  46086.848,   62363.956,  103976.68 , ...,  937192.364,
+              937194.488,  937247.848])}
       
    Then we may export them to the datafile:
 
    .. doctest::
    
-      >>> cell = dataset + '/cell1'
-      >>> io_filter.write_spt(spt_clust[0], cell,
-      ...                        overwrite=True)
-      ... io_filter.close()
+      >>> from spike_sort.io import export
+      >>> cell_template = dataset + '/cell{cell_id}'
+      >>> export.export_cells(io_filter, cell_template, spt_clust, overwrite=True)
       
    This will create a new node in :file:`tutorial.h5` containing  spike times of 
-   the discriminated cell ``/SubjectA/session01/el1/cell1``, 
+   the discriminated cell ``/SubjectA/session01/el1/cell{1-4}``, 
    which you can use for further analysis.
-   
+  
+   Don not forget to close the I/O filter at the end of your analysis:
+
+   ..doctest::
+
+      >>> io_filter.close()
    
    Good luck!!!
    
