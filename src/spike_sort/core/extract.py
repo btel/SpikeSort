@@ -4,6 +4,21 @@
 import numpy as np
 from scipy import interpolate
 
+def split_cells(spikes, idx, which='all'):
+    """return the spike features splitted into separate cells"""
+
+    if which == 'all':
+        classes = np.unique(idx)
+    else:
+        classes = which
+    
+    data = spikes['data']
+    time = spikes['time']
+    spikes_dict = dict([(cl, {'data': data[:,idx==cl, :], 'time': time}) 
+                        for cl in classes])
+
+    return spikes_dict
+
 def remove_spikes(spt_dict, remove_dict, tolerance):
     spt_data = spt_dict['data']
     spt_remove = remove_dict['data']
