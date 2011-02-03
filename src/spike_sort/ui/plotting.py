@@ -72,8 +72,9 @@ def spikegraph(spike_data, color='k', alpha=0.2, n_spikes='all', contacts='all',
     line_segments = []
     for i, contact_id in enumerate(contacts): 
         ax = plt.subplot(2,2, i+1)
-        ax.set_xlim(time.min(), time.max())
-        ax.set_ylim(spikes.min(), spikes.max())
+        #ax.set_xlim(time.min(), time.max())
+        #ax.set_ylim(spikes.min(), spikes.max())
+        ax.autoscale(tight=True)
         
         segs = np.zeros((n_spikes, n_pts, 2))
         segs[:,:,0] = time[np.newaxis,:]
@@ -145,6 +146,17 @@ def featuresgraph(features_dict, color='k', size=1):
         ax = plt.subplot(n_feats, n_feats, i*n_feats + 1)
         ax.set_ylabel(names[i])
 
-
-
+def legend(labels, colors):
+    
+    ax=plt.gca()
+    ax.set_frame_on(False)
+    n_classes = len(labels)
+    x, y =np.ones(n_classes), np.arange(n_classes)
+    plt.scatter(x, y, c=colors, marker='s',edgecolors="none",s=100)
+    plt.xticks([])
+    plt.yticks([])
+    for i, l in enumerate(labels):
+        plt.text(x[i]+0.005, y[i], "Cell {0}".format(l), va='center', ha='left', 
+                 transform=plt.gca().transData)
+    
 
