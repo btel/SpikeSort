@@ -5,7 +5,7 @@ import numpy as np
 
 from matplotlib.pyplot import show, figure, close
 from matplotlib.collections import LineCollection
-from spike_sort import extract
+import spike_sort
 cmap = plt.cm.jet
 
 def label_color(labels):
@@ -45,7 +45,7 @@ def plot_spikes(spikes, clust_idx=None, **kwargs):
     if clust_idx is None:
         spikegraph(spikes,**kwargs)
     else:
-        spikes_cell = extract.split_cells(spikes, clust_idx)
+        spikes_cell = spike_sort.extract.split_cells(spikes, clust_idx)
         
         labs = spikes_cell.keys()
        
@@ -90,7 +90,7 @@ def spikegraph(spike_data, color='k', alpha=0.2, n_spikes='all', contacts='all',
             
     return line_segments
 
-def plot_features(features_dict, clust_idx=None, size=1):
+def plot_features(features, clust_idx=None, **kwargs):
     """Plot features and their histograms
     
     :arguments:
@@ -102,31 +102,39 @@ def plot_features(features_dict, clust_idx=None, size=1):
      * size (default: 1)
     
     """
+    
+    if clust_idx is None:
+        featuresgraph(features,**kwargs)
+    else:
+        features_cell = spike_sort.features.split_cells(features, clust_idx)
+        
+        labs = features_cell.keys()
+       
+        color_func = label_color(labs)
+        for l in labs:
+            featuresgraph(features_cell[l], color_func(l), **kwargs)
+    
+def featuresgraph(features_dict, color='k', size=1):
 
     features = features_dict['data']
     names = features_dict['names']
 
-    n_spikes, n_feats = features.shape
-    
-    if clust_idx is None:
-        clust_idx = np.ones(n_spikes)
-    
-    norm = label_color(np.unique(clust_idx))
+    _, n_feats = features.shape
+
     fig = plt.gcf()
     for i in range(n_feats):
         for j in range(n_feats):
             ax = fig.add_subplot(n_feats, n_feats, j*n_feats + i + 1)
             if i<>j:
-                for c in np.unique(clust_idx):
-                    plt.plot(features[clust_idx==c,i],
-                             features[clust_idx==c,j],".", 
-                            color=norm(c), markersize=size)
+                plt.plot(features[:,i],
+                         features[:,j],".", 
+                        color=color, markersize=size)
             else:
                 ax.set_frame_on(False)
-                for c in np.unique(clust_idx):
-                    plt.hist(features[clust_idx==c,i],20, 
-                            [0,1], ec="none", fc=norm(c),
-                            alpha=0.5, normed=True)
+           
+                plt.hist(features[:,i],20, 
+                        [0,1], ec="none", fc=color,
+                        alpha=0.5, normed=True)
             plt.xticks([])
             plt.yticks([])
     
