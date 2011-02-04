@@ -67,7 +67,7 @@ def detect_spikes(spike_data, thresh='auto', edge="rising",
     FS = spike_data['FS']
 
     if thresh=='auto':
-        thresh = 8*np.sqrt(float(np.var(sp_data[:10*FS,contact])))
+        thresh = 8*np.sqrt(float(np.var(sp_data[:int(10*FS),contact])))
         if edge == 'falling':
             thresh = -thresh
 
@@ -82,6 +82,22 @@ def detect_spikes(spike_data, thresh='auto', edge="rising",
     spt_dict = {'data': spt}
 
     return spt_dict
+
+def filter_spt(spike_data, spt_dict, sp_win):
+    spt = spt_dict['data']
+    sp_data = spike_data['data']
+    FS = spike_data['FS']
+    
+    n_pts = sp_data.shape[0]
+    max_time = (n_pts)*1000./FS
+    
+    t_min = np.max((-sp_win[0],0))
+    t_max = np.min((max_time, max_time-sp_win[1]))
+    
+    idx, = np.nonzero((spt>=t_min) & (spt<=t_max))
+    
+    return idx
+    
 
 def extract_spikes(spike_data, spt_dict, sp_win, resample=None,
                    contacts='all'):
@@ -106,35 +122,34 @@ def extract_spikes(spike_data, spt_dict, sp_win, resample=None,
         contacts = np.asarray(contacts)
 
     FS = spike_data['FS']
-    spt = spt_dict['data']
+    idx = filter_spt(spike_data, spt_dict, sp_win)
+    spt = spt_dict['data'][idx]
 
     indices = (spt/1000.*FS).astype(np.int32)
     win = (np.asarray(sp_win)/1000.*FS).astype(np.int32)
    
-    isOutOfBound = ((indices>(sp_data.shape[0]-win[1])) | (indices<-win[0]))
-    correct_indices = indices[~isOutOfBound]
-    truncated_indices = indices[isOutOfBound]
-
     time = np.arange(win[1]-win[0])*1000./FS+sp_win[0]
 
 
     if resample is None or resample==1:
-        spWave = np.zeros((len(time), len(spt), len(contacts)), dtype=np.float32)
-        for i,sp in enumerate(correct_indices):
+        spWave = np.zeros((len(time), len(spt), len(contacts)), 
+                          dtype=np.float32)
+        for i,sp in enumerate(indices):
             spWave[:,i,:] = sp_data[sp+win[0]:sp+win[1],contacts]
         return {"data":spWave, "time": time, "FS": FS}
 
     else:
         FS_new = FS*resample
         resamp_time = np.arange(sp_win[0], sp_win[1], 1000./FS_new)
-        spWave = np.zeros((len(resamp_time), len(spt), len(contacts)), dtype=np.float32)
+        spWave = np.zeros((len(resamp_time), len(indices), len(contacts)), 
+                          dtype=np.float32)
        
-        for i,sp in enumerate(correct_indices):
+        for i,sp in enumerate(indices):
             time = np.arange(sp+win[0]-1, sp+win[1]+1)*1000./FS
-            for contact in contacts:
+            for j, contact in enumerate(contacts):
                 new_wave  = sp_data[sp+win[0]-1:sp+win[1]+1, contact]
                 tck = interpolate.splrep(time, new_wave, s=0)
-                spWave[:,i,contact] = interpolate.splev(resamp_time+spt[i], tck, der=0)
+                spWave[:,i,j] = interpolate.splev(resamp_time+spt[i], tck, der=0)
 
         return {"data":spWave, "time": resamp_time, "FS": FS_new}
 
@@ -163,23 +178,40 @@ def align_spikes(spike_data, spt_dict, sp_win, type="max", resample=1,
     
     """aligns spike waves and returns corrected spike times"""
 
-    spt = spt_dict['data']
+    spt = spt_dict['data'].copy()
     
-    sp_waves_dict = extract_spikes(spike_data, spt_dict, sp_win,
-            resample=resample, contacts=contact)
+    idx_align = np.arange(len(spt))
+    #spt_align = {'data': spt}
+    
+    while len(idx_align) > 0:
+        spt_align = {'data': spt[idx_align]}
+        spt_inbound = filter_spt(spike_data, spt_align, sp_win)
+        idx_align = idx_align[spt_inbound]
+        #spt_align = {'data': spt[idx_align]}
+        sp_waves_dict = extract_spikes(spike_data, spt_align, sp_win,
+                resample=resample, contacts=contact)
+    
+        sp_waves = sp_waves_dict['data'][:,:,0]
+        time = sp_waves_dict['time']
+    
+        if type=="max":
+            i = sp_waves.argmax(0)
+        elif type=="min":
+            i = sp_waves.argmin(0)
+  
+        shift = time[i]
+        spt[idx_align]+=shift
+    
+        #remove spikes whose maximum/minimum was at the edge
+        tol = 0.1
+        idx_align = idx_align[(shift<(sp_win[0]+tol)) | (shift>(sp_win[1]-tol))]
+    
+    #remove double spikes
+    spt = np.unique(spt)
+    FS = spike_data['FS']
+    spt=spt[np.concatenate(([True],np.diff(spt)>1000./FS))]
 
-    sp_waves = sp_waves_dict['data'][:,:,0]
-    time = sp_waves_dict['time']
-
-    if type=="max":
-        i = sp_waves.argmax(0)
-        spt_new = spt + time[i]
-    elif type=="min":
-        i = sp_waves.argmin(0)
-        spt_new = spt + time[i]
-
-
-    return {"data": spt_new}
+    return {"data": spt}
 
 
 def merge_spikes(spike_waves1, spike_waves2):

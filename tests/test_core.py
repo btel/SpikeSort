@@ -3,6 +3,100 @@ import matplotlib.pyplot as plt
 import spike_sort as ss
 
 from nose.tools import ok_, eq_, raises
+from numpy.testing import assert_array_almost_equal as almost_equal
+
+class TestExtract:
+    
+    def __init__(self):
+        self.n_spikes = 100
+        
+        self.FS = 25E3
+        self.period = 1000./self.FS*100
+        self.time = np.arange(0, self.period*self.n_spikes, 1000./self.FS)
+        self.spikes = np.sin(2*np.pi/self.period*self.time)[:,np.newaxis]
+        self.spk_data ={"data":self.spikes,"n_contacts":1, "FS":self.FS}
+    
+    def test_detect(self):
+        n_spikes = self.n_spikes
+        period = self.period
+        FS = self.FS
+        time = self.time
+        spikes = self.spikes
+        threshold = 0.5
+        crossings_real = period/12.+np.arange(n_spikes)*period 
+        spt = ss.extract.detect_spikes(self.spk_data, thresh=threshold)
+        ok_((np.abs(spt['data']-crossings_real)<=1000./FS).all())
+        
+    def test_align(self):
+        maxima_idx = self.period*(1/4.+np.arange(self.n_spikes))
+        thr_crossings = self.period*(1/6. + np.arange(self.n_spikes))
+        spt_dict = {"data":thr_crossings}
+        sp_win = [-self.period/6., self.period/3.]
+        spt = ss.extract.align_spikes(self.spk_data, spt_dict, sp_win)
+        ok_((np.abs(spt['data']-maxima_idx)<=1000./self.FS).all())
+    
+    def test_align_short_win(self):
+        maxima_idx = self.period*(1/4.+np.arange(self.n_spikes))
+        thr_crossings = self.period*(1/6. + np.arange(self.n_spikes))
+        spt_dict = {"data":thr_crossings}
+        sp_win = [-self.period/24., self.period/12.]
+        spt = ss.extract.align_spikes(self.spk_data, spt_dict, sp_win)
+        ok_((np.abs(spt['data']-maxima_idx)<=1000./self.FS).all())
+        
+    def test_align_edge(self):
+        spikes = np.sin(2*np.pi/self.period*self.time+np.pi/2.)[:,np.newaxis]
+        maxima_idx = self.period*(np.arange(1, self.n_spikes+1))
+        thr_crossings = self.period*(-1/6.+np.arange(1, self.n_spikes+1))
+        spt_dict = {"data":thr_crossings}
+        sp_win = [-self.period/24., self.period/12.]
+        spk_data ={"data":spikes,"n_contacts":1, "FS":self.FS}
+        spt = ss.extract.align_spikes(spk_data, spt_dict, sp_win)
+        last = spt['data'][-1]     
+        ok_((last>=(self.time[-1]-sp_win[1])) & (last<=self.time[-1]))
+    
+    def test_align_double_spikes(self):
+        maxima_idx = self.period*(1/4.+np.arange(self.n_spikes))
+        thr_crossings = self.period*(1/6. + np.arange(0,self.n_spikes, 0.5))
+        spt_dict = {"data":thr_crossings}
+        sp_win = [-self.period/24., self.period/12.]
+        spt = ss.extract.align_spikes(self.spk_data, spt_dict, sp_win)
+        ok_((np.abs(spt['data']-maxima_idx)<=1000./self.FS).all())
+        
+    
+    def test_extract(self):
+        zero_crossing = self.period*np.arange(self.n_spikes)
+        spt_dict = {"data":zero_crossing}
+        sp_win = [0, self.period]
+        sp_waves = ss.extract.extract_spikes(self.spk_data, spt_dict, sp_win)
+        ref_sp = np.sin(2*np.pi/self.period*sp_waves['time'])
+        ok_((np.abs(sp_waves['data'][:,:,0].mean(1)-ref_sp)<2*1000*np.pi/(self.FS*self.period)).all())
+        #ok_(np.abs(np.sum(sp_waves['data'][:,:,0].mean(1)-ref_sp))<1E-6)
+        
+    def test_filter_spt(self):
+        zero_crossing = self.period*(np.arange(self.n_spikes))
+        spt_dict = {"data":zero_crossing}
+        sp_win = [0, self.period]
+        spt_filt = ss.extract.filter_spt(self.spk_data, spt_dict, sp_win)
+        ok_(len(spt_filt)==self.n_spikes)
+        
+    def test_filter_spt_shorten_left(self):
+        zero_crossing = self.period*(np.arange(self.n_spikes))
+        spt_dict = {"data":zero_crossing}
+        sp_win = [-self.period/8, self.period/8.]
+        spt_filt = ss.extract.filter_spt(self.spk_data, spt_dict, sp_win)
+        ok_(len(spt_filt)==(self.n_spikes-1))
+    
+    def test_filter_spt_shorten_right(self):
+        zero_crossing = self.period*(np.arange(self.n_spikes))
+        spt_dict = {"data":zero_crossing}
+        sp_win = [0, self.period+1000./self.FS]
+        spt_filt = ss.extract.filter_spt(self.spk_data, spt_dict, sp_win)
+        ok_(len(spt_filt)==(self.n_spikes-1))
+        
+    
+        
+    
+   
 
 class TestFeatures:
 
