@@ -13,7 +13,7 @@ class TestExtract:
         self.FS = 25E3
         self.period = 1000./self.FS*100
         self.time = np.arange(0, self.period*self.n_spikes, 1000./self.FS)
-        self.spikes = np.sin(2*np.pi/self.period*self.time)[:,np.newaxis]
+        self.spikes = np.sin(2*np.pi/self.period*self.time)[np.newaxis,:]
         self.spk_data ={"data":self.spikes,"n_contacts":1, "FS":self.FS}
     
     def test_detect(self):
@@ -47,7 +47,7 @@ class TestExtract:
         
     def test_align_edge(self):
         #???
-        spikes = np.sin(2*np.pi/self.period*self.time+np.pi/2.)[:,np.newaxis]
+        spikes = np.sin(2*np.pi/self.period*self.time+np.pi/2.)[np.newaxis,:]
         maxima_idx = self.period*(np.arange(1, self.n_spikes+1))
         thr_crossings = self.period*(-1/6.+np.arange(1, self.n_spikes+1))
         spt_dict = {"data":thr_crossings}

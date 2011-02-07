@@ -13,7 +13,7 @@ import tempfile
 
 class TestHDF:
     def setUp(self):
-        self.data = np.random.randint(1000,size=(100,4))
+        self.data = np.random.randint(1000,size=(4, 100))
         self.spt = np.random.randint(0,100, (10,))/200.
         self.el_node = '/Subject/Session/Electrode'
         self.fname = 'test.h5'
@@ -102,7 +102,7 @@ class TestBakerlab:
 
     def test_write_sp(self):
         el_node_tmp = '/Test/s32test01/el2'
-        sp_dict = {'data':self.data[:,np.newaxis]}
+        sp_dict = {'data':self.data[np.newaxis,:]}
         filter = BakerlabFilter(self.conf_file)
         filter.write_sp(sp_dict,  el_node_tmp)
         files_eq = filecmp.cmp("32test011.sp","32test012.sp", shallow=0)
@@ -111,7 +111,7 @@ class TestBakerlab:
         
     def test_write_multichan(self):
         n_contacts = 4 
-        data = np.repeat(self.data[:,np.newaxis], n_contacts, 1)
+        data = np.repeat(self.data[np.newaxis,:], 1, n_contacts)
         sp_dict = {'data':data}
         with open(self.conf_file,'r+') as fid:
             file_desc = json.load(fid)
@@ -128,7 +128,7 @@ class TestBakerlab:
     def test_read_sp(self):
         filter = BakerlabFilter(self.conf_file)
         sp = filter.read_sp(self.el_node)
-        read_data = sp['data'][:,0]
+        read_data = sp['data'][0,:]
         print read_data.shape
         ok_((np.abs(read_data-self.data)<=1/200.).all())
         
@@ -141,7 +141,7 @@ class TestBakerlab:
         filter = BakerlabFilter(self.conf_file)
         sp=filter.read_sp(self.el_node)
         data = sp['data']
-        ok_(data.shape==(len(self.data),4))
+        ok_(data.shape==(4, len(self.data)))
 
 class TestExport:
     
