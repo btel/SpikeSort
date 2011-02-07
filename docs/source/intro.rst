@@ -37,14 +37,14 @@ issuing the command::
 
 If you prefer to install it in your home directory you may try::
 
-   python setup.py install --local
+   python setup.py install --user
 
-but remember to add :file:`$HOME/python/site-packages` to your python
+but remember to add :file:`$HOME/.local/lib/python2.6/site-packages` to your python
 path.
 
 After a successful installation you can run the supplied tests::
 
-   python setup.py install nosetests
+   python setup.py nosetests
 
 Examples
 --------
