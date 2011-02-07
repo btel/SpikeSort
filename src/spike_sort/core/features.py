@@ -138,8 +138,9 @@ def fetPCs(spikes_data,ncomps=2, contacts='all'):
 
     if spikes.ndim==3:
         n_channels = spikes.shape[2]
+        sc=[]
         for i in range(n_channels):
-            sc=[_getPCs(spikes[:,:,i])]
+            sc+=[_getPCs(spikes[:,:,i])]
         sc=np.vstack(sc)
     else:
         sc=_getPCs(spikes)
