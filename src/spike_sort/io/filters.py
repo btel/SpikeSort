@@ -26,7 +26,7 @@ class BakerlabFilter:
         self._tempfiles=[]
         with file(conf_file) as fid:
             self.conf_dict = json.load(fid)
-            
+        self.chunksize = 10E6 #number of elements in a chunk 
 
     
     def read_sp(self, dataset, memmap=None):
@@ -48,33 +48,39 @@ class BakerlabFilter:
         
         full_path = os.path.join(dirname, f_spike)
         fname = full_path.format(**rec_dict)
-        sp = np.fromfile(fname, dtype=np.int16)
+        npts = os.path.getsize(fname)/2
+        #sp = np.memmap(fname, dtype=np.int16, mode='r+')
+        dtype='int16'
     
         
         if memmap=="numpy":
-            #create temporary memmory mapped array
+            #create temporary memory mapped array
             filename = os.path.join(mkdtemp(), 'newfile.dat')
-            fp = np.memmap(filename, dtype='float', mode='w+', 
-                           shape=(len(sp),n_contacts))
+            fp = np.memmap(filename, dtype=np.int16, mode='w+', 
+                           shape=(npts,n_contacts))
             self._tempfiles.append(fp)
         elif memmap=="tables":
-            atom = tables.Atom.from_dtype(sp.dtype)
-            shape = (len(sp), n_contacts)
-            filters = tables.Filters(complevel=3, complib='blosc')
+            atom = tables.Atom.from_dtype(np.dtype(dtype))
+            shape = (npts, n_contacts)
+            filters = tables.Filters(complevel=0, complib='blosc')
             filename = os.path.join(mkdtemp(), 'newfile.dat')
             h5f = tables.openFile(filename,'w')
             self._tempfiles.append(h5f)
             fp = h5f.createCArray('/', "test", atom, shape, filters=filters)
         else:
-            fp = np.empty((len(sp), n_contacts), dtype=sp.dtype)
-    
-        fp[:,0]=sp
-        for i in range(1,n_contacts):
+            fp = np.empty((npts, n_contacts), dtype=np.int16)
+        
+        sz = np.min([self.chunksize, npts])
+        n_chunks = int(np.ceil(npts/sz))
+        for i in range(n_contacts):
             rec_dict['contact_id']=i+1
             fname = full_path.format(**rec_dict)
-            sp = np.fromfile(fname,dtype=np.int16)
-            fp[:,i]=sp
-        del sp
+            sp = np.memmap(fname, dtype=np.int16, mode='r')
+            #read and copy data by chunks
+            for j in range(n_chunks):
+                fp[j*sz:(j+1)*sz, i] = sp[j*sz:(j+1)*sz]
+            #fp[:,i]=sp[:]
+            del sp
         return {'data':fp, "FS":conf_dict['FS'], "n_contacts":n_contacts} 
     
     def write_sp(self, sp_dict, dataset):
@@ -142,7 +148,7 @@ class BakerlabFilter:
     def close(self):
         for f in self._tempfiles:
             fname = f.filename
-            f.close()
+            del f
             os.unlink(fname)
         self._tempfiles = []
         
