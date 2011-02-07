@@ -69,7 +69,7 @@ def detect_spikes(spike_data, thresh='auto', edge="rising",
     FS = spike_data['FS']
 
     if thresh=='auto':
-        thresh = 8*np.sqrt(float(np.var(sp_data[:int(10*FS),contact])))
+        thresh = 8*np.sqrt(float(np.var(sp_data[contact, :int(10*FS)])))
         if edge == 'falling':
             thresh = -thresh
     
