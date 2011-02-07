@@ -183,6 +183,7 @@ def align_spikes(spike_data, spt_dict, sp_win, type="max", resample=1,
     idx_align = np.arange(len(spt))
     #spt_align = {'data': spt}
     
+    #go in a loop until all spikes are correctly aligned
     while len(idx_align) > 0:
         spt_align = {'data': spt[idx_align]}
         spt_inbound = filter_spt(spike_data, spt_align, sp_win)
@@ -198,11 +199,13 @@ def align_spikes(spike_data, spt_dict, sp_win, type="max", resample=1,
             i = sp_waves.argmax(0)
         elif type=="min":
             i = sp_waves.argmin(0)
-  
+   
+        #move spike markers
         shift = time[i]
         spt[idx_align]+=shift
     
-        #remove spikes whose maximum/minimum was at the edge
+        #if spike maximum/minimum was at the edge we have to extract it at the
+        # new marker and repeat the alignment
         tol = 0.1
         idx_align = idx_align[(shift<(sp_win[0]+tol)) | (shift>(sp_win[1]-tol))]
     

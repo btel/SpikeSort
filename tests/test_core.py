@@ -28,6 +28,7 @@ class TestExtract:
         ok_((np.abs(spt['data']-crossings_real)<=1000./FS).all())
         
     def test_align(self):
+        #check whether spikes are correctly aligned to maxima
         maxima_idx = self.period*(1/4.+np.arange(self.n_spikes))
         thr_crossings = self.period*(1/6. + np.arange(self.n_spikes))
         spt_dict = {"data":thr_crossings}
@@ -36,6 +37,7 @@ class TestExtract:
         ok_((np.abs(spt['data']-maxima_idx)<=1000./self.FS).all())
     
     def test_align_short_win(self):
+        #test spike alignment with windows shorter than total spike duration
         maxima_idx = self.period*(1/4.+np.arange(self.n_spikes))
         thr_crossings = self.period*(1/6. + np.arange(self.n_spikes))
         spt_dict = {"data":thr_crossings}
@@ -44,6 +46,7 @@ class TestExtract:
         ok_((np.abs(spt['data']-maxima_idx)<=1000./self.FS).all())
         
     def test_align_edge(self):
+        #???
         spikes = np.sin(2*np.pi/self.period*self.time+np.pi/2.)[:,np.newaxis]
         maxima_idx = self.period*(np.arange(1, self.n_spikes+1))
         thr_crossings = self.period*(-1/6.+np.arange(1, self.n_spikes+1))
@@ -55,6 +58,7 @@ class TestExtract:
         ok_((last>=(self.time[-1]-sp_win[1])) & (last<=self.time[-1]))
     
     def test_align_double_spikes(self):
+        #double detections of the same spike should be removed
         maxima_idx = self.period*(1/4.+np.arange(self.n_spikes))
         thr_crossings = self.period*(1/6. + np.arange(0,self.n_spikes, 0.5))
         spt_dict = {"data":thr_crossings}
@@ -73,6 +77,7 @@ class TestExtract:
         #ok_(np.abs(np.sum(sp_waves['data'][:,:,0].mean(1)-ref_sp))<1E-6)
         
     def test_filter_spt(self):
+        #out of band spikes  should be removed
         zero_crossing = self.period*(np.arange(self.n_spikes))
         spt_dict = {"data":zero_crossing}
         sp_win = [0, self.period]
@@ -80,6 +85,7 @@ class TestExtract:
         ok_(len(spt_filt)==self.n_spikes)
         
     def test_filter_spt_shorten_left(self):
+        #remove out-of-band spikes from the beginning of the train
         zero_crossing = self.period*(np.arange(self.n_spikes))
         spt_dict = {"data":zero_crossing}
         sp_win = [-self.period/8, self.period/8.]
@@ -87,6 +93,7 @@ class TestExtract:
         ok_(len(spt_filt)==(self.n_spikes-1))
     
     def test_filter_spt_shorten_right(self):
+        #remove out-of-band spikes from the end of the train
         zero_crossing = self.period*(np.arange(self.n_spikes))
         spt_dict = {"data":zero_crossing}
         sp_win = [0, self.period+1000./self.FS]
