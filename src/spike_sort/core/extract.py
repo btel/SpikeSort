@@ -74,9 +74,9 @@ def detect_spikes(spike_data, thresh='auto', edge="rising",
             thresh = -thresh
     
     if edge == "rising":
-        i, = np.where((sp_data[:-1,contact]<thresh) & (sp_data[1:,contact]>thresh))
+        i, = np.where((sp_data[contact,:-1]<thresh) & (sp_data[contact,1:]>thresh))
     elif edge == "falling":
-        i, = np.where((sp_data[:-1,contact]>thresh) & (sp_data[1:,contact]<thresh))
+        i, = np.where((sp_data[contact,:-1]>thresh) & (sp_data[contact,1:]<thresh))
     else:
         raise "Edge must be 'rising' or 'falling'"
     spt = i*1000./FS
@@ -90,7 +90,7 @@ def filter_spt(spike_data, spt_dict, sp_win):
     sp_data = spike_data['data']
     FS = spike_data['FS']
     
-    n_pts = sp_data.shape[0]
+    n_pts = sp_data.shape[1]
     max_time = (n_pts)*1000./FS
     
     t_min = np.max((-sp_win[0],0))
@@ -137,7 +137,7 @@ def extract_spikes(spike_data, spt_dict, sp_win, resample=None,
         spWave = np.zeros((len(time), len(spt), len(contacts)), 
                           dtype=np.float32)
         for i,sp in enumerate(indices):
-            spWave[:,i,:] = sp_data[sp+win[0]:sp+win[1],contacts]
+            spWave[:,i,:] = sp_data[contacts, sp+win[0]:sp+win[1]].T
         return {"data":spWave, "time": time, "FS": FS}
 
     else:
@@ -149,7 +149,7 @@ def extract_spikes(spike_data, spt_dict, sp_win, resample=None,
         for i,sp in enumerate(indices):
             time = np.arange(sp+win[0]-1, sp+win[1]+1)*1000./FS
             for j, contact in enumerate(contacts):
-                new_wave  = sp_data[sp+win[0]-1:sp+win[1]+1, contact]
+                new_wave  = sp_data[contact,sp+win[0]-1:sp+win[1]+1]
                 tck = interpolate.splrep(time, new_wave, s=0)
                 spWave[:,i,j] = interpolate.splev(resamp_time+spt[i], tck, der=0)
 

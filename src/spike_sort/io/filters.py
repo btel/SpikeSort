@@ -51,24 +51,24 @@ class BakerlabFilter:
         npts = os.path.getsize(fname)/2
         #sp = np.memmap(fname, dtype=np.int16, mode='r+')
         dtype='int16'
+        shape = (n_contacts, npts)
     
         
         if memmap=="numpy":
             #create temporary memory mapped array
             filename = os.path.join(mkdtemp(), 'newfile.dat')
             fp = np.memmap(filename, dtype=np.int16, mode='w+', 
-                           shape=(npts,n_contacts))
+                           shape=shape)
             self._tempfiles.append(fp)
         elif memmap=="tables":
             atom = tables.Atom.from_dtype(np.dtype(dtype))
-            shape = (npts, n_contacts)
             filters = tables.Filters(complevel=0, complib='blosc')
             filename = os.path.join(mkdtemp(), 'newfile.dat')
             h5f = tables.openFile(filename,'w')
             self._tempfiles.append(h5f)
             fp = h5f.createCArray('/', "test", atom, shape, filters=filters)
         else:
-            fp = np.empty((npts, n_contacts), dtype=np.int16)
+            fp = np.empty(shape, dtype=np.int16)
         
         sz = np.min([self.chunksize, npts])
         n_chunks = int(np.ceil(npts/sz))
@@ -78,7 +78,7 @@ class BakerlabFilter:
             sp = np.memmap(fname, dtype=np.int16, mode='r')
             #read and copy data by chunks
             for j in range(n_chunks):
-                fp[j*sz:(j+1)*sz, i] = sp[j*sz:(j+1)*sz]
+                fp[i, j*sz:(j+1)*sz] = sp[j*sz:(j+1)*sz]
             #fp[:,i]=sp[:]
             del sp
         return {'data':fp, "FS":conf_dict['FS'], "n_contacts":n_contacts} 
@@ -94,14 +94,14 @@ class BakerlabFilter:
         conf_dict = self.conf_dict
     
         m = re.match(self._regexp, dataset)
-        n_contacts = sp.shape[1]
+        n_contacts = sp.shape[0]
         rec_dict = m.groupdict()
         
         for i in range(n_contacts):
             rec_dict['contact_id']=i+1
             fname = conf_dict['fspike'].format(**rec_dict)
             full_path = os.path.join(conf_dict['dirname'], fname)
-            sp_int = (sp[:,i]).astype(np.int16)
+            sp_int = (sp[i,:]).astype(np.int16)
             sp_int.tofile(full_path)
     
     def _match_dataset(self, dataset):

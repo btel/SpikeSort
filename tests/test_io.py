@@ -111,7 +111,7 @@ class TestBakerlab:
         
     def test_write_multichan(self):
         n_contacts = 4 
-        data = np.repeat(self.data[np.newaxis,:], 1, n_contacts)
+        data = np.repeat(self.data[np.newaxis,:],  n_contacts, 0)
         sp_dict = {'data':data}
         with open(self.conf_file,'r+') as fid:
             file_desc = json.load(fid)
