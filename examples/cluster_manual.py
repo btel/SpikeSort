@@ -51,17 +51,17 @@ if __name__ == "__main__":
                                          ['Ch0:P2P','Ch3:P2P'],
                                          show_spikes=True)
 
-    clust, rest = sort.cluster.cluster2spt(spt, clust_idx, [1,0])
+    clust, rest = sort.cluster.split_cells(spt, clust_idx, [1,0])
 
-    if len(clust)>0:
-        cell_node = dataset+"/cell1"
-        print "Exporting to HDF5 (file %s) as %s_{clust,rest}" % (h5_fname,
-                                                     cell_node)
-        h5filter.write_spt(clust, cell_node+"_clust",
-                               overwrite=True)
-        h5filter.write_spt(rest, cell_node+"_rest",
-                               overwrite=True)
-
-    else: 
-        print "Exiting."
+#    if len(clust)>0:
+#        cell_node = dataset+"/cell1"
+#        print "Exporting to HDF5 (file %s) as %s_{clust,rest}" % (h5_fname,
+#                                                     cell_node)
+#        h5filter.write_spt(clust, cell_node+"_clust",
+#                               overwrite=True)
+#        h5filter.write_spt(rest, cell_node+"_rest",
+#                               overwrite=True)
+#
+#    else: 
+#        print "Exiting."
     h5filter.close()

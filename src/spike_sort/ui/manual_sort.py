@@ -81,7 +81,7 @@ class SpikeWaveform:
         self.canvas = self.figure.canvas
         
         #self.lines = ax.plot(self.time, self.spikes, 'k', alpha=0.2)
-        self.lines = plotting.plot_spikes(sp_dict, plot_avg=False, ec=color_off)
+        self.lines = plotting.spikegraph(sp_dict, plot_avg=False, color=color_off)
         #self.lines = ax.collections[0]
         
         self.Nxy = sp_dict['data'].shape[1]

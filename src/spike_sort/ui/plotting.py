@@ -74,7 +74,7 @@ def spikegraph(spike_data, color='k', alpha=0.2, n_spikes='all', contacts='all',
         ax = plt.subplot(2,2, i+1)
         #ax.set_xlim(time.min(), time.max())
         #ax.set_ylim(spikes.min(), spikes.max())
-        ax.autoscale(tight=True)
+        
         
         segs = np.zeros((n_spikes, n_pts, 2))
         segs[:,:,0] = time[np.newaxis,:]
@@ -82,12 +82,13 @@ def spikegraph(spike_data, color='k', alpha=0.2, n_spikes='all', contacts='all',
         collection = LineCollection(segs,colors=color,
                                             alpha=alpha)
         line_segments.append(collection)
-        ax.add_collection(collection)
+        ax.add_collection(collection, autolim=True)
         
         if plot_avg:
             spikes_mean = spikes[:, :, i].mean(1) 
             plt.plot(time, spikes_mean, color='w',lw=3)
             plt.plot(time, spikes_mean, color=color,lw=2)
+        ax.autoscale_view(tight=True)
             
     return line_segments
 
