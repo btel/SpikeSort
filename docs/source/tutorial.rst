@@ -44,7 +44,7 @@ Tutorial
    .. doctest::
    
       >>> print raw['data']
-      /SubjectA/session01/el1/raw (CArray(23512500, 4), shuffle, zlib(4)) ''
+      /SubjectA/session01/el1/raw (CArray(4, 23512500)) ''
       
    The size of the data is 23512500 samples in 4 independent channels (`contacts`
    in the tetrode).
@@ -98,7 +98,7 @@ Tutorial
    .. doctest::
    
       >>> print sp_waves['data'].shape
-      (25, 16293, 4)
+      (25, 15541, 4)
       
    In practice, you do not to take care of such details. However, it is always
    a good idea to take a look at the obtained waveforms. 
@@ -110,7 +110,6 @@ Tutorial
    
       >>> from spike_sort.ui import plotting
       >>> plotting.plot_spikes(sp_waves, n_spikes=200)
-      [<matplotlib.collections.LineCollection object...>]
    
    .. plot:: source/pyplots/tutorial_spikes.py
    
@@ -200,7 +199,6 @@ Tutorial
    .. doctest::
      
       >>> plotting.plot_spikes(sp_waves, clust_idx, n_spikes=200)
-      [<matplotlib.collections.LineCollection object...]
       >>> plotting.show()
 
    .. plot:: source/pyplots/tutorial_cells.py
@@ -238,8 +236,9 @@ Tutorial
    .. doctest::
 
       >>> print spt_clust[0]
-      {'data': array([  46086.848,   62363.956,  103976.68 , ...,  937192.364,
-              937194.488,  937247.848])}
+      {'data': array([  2.11884000e+02,   2.37192000e+02,   3.45244000e+02, ...,
+               9.36228740e+05,   9.36269656e+05,   9.36527580e+05])}
+ 
       
    Then we may export them to the datafile:
 
