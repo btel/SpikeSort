@@ -54,6 +54,13 @@ class TestHDF:
         self.filter = PyTablesFilter(self.fname)
         sp = self.filter.read_sp(self.el_node)
         ok_((sp['data'][:]==self.data).all())
+        
+    def test_read_sp_attr(self):
+        #check n_contacts attribute
+        self.filter = PyTablesFilter(self.fname)
+        sp = self.filter.read_sp(self.el_node)
+        n_contacts = sp['n_contacts']
+        ok_(n_contacts==self.data.shape[0])
     
     def test_read_spt(self):
         self.filter = PyTablesFilter(self.fname)

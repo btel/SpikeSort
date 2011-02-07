@@ -221,7 +221,7 @@ class PyTablesFilter:
         FS = electrode_node.raw.attrs['sampfreq']
     
         try:
-            n_contacts = sp_raw.shape[1]
+            n_contacts = sp_raw.shape[0]
         except IndexError:
             n_contacts = 1
         
