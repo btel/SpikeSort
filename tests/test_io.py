@@ -91,6 +91,7 @@ class TestBakerlab:
     def tearDown(self):
         os.unlink(self.conf_file)
         os.unlink(self.fname)
+        os.unlink(self.spt_fname)
         
     def test_write_spt(self):
         cell_node_tmp = '/Test/s32test01/el2/cell1'
