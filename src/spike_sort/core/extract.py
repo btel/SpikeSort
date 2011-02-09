@@ -78,7 +78,7 @@ def detect_spikes(spike_data, thresh='auto', edge="rising",
     elif edge == "falling":
         i, = np.where((sp_data[contact,:-1]>thresh) & (sp_data[contact,1:]<thresh))
     else:
-        raise "Edge must be 'rising' or 'falling'"
+        raise TypeError("Edge must be 'rising' or 'falling'")
     spt = i*1000./FS
 
     spt_dict = {'data': spt}
