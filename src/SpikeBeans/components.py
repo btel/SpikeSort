@@ -7,6 +7,26 @@ Created on Feb 9, 2011
 import spike_sort as sort
 
 import base
+from spike_sort.io.filters import BakerlabFilter, PyTablesFilter
+
+class BakerlabSource(base.Component, BakerlabFilter):
+    
+    def __init__(self, conf_file, dataset):
+        BakerlabFilter.__init__(self, conf_file)
+        self.dataset = dataset
+        self.signal = None
+        self.events = None
+        
+    def read_signal(self):
+        if self.signal is None:
+            self.signal = self.read_sp(self.dataset)
+        return self.signal
+    
+    def read_events(self):
+        if self.events is None:
+            self.events = self.read_spt(self.dataset)
+        return self.events
+    
 
 class SpikeDetector(base.Component):
     """Detect Spikes with alignment"""
