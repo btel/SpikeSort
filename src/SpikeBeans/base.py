@@ -90,23 +90,31 @@ class RequiredFeature(object):
         self.assertion = assertion
         self.result=None
     def __get__(self, obj, T):
-        self.result = self.Request()
+        if self.result is None:
+            self.result = self.Request(obj)
         return self.result # <-- will request the feature upon first call
     def __getattr__(self, name):
         assert name == 'result', "Unexpected attribute request other then 'result'"
         return self.result
-    def Request(self):
+    def Request(self, callee):
         obj = features[self.feature]
+        try:
+            handler = getattr(callee, ("on_%s_change" % self.feature).lower())
+            if handler not in obj.observers:
+                obj.observers.append(handler)
+        except AttributeError:
+            pass
+            
         assert self.assertion(obj), \
                  "The value %r of %r does not match the specified criteria" \
                  % (obj, self.feature)
         return obj
 
 class Component(object):
-    
+    "Symbolic base class for components"
     def __init__(self):
         self.observers = []
-    "Symbolic base class for components"
+    
 
 ######################################################################
 ## 

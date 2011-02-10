@@ -14,12 +14,11 @@ class Dummy(base.Component):
     
     def __init__(self):
         self.data = False
-        self.con.observers.append(self.data_handler)
 
     def get_data(self):
         return self.con.data
     
-    def data_handler(self):
+    def on_data_change(self):
         self.data = True
     
 class DummyDataProvider(base.Component):
@@ -47,9 +46,11 @@ def test_missing_attribute():
 def test_missing_dependency():
     comp = Dummy()
     data = comp.get_data()
-    
+
+@with_setup(setup, teardown)
 def test_on_change():
     base.features.Provide('Data', DummyDataProvider())
     comp = Dummy()
+    comp.get_data()
     base.features['Data'].data = "new data"
     ok_(comp.data)
