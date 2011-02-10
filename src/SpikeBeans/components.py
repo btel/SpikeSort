@@ -104,7 +104,43 @@ class FeatureExtractor(base.Component):
             self._calc_features()
         return self.feature_data
         
-        
+class ClusterAnalyzer(base.Component):
+    feature_src = base.RequiredFeature("FeatureSource", 
+                                       base.HasAttributes("read_features"))
+    
+    def __init__(self, method, *args, **kwargs):
+        self.method = method
+        self.args = args
+        self.kwargs = kwargs
+        self.cluster_labels = None
+    
+    def _cluster(self, idx, method, *args,**kwargs):
+        feature_data = self.feature_src.read_features()
+        if idx is not None:
+            feature_data['data'] = feature_data['data'][idx,:]
+            clust_idx = sort.cluster.cluster(method, feature_data, *args, 
+                                         **kwargs)
+            self.cluster_labels[idx] = clust_idx
+        else:
+            clust_idx = sort.cluster.cluster(method,feature_data, *self.args, 
+                                         **kwargs)
+            self.cluster_labels = clust_idx
+            
+    
+    def read_labels(self):
+        if self.cluster_labels is None:
+            self._cluster(None, self.method, *self.args, **self.kwargs)
+        return self.cluster_labels
+    
+    def recluster(self, label, method=None, *args, **kwargs):
+        if method is None:
+            method = self.method
+        if not args:
+            args = self.args
+        if not kwargs:
+            kwargs = self.kwargs 
+        self._cluster(self.cluster_labels==label, method, *args, **kwargs)
+                
         
         
             

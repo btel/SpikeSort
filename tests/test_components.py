@@ -40,6 +40,16 @@ class DummySpikeDetector(base.Component):
         spt = (sp_idx+0.5)*1000./FS
         spt_data = {'data':spt}
         return spt_data
+
+class DummyFeatureExtractor(base.Component):
+    def read_features(self):
+        n_feats = 2
+        n_spikes = 10
+        features = np.vstack((np.zeros((n_spikes, n_feats)), 
+                              np.ones((n_spikes, n_feats))
+                            ))
+        names = ["Fet{0}".format(i) for i in range(n_feats)]
+        return {"data": features, "names":names}
         
         
 
@@ -127,3 +137,16 @@ def test_feature_extractor():
     features = feat_comp.read_features()
     
     ok_((features['data']==spike_amp).all())       
+
+@with_setup(setup, teardown)
+def test_cluster_component():
+    base.features.Provide("FeatureSource", DummyFeatureExtractor())
+    
+    cluster_comp = components.ClusterAnalyzer("k_means", 2)
+    labels = cluster_comp.read_labels()
+    
+    ok = (((labels[:100]==0).all() & (labels[100:]==1).all()) |
+         ((labels[:100]==1).all() & (labels[100:]==0).all()))
+    ok_(ok)
+    
+    
