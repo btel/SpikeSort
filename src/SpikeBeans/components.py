@@ -58,3 +58,24 @@ class SpikeDetector(base.Component):
         if self.sp_times is None:
             self._detect()
         return self.sp_times
+    
+class SpikeExtractor(base.Component):
+    waveform_src = base.RequiredFeature("SignalSource", 
+                                    base.HasAttributes("read_signal"))
+    spike_times = base.RequiredFeature("SpikeMarkerSource", 
+                                    base.HasAttributes("read_events"))
+    
+    def __init__(self, sp_win=[-0.2,0.8]):
+        self.sp_shapes = None
+        self.sp_win = sp_win
+    
+    def _extract_spikes(self):
+        sp = self.waveform_src.read_signal()
+        spt = self.spike_times.read_events()
+        self.sp_shapes = sort.extract.extract_spikes(sp, spt, self.sp_win)
+    
+    def read_spikes(self):
+        if self.sp_shapes is None:
+            self._extract_spikes()
+        return self.sp_shapes
+            

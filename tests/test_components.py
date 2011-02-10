@@ -1,5 +1,4 @@
 from SpikeBeans import base, components
-from SpikeBeans.base import features
 from nose.tools import ok_,raises
 from nose import with_setup
 import numpy as np
@@ -13,30 +12,44 @@ def teardown():
     "tear down test fixtures"
     base.features = base.FeatureBroker()
     
-
+spike_dur = 5.
+spike_amp = 100.
+FS = 25E3
+period = 100
+n_spikes = 100
 class DummySignalSource(base.Component):
     def read_signal(self):
-        n_spikes = 100
         
-        FS = 25E3
-        
-        period = 100 #in milisecs
+         #in milisecs
         n_pts = int(n_spikes*period/1000.*FS)
         sp_idx = (np.arange(1,n_spikes-1)*period*FS/1000).astype(int)
         spikes = np.zeros(n_pts)[np.newaxis,:]
-        spikes[0,sp_idx]=100.
-        self.spt = sp_idx*1000./FS
+        spikes[0,sp_idx]=spike_amp
+        
+        n = int(spike_dur/1000.*FS) #spike length
+        spikes[0,:] = np.convolve(spikes[0,:], np.ones(n), 'full')[:n_pts]
+        self.spt = (sp_idx+0.5)*1000./FS
         self.FS = FS
         spk_data ={"data":spikes,"n_contacts":1, "FS":FS}
         return spk_data
+    
+class DummySpikeDetector(base.Component):
+    def read_events(self):
+        n_pts = int(n_spikes*period/1000.*FS)
+        sp_idx = (np.arange(1,n_spikes-1)*period*FS/1000).astype(int)
+        spt = (sp_idx+0.5)*1000./FS
+        spt_data = {'data':spt}
+        return spt_data
+        
+        
 
 @with_setup(setup, teardown)
 def test_spike_detection():
-    features.Provide("SignalSource", DummySignalSource())
+    base.features.Provide("SignalSource", DummySignalSource())
     detector = components.SpikeDetector(thresh=50.)
     spt = detector.read_events()
     
-    source = features['SignalSource']
+    source = base.features['SignalSource']
     ok_((np.abs(spt['data']-source.spt)<=1000./source.FS).all())
 
 @with_setup(setup, teardown)
@@ -92,3 +105,14 @@ def test_bakerlab_signal_source():
     os.unlink(fname)
     ok_((np.abs(sp_read['data']-data)<=1/200.).all())
 
+@with_setup(setup, teardown)
+def test_feature_extractor():
+    base.features.Provide("SignalSource", DummySignalSource())
+    base.features.Provide("SpikeMarkerSource", DummySpikeDetector())
+    
+    sp_waves = components.SpikeExtractor().read_spikes()
+    mean_wave = sp_waves['data'][:,:,0].mean(1) 
+    time = sp_waves['time']
+    true_spike = spike_amp*((time>=0) & (time<spike_dur))
+    ok_(np.sum(np.abs(mean_wave-true_spike))<0.01*spike_amp)
+       
