@@ -1,4 +1,5 @@
 from SpikeBeans import base, components
+import numpy as np
 
 dataset = "/Gollum/s39gollum01/el1"
 conf_file = "../data/gollum.inf"
@@ -13,4 +14,8 @@ base.features.Provide("LabelSource",       components.ClusterAnalyzer("gmm", 5))
 base.features["FeatureSource"].add_feature("P2P")
 base.features["FeatureSource"].add_feature("PCs", ncomps=1)
 
-print base.features['LabelSource'].read_labels()
+cluster = base.features['LabelSource']
+
+print np.unique(cluster.read_labels())
+cluster.recluster(2)
+print np.unique(cluster.read_labels())

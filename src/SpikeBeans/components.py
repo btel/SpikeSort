@@ -9,6 +9,7 @@ import spike_sort as sort
 import base
 from spike_sort.io.filters import BakerlabFilter, PyTablesFilter
 from spike_sort import features
+import numpy as np
 
 class BakerlabSource(base.Component, BakerlabFilter):
     
@@ -120,11 +121,19 @@ class ClusterAnalyzer(base.Component):
             feature_data['data'] = feature_data['data'][idx,:]
             clust_idx = sort.cluster.cluster(method, feature_data, *args, 
                                          **kwargs)
+            all_labels = set(range(1, 100))
+            used_labels = set(np.unique(self.cluster_labels))
+            free_labels = list(all_labels - used_labels)
+            free_labels.sort(reverse=True)
+            for l in np.unique(clust_idx):
+                new_label = free_labels.pop()
+                clust_idx[clust_idx==l]= new_label
+                
             self.cluster_labels[idx] = clust_idx
         else:
             clust_idx = sort.cluster.cluster(method,feature_data, *self.args, 
                                          **kwargs)
-            self.cluster_labels = clust_idx
+            self.cluster_labels = clust_idx+1
             
     
     def read_labels(self):
@@ -140,6 +149,13 @@ class ClusterAnalyzer(base.Component):
         if not kwargs:
             kwargs = self.kwargs 
         self._cluster(self.cluster_labels==label, method, *args, **kwargs)
+        
+    def delete_cell(self, cell_id):
+        self.cluster_labels[self.cluster_labels==cell_id] = 0
+    
+    def merge_cells(self, cell_ids):
+        for id in cell_ids:
+            self.cluster_labels[self.cluster_labels==id]=cell_ids[0]
                 
         
         
