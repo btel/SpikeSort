@@ -8,6 +8,7 @@ import spike_sort as sort
 
 import base
 from spike_sort.io.filters import BakerlabFilter, PyTablesFilter
+from spike_sort import features
 
 class BakerlabSource(base.Component, BakerlabFilter):
     
@@ -78,4 +79,32 @@ class SpikeExtractor(base.Component):
         if self.sp_shapes is None:
             self._extract_spikes()
         return self.sp_shapes
+    
+class FeatureExtractor(base.Component):
+    spikes_src = base.RequiredFeature("SpikeSource", 
+                                      base.HasAttributes("read_spikes"))
+    
+    def __init__(self, normalize=True):
+        self.features = []
+        self.feature_data = None
+        self.normalize = normalize
+        
+    def add_feature(self, name, *args, **kwargs):
+        func_name = "fet" + name
+        func = lambda x: features.__getattribute__(func_name)(x, *args, **kwargs)
+        self.features.append(func)
+    
+    def _calc_features(self):
+        spikes = self.spikes_src.read_spikes()
+        feats = [f(spikes) for f in self.features]
+        self.feature_data = features.combine(feats, normalize=self.normalize)
+    
+    def read_features(self):
+        if self.feature_data is None:
+            self._calc_features()
+        return self.feature_data
+        
+        
+        
+        
             

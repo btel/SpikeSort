@@ -106,7 +106,7 @@ def test_bakerlab_signal_source():
     ok_((np.abs(sp_read['data']-data)<=1/200.).all())
 
 @with_setup(setup, teardown)
-def test_feature_extractor():
+def test_spike_extractor():
     base.features.Provide("SignalSource", DummySignalSource())
     base.features.Provide("SpikeMarkerSource", DummySpikeDetector())
     
@@ -115,4 +115,15 @@ def test_feature_extractor():
     time = sp_waves['time']
     true_spike = spike_amp*((time>=0) & (time<spike_dur))
     ok_(np.sum(np.abs(mean_wave-true_spike))<0.01*spike_amp)
-       
+
+@with_setup(setup, teardown)
+def test_feature_extractor():
+    base.features.Provide("SignalSource",      DummySignalSource())
+    base.features.Provide("SpikeMarkerSource", DummySpikeDetector())
+    base.features.Provide("SpikeSource",       components.SpikeExtractor())
+    
+    feat_comp = components.FeatureExtractor(normalize=False)
+    feat_comp.add_feature("P2P")
+    features = feat_comp.read_features()
+    
+    ok_((features['data']==spike_amp).all())       
