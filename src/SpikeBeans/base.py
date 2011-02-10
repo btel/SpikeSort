@@ -90,8 +90,7 @@ class RequiredFeature(object):
         self.assertion = assertion
         self.result=None
     def __get__(self, obj, T):
-        if self.result is None:
-            self.result = self.Request(obj)
+        self.result = self.Request(obj)
         return self.result # <-- will request the feature upon first call
     def __getattr__(self, name):
         assert name == 'result', "Unexpected attribute request other then 'result'"
@@ -99,9 +98,9 @@ class RequiredFeature(object):
     def Request(self, callee):
         obj = features[self.feature]
         try:
-            handler = getattr(callee, ("on_%s_change" % self.feature).lower())
-            if handler not in obj.observers:
-                obj.observers.append(handler)
+            #handler = getattr(callee, ("on_%s_change" % self.feature).lower())
+            handler = callee.update
+            obj.register_handler(handler)
         except AttributeError:
             pass
             
@@ -114,7 +113,18 @@ class Component(object):
     "Symbolic base class for components"
     def __init__(self):
         self.observers = []
-    
+    def register_handler(self, handler):
+        if handler not in self.observers:
+            self.observers.append(handler)
+    def unregister_handler(self, handler):
+        if handler in self.observers:
+            self.observers.remove(handler)
+    def notify_observers(self):
+        for handler in self.observers:
+            handler()   
+    def update(self):
+        self.notify_observers()
+            
 
 ######################################################################
 ## 

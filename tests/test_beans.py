@@ -18,11 +18,11 @@ class Dummy(base.Component):
     def get_data(self):
         return self.con.data
     
-    def on_data_change(self):
+    def update(self):
         self.data = True
     
 class DummyDataProvider(base.Component):
-    data = base.DataAttribute("some data")
+    data ="some data"
 
 class NixProvider(base.Component):
     pass
@@ -52,5 +52,5 @@ def test_on_change():
     base.features.Provide('Data', DummyDataProvider())
     comp = Dummy()
     comp.get_data()
-    base.features['Data'].data = "new data"
+    base.features['Data'].update()
     ok_(comp.data)
