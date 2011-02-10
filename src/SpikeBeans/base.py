@@ -66,6 +66,24 @@ def HasMethods(*methods):
 # An attribute descriptor to "declare" required features
 #
 
+class DataAttribute(object):
+    """A data descriptor that sets and returns values
+       normally and notifies on value changed.
+    """
+
+    def __init__(self, initval=None, name='var'):
+        self.val = initval
+        self.name = name
+
+    def __get__(self, obj, objtype):
+        return self.val
+
+    def __set__(self, obj, val):
+        self.val = val
+        for handler in obj.observers:
+            handler()
+
+
 class RequiredFeature(object):
     def __init__(self, feature, assertion=NoAssertion):
         self.feature = feature
@@ -85,6 +103,9 @@ class RequiredFeature(object):
         return obj
 
 class Component(object):
+    
+    def __init__(self):
+        self.observers = []
     "Symbolic base class for components"
 
 ######################################################################

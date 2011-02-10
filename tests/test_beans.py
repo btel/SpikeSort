@@ -11,12 +11,19 @@ def teardown():
 
 class Dummy(base.Component):
     con = base.RequiredFeature('Data', base.HasAttributes('data'))
+    
+    def __init__(self):
+        self.data = False
+        self.con.observers.append(self.data_handler)
 
     def get_data(self):
         return self.con.data
     
+    def data_handler(self):
+        self.data = True
+    
 class DummyDataProvider(base.Component):
-    data = "some data"
+    data = base.DataAttribute("some data")
 
 class NixProvider(base.Component):
     pass
@@ -41,3 +48,8 @@ def test_missing_dependency():
     comp = Dummy()
     data = comp.get_data()
     
+def test_on_change():
+    base.features.Provide('Data', DummyDataProvider())
+    comp = Dummy()
+    base.features['Data'].data = "new data"
+    ok_(comp.data)
