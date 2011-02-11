@@ -38,7 +38,9 @@ features = FeatureBroker()
 # Some basic assertions to test the suitability of injected features
 #
 
-def NoAssertion(): return True
+def NoAssertion(): 
+    def test(obj): return True
+    return test
 
 def IsInstanceOf(*classes):
     def test(obj): return isinstance(obj, classes)
@@ -66,19 +68,44 @@ def HasMethods(*methods):
 # An attribute descriptor to "declare" required features
 #
 
+class DataAttribute(object):
+    """A data descriptor that sets and returns values
+       normally and notifies on value changed.
+    """
+
+    def __init__(self, initval=None, name='var'):
+        self.val = initval
+        self.name = name
+
+    def __get__(self, obj, objtype):
+        return self.val
+
+    def __set__(self, obj, val):
+        self.val = val
+        for handler in obj.observers:
+            handler()
+
+
 class RequiredFeature(object):
-    def __init__(self, feature, assertion=NoAssertion):
+    def __init__(self, feature, assertion=NoAssertion()):
         self.feature = feature
         self.assertion = assertion
         self.result=None
     def __get__(self, obj, T):
-        self.result = self.Request()
+        self.result = self.Request(obj)
         return self.result # <-- will request the feature upon first call
     def __getattr__(self, name):
         assert name == 'result', "Unexpected attribute request other then 'result'"
         return self.result
-    def Request(self):
+    def Request(self, callee):
         obj = features[self.feature]
+        try:
+            #handler = getattr(callee, ("on_%s_change" % self.feature).lower())
+            handler = callee.update
+            obj.register_handler(handler)
+        except AttributeError:
+            pass
+            
         assert self.assertion(obj), \
                  "The value %r of %r does not match the specified criteria" \
                  % (obj, self.feature)
@@ -86,6 +113,20 @@ class RequiredFeature(object):
 
 class Component(object):
     "Symbolic base class for components"
+    def __init__(self):
+        self.observers = []
+    def register_handler(self, handler):
+        if handler not in self.observers:
+            self.observers.append(handler)
+    def unregister_handler(self, handler):
+        if handler in self.observers:
+            self.observers.remove(handler)
+    def notify_observers(self):
+        for handler in self.observers:
+            handler()   
+    def update(self):
+        self.notify_observers()
+            
 
 ######################################################################
 ## 
