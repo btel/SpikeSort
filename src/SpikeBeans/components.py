@@ -9,6 +9,7 @@ import spike_sort as sort
 import base
 from spike_sort.io.filters import BakerlabFilter, PyTablesFilter
 from spike_sort import features
+from spike_sort.ui import plotting
 import numpy as np
 
 class BakerlabSource(base.Component, BakerlabFilter):  
@@ -189,6 +190,26 @@ class ClusterAnalyzer(base.Component):
             
     labels = property(read_labels)
                 
+class PlotFeatures(base.Component):
+    feature_src = base.RequiredFeature("FeatureSource")
+    cluster_src = base.RequiredFeature("LabelSource")
+    
+    def __init__(self):
+        self.fig = None
+        super(base.Component, self).__init__()
+    
+    def draw(self, new_figure=False):
+        feats = self.feature_src.features
+        labels = self.cluster_src.labels
+        if new_figure or self.fig is None:
+            self.fig = plotting.figure()
+        plotting.plot_features(feats, labels)
+    
+    def show(self):
+        plotting.show()
+        
+    def update(self):
+        pass
         
         
             

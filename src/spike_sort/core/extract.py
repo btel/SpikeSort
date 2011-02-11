@@ -214,8 +214,7 @@ def align_spikes(spike_data, spt_dict, sp_win, type="max", resample=1,
     #remove double spikes
     spt = np.unique(spt)
     FS = spike_data['FS']
-    if len(spt)>0:
-        spt=spt[np.concatenate(([True],np.diff(spt)>1000./FS))]
+    spt=spt[np.concatenate(([True],np.diff(spt)>1000./FS))]
 
     return {"data": spt}
 

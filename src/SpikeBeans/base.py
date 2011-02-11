@@ -38,7 +38,9 @@ features = FeatureBroker()
 # Some basic assertions to test the suitability of injected features
 #
 
-def NoAssertion(): return True
+def NoAssertion(): 
+    def test(obj): return True
+    return test
 
 def IsInstanceOf(*classes):
     def test(obj): return isinstance(obj, classes)
@@ -85,7 +87,7 @@ class DataAttribute(object):
 
 
 class RequiredFeature(object):
-    def __init__(self, feature, assertion=NoAssertion):
+    def __init__(self, feature, assertion=NoAssertion()):
         self.feature = feature
         self.assertion = assertion
         self.result=None
