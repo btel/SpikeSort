@@ -54,7 +54,7 @@ def plot_spikes(spikes, clust_idx=None, **kwargs):
             spikegraph(spikes_cell[l], color_func(l), **kwargs)
     
 def spikegraph(spike_data, color='k', alpha=0.2, n_spikes='all', contacts='all', 
-                plot_avg=True):
+                plot_avg=True, fig=None):
 
 
     spikes =  spike_data['data']
@@ -68,10 +68,11 @@ def spikegraph(spike_data, color='k', alpha=0.2, n_spikes='all', contacts='all',
     if  not n_spikes=='all':
         spikes = spikes[:,:n_spikes,:]
     n_spikes = spikes.shape[1]
-
+    if fig is None:
+        fig = plt.gcf()
     line_segments = []
     for i, contact_id in enumerate(contacts): 
-        ax = plt.subplot(2,2, i+1)
+        ax = fig.add_subplot(2,2, i+1)
         #ax.set_xlim(time.min(), time.max())
         #ax.set_ylim(spikes.min(), spikes.max())
         
@@ -86,8 +87,8 @@ def spikegraph(spike_data, color='k', alpha=0.2, n_spikes='all', contacts='all',
         
         if plot_avg:
             spikes_mean = spikes[:, :, i].mean(1) 
-            plt.plot(time, spikes_mean, color='w',lw=3)
-            plt.plot(time, spikes_mean, color=color,lw=2)
+            ax.plot(time, spikes_mean, color='w',lw=3)
+            ax.plot(time, spikes_mean, color=color,lw=2)
         ax.autoscale_view(tight=True)
             
     return line_segments
@@ -116,35 +117,37 @@ def plot_features(features, clust_idx=None, **kwargs):
         for l in labs:
             featuresgraph(features_cell[l], color_func(l), **kwargs)
     
-def featuresgraph(features_dict, color='k', size=1):
+def featuresgraph(features_dict, color='k', size=1, fig=None):
 
     features = features_dict['data']
     names = features_dict['names']
 
     _, n_feats = features.shape
-
-    fig = plt.gcf()
+    if fig is None:
+        fig = plt.gcf()
+    axes = [[fig.add_subplot(n_feats, n_feats, j*n_feats + i + 1) 
+             for i in range(n_feats)] for j in range(n_feats)]
     for i in range(n_feats):
         for j in range(n_feats):
-            ax = fig.add_subplot(n_feats, n_feats, j*n_feats + i + 1)
+            ax = axes[i][j]
             if i<>j:
-                plt.plot(features[:,i],
+                ax.plot(features[:,i],
                          features[:,j],".", 
                         color=color, markersize=size)
             else:
                 ax.set_frame_on(False)
            
-                plt.hist(features[:,i],20, 
+                ax.hist(features[:,i],20, 
                         [0,1], ec="none", fc=color,
                         alpha=0.5, normed=True)
-            plt.xticks([])
-            plt.yticks([])
+            ax.set_xticks([])
+            ax.set_yticks([])
     
     for i in range(n_feats):
-        ax = plt.subplot(n_feats, n_feats, i+1)
+        ax = axes[0][i] 
         ax.set_xlabel(names[i])
         ax.xaxis.set_label_position("top")
-        ax = plt.subplot(n_feats, n_feats, i*n_feats + 1)
+        ax = axes[i][0]
         ax.set_ylabel(names[i])
 
 def legend(labels, colors):
