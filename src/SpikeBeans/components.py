@@ -196,7 +196,7 @@ class PlotFeatures(base.Component):
     
     def __init__(self):
         self.fig = None
-        super(base.Component, self).__init__()
+        super(PlotFeatures, self).__init__()
     
     def draw(self, new_figure=False):
         feats = self.feature_src.features
@@ -204,12 +204,12 @@ class PlotFeatures(base.Component):
         if new_figure or self.fig is None:
             self.fig = plotting.figure()
         plotting.plot_features(feats, labels)
+        self.fig.canvas.draw()
     
     def show(self):
         plotting.show()
         
     def update(self):
-        pass
-        
+        self.draw()
         
             
