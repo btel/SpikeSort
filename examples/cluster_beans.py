@@ -23,18 +23,10 @@ base.features.Provide("FeatureSource",     components.FeatureExtractor())
 base.features.Provide("LabelSource",       components.ClusterAnalyzer("gmm", 5))
 base.features.Provide("Print",             PrintLabel())
 
-plot = components.PlotFeatures()
+plot1 = components.PlotFeatures()
+plot2 = components.PlotSpikes()
 base.features["FeatureSource"].add_feature("P2P")
 base.features["FeatureSource"].add_feature("PCs", ncomps=1)
 
-start = time.time()
-signal = base.features['SignalSource'].signal
-print time.time() - start, "s"
-plot.draw()
-
-cluster = base.features['Print'].update()
-
-base.features['SpikeMarkerSource'].contact=2
-base.features['SpikeMarkerSource'].update()
-plot.draw(True)
-plot.show()
+plot1.show()
+plot2.show()

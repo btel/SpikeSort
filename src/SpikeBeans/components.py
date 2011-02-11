@@ -145,8 +145,9 @@ class ClusterAnalyzer(base.Component):
     def _cluster(self, idx, method, *args,**kwargs):
         feature_data = self.feature_src.features
         if idx is not None:
-            feature_data['data'] = feature_data['data'][idx,:]
-            clust_idx = sort.cluster.cluster(method, feature_data, *args, 
+            new_features  = feature_data.copy()
+            new_features['data'] = new_features['data'][idx,:]
+            clust_idx = sort.cluster.cluster(method, new_features, *args, 
                                          **kwargs)
             all_labels = set(range(1, 100))
             used_labels = set(np.unique(self.cluster_labels))
@@ -176,6 +177,7 @@ class ClusterAnalyzer(base.Component):
         if not kwargs:
             kwargs = self.kwargs 
         self._cluster(self.cluster_labels==label, method, *args, **kwargs)
+        super(ClusterAnalyzer, self).update()
         
     def delete_cell(self, cell_id):
         self.cluster_labels[self.cluster_labels==cell_id] = 0
@@ -189,27 +191,57 @@ class ClusterAnalyzer(base.Component):
         super(ClusterAnalyzer, self).update()
             
     labels = property(read_labels)
-                
-class PlotFeatures(base.Component):
-    feature_src = base.RequiredFeature("FeatureSource")
-    cluster_src = base.RequiredFeature("LabelSource")
+
+class PlotComponent(base.Component):
+    """Base class for plot components"""
     
     def __init__(self):
         self.fig = None
-        super(PlotFeatures, self).__init__()
-    
-    def draw(self, new_figure=False):
-        feats = self.feature_src.features
-        labels = self.cluster_src.labels
+        super(PlotComponent, self).__init__()
+        
+    def _draw(self, new_figure=False):
         if new_figure or self.fig is None:
             self.fig = plotting.figure()
-        plotting.plot_features(feats, labels)
+            plotting.show()
+        self.fig.clf()
+        self._plot()
         self.fig.canvas.draw()
-    
+
     def show(self):
-        plotting.show()
+        if not self.fig:
+            self._draw()
+        #plotting.show()
         
     def update(self):
-        self.draw()
+        if self.fig is not None:
+            self._draw()
+    
+
+class PlotFeatures(PlotComponent):
+    feature_src = base.RequiredFeature("FeatureSource", base.HasAttributes("features"))
+    cluster_src = base.RequiredFeature("LabelSource", base.HasAttributes("labels"))
+    
+    def _plot(self):
+        feats = self.feature_src.features
+        labels = self.cluster_src.labels
+        try:
+            plotting.plot_features(feats, labels, fig=self.fig)
+        except IndexError:
+            pass
+
+       
+class PlotSpikes(PlotComponent):
+    spike_src = base.RequiredFeature("SpikeSource", base.HasAttributes("spikes"))
+    cluster_src = base.RequiredFeature("LabelSource", base.HasAttributes("labels"))
+    
+    def _plot(self):
+        spikes = self.spike_src.spikes
+        labels = self.cluster_src.labels
+        try:
+            plotting.plot_spikes(spikes, labels, fig=self.fig)
+        except IndexError:
+            pass
+    
+
         
             
