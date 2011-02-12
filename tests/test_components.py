@@ -67,7 +67,14 @@ class DummyFeatureExtractor(base.Component):
         return {"data": features, "names":names}
     
     features = property(read_features)
-        
+
+class RandomFeatures(base.Component):
+    def read_features(self):
+        n_feats=2
+        features = np.random.randn(n_spikes, n_feats)
+        names = ["Fet{0}".format(i) for i in range(n_feats)]
+        return {"data": features, "names":names}
+    features = property(read_features)
         
 
 @with_setup(setup, teardown)
@@ -177,6 +184,22 @@ def test_cluster_component():
          ((labels[:n_spikes]==2).all() & (labels[n_spikes:]==1).all()))
     ok_(ok)
 
+@with_setup(setup, teardown)
+def test_cluster_component_relabel():
+    base.features.Provide("FeatureSource", RandomFeatures())
+    
+    cluster_comp = components.ClusterAnalyzer("k_means", 5)
+    labs = cluster_comp.labels
+    cluster_comp.delete_cells(1,2,3,4)
+    cluster_comp.relabel()
+    
+    labels = np.unique(cluster_comp.labels)
+    labels.sort()
+    
+    ok_((labels==np.array([0,1])).all())
+
+
+@with_setup(setup, teardown)
 def test_pipeline_update():
     base.features.Provide("SignalSource",      DummySignalSource())
     base.features.Provide("SpikeMarkerSource", components.SpikeDetector(thresh=spike_amp/2.))

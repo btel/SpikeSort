@@ -140,6 +140,7 @@ class ClusterAnalyzer(base.Component):
         self.args = args
         self.kwargs = kwargs
         self.cluster_labels = None
+        self.trash_label = 0
         super(ClusterAnalyzer, self).__init__()
     
     def _cluster(self, idx, method, *args,**kwargs):
@@ -169,7 +170,17 @@ class ClusterAnalyzer(base.Component):
             self._cluster(None, self.method, *self.args, **self.kwargs)
         return self.cluster_labels
     
+    def relabel(self):
+        """rename cells in sequential order"""
+        labels = list(np.unique(self.labels))
+        if self.trash_label in labels:
+            labels.remove(self.trash_label)
+        for i, l in enumerate(labels):
+            self.cluster_labels[self.cluster_labels==l] = i+1
+        self.notify_observers()
+    
     def recluster(self, label, method=None, *args, **kwargs):
+        """repeat clustering of a selected cell"""
         if method is None:
             method = self.method
         if not args:
@@ -177,14 +188,23 @@ class ClusterAnalyzer(base.Component):
         if not kwargs:
             kwargs = self.kwargs 
         self._cluster(self.cluster_labels==label, method, *args, **kwargs)
-        super(ClusterAnalyzer, self).update()
+        self.notify_observers()
         
-    def delete_cell(self, cell_id):
-        self.cluster_labels[self.cluster_labels==cell_id] = 0
+    def delete_cells(self, *cell_ids):
+        """move selected labels to thrash (cluster 0). 
+        if 'all' thrash all cells """
+        if len(cell_ids)==1 and cell_ids[0]=='all':
+            cell_id = np.unique(self.labels)
+        for cell_id in cell_ids:
+            self.cluster_labels[self.cluster_labels==cell_id] = self.trash_label
+        self.notify_observers()
     
-    def merge_cells(self, cell_ids):
+    def merge_cells(self, *cell_ids):
+        """merge selected cells. after merging all cells receive the label of the
+        first cell"""
         for cell in cell_ids:
             self.cluster_labels[self.cluster_labels==cell]=cell_ids[0]
+        self.notify_observers()
         
     def update(self):
         self._cluster(None, self.method, *self.args, **self.kwargs)
@@ -192,16 +212,17 @@ class ClusterAnalyzer(base.Component):
             
     labels = property(read_labels)
 
-class PlotComponent(base.Component):
+class MplPlotComponent(base.Component):
     """Base class for plot components"""
     
-    def __init__(self):
+    def __init__(self, figsize=(8,6)):
         self.fig = None
-        super(PlotComponent, self).__init__()
+        self.figsize = figsize
+        super(MplPlotComponent, self).__init__()
         
     def _draw(self, new_figure=False):
         if new_figure or self.fig is None:
-            self.fig = plotting.figure()
+            self.fig = plotting.figure(figsize=self.figsize)
             plotting.show()
         self.fig.clf()
         self._plot()
@@ -217,7 +238,7 @@ class PlotComponent(base.Component):
             self._draw()
     
 
-class PlotFeatures(PlotComponent):
+class PlotFeatures(MplPlotComponent):
     feature_src = base.RequiredFeature("FeatureSource", base.HasAttributes("features"))
     cluster_src = base.RequiredFeature("LabelSource", base.HasAttributes("labels"))
     
@@ -230,7 +251,7 @@ class PlotFeatures(PlotComponent):
             pass
 
        
-class PlotSpikes(PlotComponent):
+class PlotSpikes(MplPlotComponent):
     spike_src = base.RequiredFeature("SpikeSource", base.HasAttributes("spikes"))
     cluster_src = base.RequiredFeature("LabelSource", base.HasAttributes("labels"))
     
@@ -241,7 +262,17 @@ class PlotSpikes(PlotComponent):
             plotting.plot_spikes(spikes, labels, fig=self.fig)
         except IndexError:
             pass
-    
 
-        
+class Legend(MplPlotComponent):
+    cluster_src = base.RequiredFeature("LabelSource", base.HasAttributes("labels"))
+    
+    def __init__(self):
+        super(Legend, self).__init__()
+        self.figsize=(1,2)
+    
+    def _plot(self):
+        labels = np.unique(self.cluster_src.labels)
+        ax = self.fig.add_axes([0,0,1,1])
+        plotting.legend(labels, ax=ax)
+    
             

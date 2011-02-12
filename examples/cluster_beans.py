@@ -25,8 +25,11 @@ base.features.Provide("Print",             PrintLabel())
 
 plot1 = components.PlotFeatures()
 plot2 = components.PlotSpikes()
+legend = components.Legend()
+
 base.features["FeatureSource"].add_feature("P2P")
 base.features["FeatureSource"].add_feature("PCs", ncomps=1)
 
 plot1.show()
 plot2.show()
+legend.show()
