@@ -59,8 +59,7 @@ class DummySpikeDetector(base.Component):
 
 class DummyFeatureExtractor(base.Component):
     def read_features(self):
-        n_feats = 2
-        n_spikes = 10
+        n_feats=2
         features = np.vstack((np.zeros((n_spikes, n_feats)), 
                               np.ones((n_spikes, n_feats))
                             ))
@@ -174,8 +173,8 @@ def test_cluster_component():
     cluster_comp = components.ClusterAnalyzer("k_means", 2)
     labels = cluster_comp.read_labels()
     
-    ok = (((labels[:100]==0).all() & (labels[100:]==1).all()) |
-         ((labels[:100]==1).all() & (labels[100:]==0).all()))
+    ok = (((labels[:n_spikes]==1).all() & (labels[n_spikes:]==2).all()) |
+         ((labels[:n_spikes]==2).all() & (labels[n_spikes:]==1).all()))
     ok_(ok)
 
 def test_pipeline_update():
