@@ -150,17 +150,22 @@ def featuresgraph(features_dict, color='k', size=1, fig=None):
         ax = axes[i][0]
         ax.set_ylabel(names[i])
 
-def legend(labels, colors):
+def legend(labels, colors=None, ax=None):
     
-    ax=plt.gca()
+    if ax is None:
+        ax=plt.gca()
+    if colors is None:
+        color_func = label_color(labels)
+        colors = [color_func(i) for i in labels]
+        
     ax.set_frame_on(False)
     n_classes = len(labels)
     x, y =np.ones(n_classes), np.arange(n_classes)
-    plt.scatter(x, y, c=colors, marker='s',edgecolors="none",s=100)
-    plt.xticks([])
-    plt.yticks([])
+    ax.scatter(x, y, c=colors, marker='s',edgecolors="none",s=100)
+    ax.set_xticks([])
+    ax.set_yticks([])
     for i, l in enumerate(labels):
-        plt.text(x[i]+0.005, y[i], "Cell {0}".format(l), va='center', ha='left', 
-                 transform=plt.gca().transData)
+        ax.text(x[i]+0.005, y[i], "Cell {0}".format(l), va='center', ha='left', 
+                 transform=ax.transData)
     
 
