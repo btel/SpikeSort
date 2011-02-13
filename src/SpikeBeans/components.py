@@ -223,14 +223,19 @@ class MplPlotComponent(base.Component):
     def _draw(self, new_figure=False):
         if new_figure or self.fig is None:
             self.fig = plotting.figure(figsize=self.figsize)
-            plotting.show()
+            self.fig.canvas.mpl_connect("close_event", self._close_callback)
         self.fig.clf()
         self._plot()
         self.fig.canvas.draw()
+        
+    def _close_callback(self, event):
+        self.fig = None
 
     def show(self):
         if not self.fig:
             self._draw()
+        plotting.show()
+        
         #plotting.show()
         
     def update(self):
