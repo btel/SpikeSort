@@ -250,18 +250,24 @@ class ExportCells(base.Component):
                                       base.HasAttributes("labels"))
     marker_src = base.RequiredFeature("SpikeMarkerSource",
                                       base.HasAttributes("events"))
-    export_filte = base.RequiredFeature("ExportFilter",
-                                        base.HasAttributes("write_spt"))
+    export_filter = base.RequiredFeature("EventsOutput",
+                                        base.HasAttributes("events"))
     
     def export(self):
-        labels = labels_src.labels
-        spike_idx = marker_src.events
-        spt_clust = cluster.cluster2spt(spike_idx, labels)
+        labels = self.labels_src.labels
+        spike_idx = self.marker_src.events
+        export_events = self.export_filter.events
+        spt_clust = sort.cluster.split_cells(spike_idx, labels)
+        for cell_id, spt in spt_clust.items():
+            export_events['cell{0}'.format(cell_id)]=spt
+            
 
 
 class PlotFeatures(MplPlotComponent):
-    feature_src = base.RequiredFeature("FeatureSource", base.HasAttributes("features"))
-    cluster_src = base.RequiredFeature("LabelSource", base.HasAttributes("labels"))
+    feature_src = base.RequiredFeature("FeatureSource", 
+                                       base.HasAttributes("features"))
+    cluster_src = base.RequiredFeature("LabelSource", 
+                                       base.HasAttributes("labels"))
     
     def _plot(self):
         feats = self.feature_src.features

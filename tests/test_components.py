@@ -74,6 +74,10 @@ class DummySpikeDetector(base.Component):
         return spt_data
     
     events = property(read_events)
+    
+class DummyLabelSource(base.Component):
+    def __init__(self):
+        self.labels = np.random.randint(0,5, n_spikes-2)
 
 class DummyFeatureExtractor(base.Component):
     def read_features(self):
@@ -145,6 +149,24 @@ def test_bakerlab_event_write():
     ok_(ok)
     
 @with_setup(setup_io, teardown_io)
+def test_export_component():
+    base.features.Provide("SpikeMarkerSource", DummySpikeDetector())
+    base.features.Provide("LabelSource", DummyLabelSource())
+    base.features.Provide("EventsOutput",
+                          components.BakerlabSource(conf_file, el_node))
+    
+    labels = np.unique(base.features['LabelSource'].labels)
+    export_comp = components.ExportCells()
+    export_comp.export()
+    
+    for i in labels:
+        fname = "32test011{0}.spt".format(i)
+        assert os.path.exists(fname)
+        os.unlink(fname)
+        
+
+    
+@with_setup(setup_io, teardown_io)
 def test_bakerlab_signal_source():
    
     data = np.random.randint(-1000, 1000, (100,))
@@ -190,6 +212,7 @@ def test_cluster_component():
     ok = (((labels[:n_spikes]==1).all() & (labels[n_spikes:]==2).all()) |
          ((labels[:n_spikes]==2).all() & (labels[n_spikes:]==1).all()))
     ok_(ok)
+    
 
 @with_setup(setup, teardown)
 def test_cluster_component_relabel():
