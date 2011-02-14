@@ -14,11 +14,12 @@ import numpy as np
 
 class BakerlabSource(base.Component, BakerlabFilter):  
     
-    def __init__(self, conf_file, dataset):
+    def __init__(self, conf_file, dataset, overwrite=False):
         BakerlabFilter.__init__(self, conf_file)
         self.dataset = dataset
         self._signal = None
         self._events = None
+        self.overwrite = overwrite
         super(BakerlabSource, self).__init__()
         
     def read_signal(self):
@@ -26,15 +27,22 @@ class BakerlabSource(base.Component, BakerlabFilter):
             self._signal = self.read_sp(self.dataset)
         return self._signal
     
-    def read_events(self):
+    def read_events(self, cell):
+        node =  '/'.join((self.dataset, cell))
         if self._events is None:
-            self._events = self.read_spt(self.dataset)
+            self._events = self.read_spt(node)
         return self._events
     
-    signal = property(read_signal)
-    events = property(read_events)
+    def write_signal(self, signal):
+        self.write_sp(signal, self.dataset)
     
-
+    def write_events(self, cell, spt):
+        node = '/'.join((self.dataset, cell))
+        self.write_spt(spt, node, overwrite=self.overwrite)
+    
+    signal = property(read_signal, write_signal)
+    events = base.dictproperty(read_events, write_events)
+    
 class SpikeDetector(base.Component):
     """Detect Spikes with alignment"""
     waveform_src = base.RequiredFeature("SignalSource", 
@@ -236,7 +244,20 @@ class MplPlotComponent(base.Component):
     def update(self):
         if self.fig is not None:
             self._draw()
+
+class ExportCells(base.Component):
+    labels_src = base.RequiredFeature("LabelSource", 
+                                      base.HasAttributes("labels"))
+    marker_src = base.RequiredFeature("SpikeMarkerSource",
+                                      base.HasAttributes("events"))
+    export_filte = base.RequiredFeature("ExportFilter",
+                                        base.HasAttributes("write_spt"))
     
+    def export(self):
+        labels = labels_src.labels
+        spike_idx = marker_src.events
+        spt_clust = cluster.cluster2spt(spike_idx, labels)
+
 
 class PlotFeatures(MplPlotComponent):
     feature_src = base.RequiredFeature("FeatureSource", base.HasAttributes("features"))

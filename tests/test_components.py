@@ -5,12 +5,30 @@ import numpy as np
 import json
 import os
 
+conf_file = 'test.conf'
+el_node = '/Test/s32test01/el1'
+cell = 'cell1'
+
 def setup():
     "set up test fixtures"
+    base.features = base.FeatureBroker()
+
+def setup_io():
+    base.features = base.FeatureBroker()
+    file_descr = {"fspike":"{ses_id}{el_id}.sp",
+                  "fspt":"{ses_id}{el_id}{cell_id}.spt",
+                  "dirname":".",
+                  "FS":5.E3,
+                  "n_contacts":1}
+    
+    with open(conf_file, 'w') as fp:
+         json.dump(file_descr, fp)
+         
+def teardown_io():
+    os.unlink(conf_file)
 
 def teardown():
     "tear down test fixtures"
-    base.features = base.FeatureBroker()
     
 spike_dur = 5.
 spike_amp = 100.
@@ -97,56 +115,45 @@ def test_spike_detection_update():
     spt_new = detector.events
     ok_(len(spt_new['data'])==0)
 
-@with_setup(setup, teardown)
-def test_bakerlab_event_source():
-    file_descr = {"fspike":"{ses_id}{el_id}.sp",
-                  "fspt":"{ses_id}{el_id}{cell_id}.spt",
-                  "dirname":".",
-                  "FS":5.E3,
-                  "n_contacts":1}
-    el_node = '/Test/s32test01/el1'
-    cell_node = el_node+'/cell1'
-    spt_data = np.random.randint(0,100, (10,))/200.
-    conf_file = 'test.conf'
+@with_setup(setup_io, teardown_io)
+def test_bakerlab_event_read():
     spt_fname = "32test0111.spt"
-    
-    with open(conf_file, 'w') as fp:
-         json.dump(file_descr, fp)
+    spt_data = np.random.randint(0,100, (10,))/200.
     
     (spt_data*200).astype(np.int32).tofile(spt_fname)
     
-    src = components.BakerlabSource(conf_file, cell_node)
+    src = components.BakerlabSource(conf_file, el_node)
     
-    spt_read = src.events
+    spt_read = src.events[cell]
     
-    os.unlink(conf_file)
     os.unlink(spt_fname)
     ok_((np.abs(spt_read['data']-spt_data)<=1/200.).all())
-
     
-@with_setup(setup, teardown)
-def test_bakerlab_signal_source():
-    file_descr = {"fspike":"{ses_id}{el_id}.sp",
-                  "fspt":"{ses_id}{el_id}{cell_id}.spt",
-                  "dirname":".",
-                  "FS":5.E3,
-                  "n_contacts":1}
-    el_node = '/Test/s32test01/el1'
-
-    data = np.random.randint(-1000, 1000, (100,))
+@with_setup(setup_io, teardown_io)
+def test_bakerlab_event_write():
+    spt_data = np.random.randint(0,100, (10,))/200.
+    
     conf_file = 'test.conf'
+    spt_fname = "32test0111.spt"
+    
+    src = components.BakerlabSource(conf_file, el_node)
+    spt_dict = {"data": spt_data}
+    src.events[cell] = spt_dict
+    
+    ok = os.path.exists(spt_fname)
+    os.unlink(spt_fname)
+    ok_(ok)
+    
+@with_setup(setup_io, teardown_io)
+def test_bakerlab_signal_source():
+   
+    data = np.random.randint(-1000, 1000, (100,))
     fname = "32test011.sp"
-    
-    with open(conf_file, 'w') as fp:
-         json.dump(file_descr, fp)
-    
+
     data.astype(np.int16).tofile(fname)
-    
     src = components.BakerlabSource(conf_file, el_node)
     
     sp_read = src.signal
-    
-    os.unlink(conf_file)
     os.unlink(fname)
     ok_((np.abs(sp_read['data']-data)<=1/200.).all())
 
