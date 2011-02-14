@@ -17,6 +17,9 @@ import json
 import re
 from tempfile import mkdtemp
 import tables
+import os.path
+
+
 
 class BakerlabFilter:
     
@@ -127,7 +130,7 @@ class BakerlabFilter:
         spt = np.fromfile(fname, dtype=np.int32)
         return {"data": spt/200.}
     
-    def write_spt(self, spt_dict, dataset):
+    def write_spt(self, spt_dict, dataset, overwrite=False):
         """Returns spike times in miliseconds:
         
         :Arguments:
@@ -141,7 +144,8 @@ class BakerlabFilter:
         fspt = conf_dict['fspt']
         full_path = os.path.join(dirname, fspt)
         fname = full_path.format(**rec)
-        
+        if os.path.exists(fname) and not overwrite:
+            raise IOError("file {0} already exists".format(fname))     
         export_spt = (spt*200).astype(np.int32)
         export_spt.tofile(fname)
         

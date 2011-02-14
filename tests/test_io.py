@@ -101,6 +101,13 @@ class TestBakerlab:
         files_eq = filecmp.cmp(self.spt_fname,"32test0121.spt", shallow=0)
         os.unlink("32test0121.spt")
         ok_(files_eq)
+               
+    @raises(IOError)
+    def test_writespt_overwrite_exc(self):
+        cell_node_tmp = '/Test/s32test01/el1/cell1'
+        spt_dict = {'data':self.spt_data}
+        filter = BakerlabFilter(self.conf_file)
+        filter.write_spt(spt_dict,  cell_node_tmp)
    
     def test_read_spt(self):
         filter = BakerlabFilter(self.conf_file)
