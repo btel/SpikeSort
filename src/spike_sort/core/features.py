@@ -52,7 +52,7 @@ def select(features_dict, features_ids):
 
     return selected
 
-def combine(args, normalize=True):
+def combine(args, norm=True):
     """Combine features into a single structure
     
     :arguments:
@@ -67,13 +67,33 @@ def combine(args, normalize=True):
     names = [d['names'] for d in args]
 
     data  = np.hstack(features)
-    if normalize:
-        data = (data-data.min(0)[np.newaxis,:])
-        data = data/data.max(0)[np.newaxis, :]
-
     combined_features = {"data": data,
                 "names":np.concatenate(names)}
+    
+    if norm:
+        normalize(combined_features, copy=False)
+
+    
     return combined_features
+
+def normalize(features, copy=True):
+    if copy:
+        features_norm = features.copy()
+    else:
+        features_norm = features
+        
+    data = features_norm['data']
+    data = (data-data.min(0)[np.newaxis,:])
+    data = data/data.max(0)[np.newaxis,:]
+    
+    features_norm['data'] = data
+
+    return features_norm
+
+    
+    
+    
+    
 
 def PCA(data,ncomps=2):
     """

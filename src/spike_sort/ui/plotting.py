@@ -105,19 +105,19 @@ def plot_features(features, clust_idx=None, **kwargs):
      * size (default: 1)
     
     """
-    
+    norm_features = spike_sort.features.normalize(features)
     if clust_idx is None:
-        featuresgraph(features,**kwargs)
+        featuresgraph(norm_features,datarange=[0,1],**kwargs)
     else:
-        features_cell = spike_sort.features.split_cells(features, clust_idx)
+        features_cell = spike_sort.features.split_cells(norm_features, clust_idx)
         
         labs = features_cell.keys()
        
         color_func = label_color(labs)
         for l in labs:
-            featuresgraph(features_cell[l], color_func(l), **kwargs)
+            featuresgraph(features_cell[l], color_func(l), datarange=[0,1],**kwargs)
     
-def featuresgraph(features_dict, color='k', size=1, fig=None):
+def featuresgraph(features_dict, color='k', size=1, datarange=None, fig=None):
 
     features = features_dict['data']
     names = features_dict['names']
@@ -125,29 +125,34 @@ def featuresgraph(features_dict, color='k', size=1, fig=None):
     _, n_feats = features.shape
     if fig is None:
         fig = plt.gcf()
-    axes = [[fig.add_subplot(n_feats, n_feats, j*n_feats + i + 1) 
+    axes = [[fig.add_subplot(n_feats, n_feats, i*n_feats + j + 1) 
              for i in range(n_feats)] for j in range(n_feats)]
     for i in range(n_feats):
         for j in range(n_feats):
             ax = axes[i][j]
-            if i<>j:
+            if i!=j:
                 ax.plot(features[:,i],
                          features[:,j],".", 
                         color=color, markersize=size)
+                if datarange:
+                    ax.set_xlim(datarange)
+                    
             else:
                 ax.set_frame_on(False)
            
                 ax.hist(features[:,i],20, 
-                        [0,1], ec="none", fc=color,
+                        datarange, ec="none", fc=color,
                         alpha=0.5, normed=True)
+                if datarange:
+                    ax.set_xlim(datarange)
             ax.set_xticks([])
             ax.set_yticks([])
     
     for i in range(n_feats):
-        ax = axes[0][i] 
+        ax = axes[i][0] 
         ax.set_xlabel(names[i])
         ax.xaxis.set_label_position("top")
-        ax = axes[i][0]
+        ax = axes[0][i]
         ax.set_ylabel(names[i])
 
 def legend(labels, colors=None, ax=None):
