@@ -126,7 +126,7 @@ class FeatureExtractor(base.Component):
     def _calc_features(self):
         spikes = self.spikes_src.spikes
         feats = [f(spikes) for f in self.feature_methods]
-        self._feature_data = features.combine(feats, normalize=self.normalize)
+        self._feature_data = features.combine(feats, norm=self.normalize)
     
     def read_features(self):
         if self._feature_data is None:
@@ -253,9 +253,10 @@ class ExportCells(base.Component):
     export_filter = base.RequiredFeature("EventsOutput",
                                         base.HasAttributes("events"))
     
-    def export(self):
+    def export(self, overwrite=False):
         labels = self.labels_src.labels
         spike_idx = self.marker_src.events
+        self.export_filter.overwrite = overwrite
         export_events = self.export_filter.events
         spt_clust = sort.cluster.split_cells(spike_idx, labels)
         for cell_id, spt in spt_clust.items():
@@ -269,6 +270,9 @@ class PlotFeatures(MplPlotComponent):
     cluster_src = base.RequiredFeature("LabelSource", 
                                        base.HasAttributes("labels"))
     
+  
+        
+
     def _plot(self):
         feats = self.feature_src.features
         labels = self.cluster_src.labels
@@ -277,7 +281,28 @@ class PlotFeatures(MplPlotComponent):
         except IndexError:
             pass
 
-       
+class PlotFeaturesTimeline(PlotFeatures):
+    spk_time_src =  base.RequiredFeature("SpikeMarkerSource", 
+                                         base.HasAttributes("events"))
+    
+    def _get_timeline_features(self):
+        spt_dict = self.spk_time_src.events
+        feats = self.feature_src.features
+        spk_time = sort.features.fetSpTime(spt_dict)
+        new_features = sort.features.combine((spk_time,feats), norm=False)
+        return new_features
+    
+    def _plot(self):
+        feats = self._get_timeline_features()
+        labels = self.cluster_src.labels
+        try:
+            plotting.plot_features(feats, labels, fig=self.fig)
+        except IndexError:
+            pass
+        
+    
+    
+               
 class PlotSpikes(MplPlotComponent):
     spike_src = base.RequiredFeature("SpikeSource", base.HasAttributes("spikes"))
     cluster_src = base.RequiredFeature("LabelSource", base.HasAttributes("labels"))
