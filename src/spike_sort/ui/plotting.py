@@ -22,7 +22,7 @@ def label_color(labels):
         return cmap(map_func(lab))
     return color_func
 
-def plot_spikes(spikes, clust_idx=None, **kwargs):
+def plot_spikes(spikes, clust_idx=None, show_cells='all', **kwargs):
     """Plot Spike waveshapes
 
     :arguments:
@@ -47,9 +47,12 @@ def plot_spikes(spikes, clust_idx=None, **kwargs):
     else:
         spikes_cell = spike_sort.extract.split_cells(spikes, clust_idx)
         
-        labs = spikes_cell.keys()
+        if show_cells == 'all':
+            labs = spikes_cell.keys()
+        else:
+            labs = show_cells
        
-        color_func = label_color(labs)
+        color_func = label_color(spikes_cell.keys())
         for l in labs:
             spikegraph(spikes_cell[l], color_func(l), **kwargs)
     
@@ -93,7 +96,7 @@ def spikegraph(spike_data, color='k', alpha=0.2, n_spikes='all', contacts='all',
             
     return line_segments
 
-def plot_features(features, clust_idx=None, **kwargs):
+def plot_features(features, clust_idx=None, show_cells='all', **kwargs):
     """Plot features and their histograms
     
     :arguments:
@@ -105,17 +108,20 @@ def plot_features(features, clust_idx=None, **kwargs):
      * size (default: 1)
     
     """
-    norm_features = spike_sort.features.normalize(features)
+
     if clust_idx is None:
-        featuresgraph(norm_features,datarange=[0,1],**kwargs)
+        featuresgraph(features,**kwargs)
     else:
-        features_cell = spike_sort.features.split_cells(norm_features, clust_idx)
+        features_cell = spike_sort.features.split_cells(features, clust_idx)
         
-        labs = features_cell.keys()
+        if show_cells == 'all':
+            labs = features_cell.keys()
+        else:
+            labs = show_cells
        
-        color_func = label_color(labs)
+        color_func = label_color(features_cell.keys())
         for l in labs:
-            featuresgraph(features_cell[l], color_func(l), datarange=[0,1],**kwargs)
+            featuresgraph(features_cell[l], color_func(l),**kwargs)
     
 def featuresgraph(features_dict, color='k', size=1, datarange=None, fig=None):
 

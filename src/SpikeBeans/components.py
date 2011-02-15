@@ -275,14 +275,54 @@ class PlotFeatures(MplPlotComponent):
     cluster_src = base.RequiredFeature("LabelSource", 
                                        base.HasAttributes("labels"))
     
-  
+    def __init__(self):
+        super(PlotFeatures, self).__init__()
+        self._showcells = 'all' 
+        self._autoscale = False
         
+    def _get_autoscale(self):
+        return self._autoscale
+    
+    def _set_autoscale(self, value):
+        self._autoscale = value
+        if self.fig is not None:
+            self._draw()
+        
+    autoscale = property(_get_autoscale,_set_autoscale, None, 
+                         "automatically set plot limits")
+    
+    def _get_showcells(self):
+        return self._showcells
+    
+    def _set_showcells(self, value):
+        if value == 'all':
+            self._showcells = value
+        else:
+            try: 
+                it = iter(value)
+                self._showcells = value
+            except TypeError:
+                self._showcells = [value]
+        if self.fig is not None:
+            self._draw()
+        
+    show_cells = property(_get_showcells,_set_showcells, None, 
+                         "list of labels of cells to plot")
+        
+    def _get_features(self):
+        return self.feature_src.features   
+    
+    def update(self):
+        self._showcells = 'all'
+        super(PlotFeatures, self).update()
 
     def _plot(self):
-        feats = self.feature_src.features
+        feats = self._get_features()
         labels = self.cluster_src.labels
+        data_range = None if self._autoscale else [0,1]
         try:
-            plotting.plot_features(feats, labels, fig=self.fig)
+            plotting.plot_features(feats, labels, show_cells=self._showcells, 
+                                   datarange=data_range, fig=self.fig)
         except IndexError:
             pass
 
@@ -290,33 +330,49 @@ class PlotFeaturesTimeline(PlotFeatures):
     spk_time_src =  base.RequiredFeature("SpikeMarkerSource", 
                                          base.HasAttributes("events"))
     
-    def _get_timeline_features(self):
+    def _get_features(self):
         spt_dict = self.spk_time_src.events
         feats = self.feature_src.features
         spk_time = sort.features.fetSpTime(spt_dict)
-        new_features = sort.features.combine((spk_time,feats), norm=False)
+        new_features = sort.features.combine((spk_time,feats), norm=True)
         return new_features
-    
-    def _plot(self):
-        labels = self.cluster_src.labels
-        try:
-            feats = self._get_timeline_features()
-            plotting.plot_features(feats, labels, fig=self.fig)
-        except IndexError:
-            pass
-        
-    
-    
                
 class PlotSpikes(MplPlotComponent):
     spike_src = base.RequiredFeature("SpikeSource", base.HasAttributes("spikes"))
     cluster_src = base.RequiredFeature("LabelSource", base.HasAttributes("labels"))
     
+    def __init__(self):
+        super(PlotSpikes, self).__init__()
+        self.show_cells = 'all'
+    
+    def update(self):
+        self.show_cells = 'all'
+        super(PlotSpikes, self).update()
+    
+    def _get_showcells(self):
+        return self._showcells
+    
+    def _set_showcells(self, value):
+        if value == 'all':
+            self._showcells = value
+        else:
+            try: 
+                it = iter(value)
+                self._showcells = value
+            except TypeError:
+                self._showcells = [value]
+        if self.fig is not None:
+            self._draw()
+        
+    show_cells = property(_get_showcells,_set_showcells, None, 
+                         "list of labels of cells to plot")
+        
     def _plot(self):
         spikes = self.spike_src.spikes
         labels = self.cluster_src.labels
         try:
-            plotting.plot_spikes(spikes, labels, fig=self.fig)
+            plotting.plot_spikes(spikes, labels, show_cells=self.show_cells,
+                                 fig=self.fig)
         except IndexError:
             pass
 
