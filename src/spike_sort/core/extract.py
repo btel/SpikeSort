@@ -2,7 +2,45 @@
 #coding=utf-8
 
 import numpy as np
-from scipy import interpolate
+from scipy import interpolate, signal
+import tables
+from tempfile import mkdtemp
+import os
+
+class Filter:
+    def __init__(self, ftype, f_pass, f_stop):
+        self.ftype = ftype
+        self.fp = np.asarray(f_pass)
+        self.fs = np.asarray(f_stop)
+        self._coefs_cache = {}
+ 
+    def _design_filter(self, FS):
+        if not FS in self._coefs_cache:
+            wp, ws = self.fp*2/FS, self.fs*2/FS
+            b,a = signal.iirdesign(wp=wp, ws=ws, gstop= 60, gpass=1, ftype=self.ftype)
+            self._coefs_cache[FS]=(b,a)
+        else:
+            b,a = self._coefs_cache[FS]
+        return b, a  
+    
+    def __call__(self, x, FS):
+        b, a = self._design_filter(FS)
+        return signal.lfilter(b,a, x)
+    
+def filter_proxy(spikes, filter_obj):
+    data = spikes['data']
+    sp_dict = spikes.copy()
+    filename = os.path.join(mkdtemp(), 'newfile.dat')
+    atom = tables.Atom.from_dtype(np.dtype('float64'))
+    shape = data.shape
+    h5f = tables.openFile(filename,'w')
+    carray = h5f.createCArray('/', "test", atom, shape)
+    
+    for i,row in enumerate(data):
+        carray[i] = filter_obj(row, sp_dict['FS'])
+    sp_dict['data'] = carray
+    return sp_dict
+    
 
 def split_cells(spikes, idx, which='all'):
     """return the spike features splitted into separate cells"""
@@ -35,7 +73,7 @@ def remove_spikes(spt_dict, remove_dict, tolerance):
     return spt_ret
 
 def detect_spikes(spike_data, thresh='auto', edge="rising",
-                  contact=0, chunksize=3E6):
+                  contact=0, chunksize=3E6, filter=None):
     
     
     """Detects spikes in extracellular data using amplitude thresholding.
@@ -60,23 +98,25 @@ def detect_spikes(spike_data, thresh='auto', edge="rising",
 
     """ 
     
-    sp_data = spike_data['data']
+    sp_data = spike_data['data'][contact, :]
     n_contacts = spike_data['n_contacts']
-
+    
+    if filter is not None:
+        sp_data = filter(sp_data, spike_data['FS'])
     #if n_contacts>1:
     #    sp_data = sp_data[:,contact]
 
     FS = spike_data['FS']
 
     if thresh=='auto':
-        thresh = 8*np.sqrt(float(np.var(sp_data[contact, :int(10*FS)])))
-        if edge == 'falling':
+        thresh = 8*np.sqrt(float(np.var(sp_data[:int(10*FS)])))
+        if edge == 'falling' or edge =="min":
             thresh = -thresh
     
-    if edge == "rising":
-        i, = np.where((sp_data[contact,:-1]<thresh) & (sp_data[contact,1:]>thresh))
-    elif edge == "falling":
-        i, = np.where((sp_data[contact,:-1]>thresh) & (sp_data[contact,1:]<thresh))
+    if edge == "rising" or edge == "max":
+        i, = np.where((sp_data[:-1]<thresh) & (sp_data[1:]>thresh))
+    elif edge == "falling" or edge == "min":
+        i, = np.where((sp_data[:-1]>thresh) & (sp_data[1:]<thresh))
     else:
         raise TypeError("Edge must be 'rising' or 'falling'")
     spt = i*1000./FS

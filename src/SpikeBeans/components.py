@@ -52,22 +52,33 @@ class SpikeDetector(base.Component):
                  contact=0, 
                  type='max', 
                  resample=1, 
-                 sp_win=(-0.2, 0.8)):
+                 sp_win=(-0.2, 0.8),
+                 f_filter=None):
         self.thresh = thresh
         self.contact = contact
-        self.type = "max"
+        self.type = type
         self.resample = resample
         self.sp_win = sp_win
         self.sp_times = None
+        self.f_filter = f_filter
         super(SpikeDetector, self).__init__()
         
     def _detect(self):
         sp = self.waveform_src.signal
-        spt = sort.extract.detect_spikes(sp,  contact=self.contact,
-                                               thresh=self.thresh)
+        
+        if self.f_filter is None:
+            filter = None
+        else:
+            filter = sort.extract.Filter("ellip", *self.f_filter)
+            sp = sort.extract.filter_proxy(sp, filter)
+        spt = sort.extract.detect_spikes(sp,   edge=self.type,
+                                               contact=self.contact,
+                                               thresh=self.thresh,
+                                               filter=filter)
+
         self.sp_times = sort.extract.align_spikes(sp, spt, 
                                                   self.sp_win, 
-                                                  type=self.type, 
+                                                  type=self.type,  
                                                   resample=self.resample)
     
     def update(self):

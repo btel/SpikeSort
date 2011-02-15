@@ -2,7 +2,7 @@ from SpikeBeans import base, components
 import numpy as np
 import time
 
-dataset = "/Gollum/s39gollum02/el5"
+dataset = "/Gollum/s39gollum01/el4"
 contact = 3
 conf_file = "../data/gollum_export.inf"
 sp_win = [-0.3, 1]
@@ -12,7 +12,9 @@ base.features.Provide("SignalSource",      io_filter)
 base.features.Provide("EventsOutput",      io_filter)
 base.features.Provide("SpikeMarkerSource", components.SpikeDetector(contact=contact, 
                                                                     thresh='auto',
-                                                                    resample=10))
+                                                                    type="min",
+                                                                    resample=10,
+                                                                    f_filter=(700., 600.)))
 base.features.Provide("SpikeSource",       components.SpikeExtractor(sp_win=sp_win))
 base.features.Provide("FeatureSource",     components.FeatureExtractor())
 base.features.Provide("LabelSource",       components.ClusterAnalyzer("gmm", 5))
