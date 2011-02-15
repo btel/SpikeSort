@@ -293,9 +293,9 @@ class PlotFeaturesTimeline(PlotFeatures):
         return new_features
     
     def _plot(self):
-        feats = self._get_timeline_features()
         labels = self.cluster_src.labels
         try:
+            feats = self._get_timeline_features()
             plotting.plot_features(feats, labels, fig=self.fig)
         except IndexError:
             pass
