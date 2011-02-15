@@ -3,5 +3,4 @@
 *.pyc
 docs/build/
 build/
-/data
 /dist
