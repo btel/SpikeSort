@@ -27,7 +27,7 @@ class Filter:
         b, a = self._design_filter(FS)
         return signal.lfilter(b,a, x)
     
-def filter_proxy(spikes, filter_obj):
+def filter_proxy(spikes, filter_obj, chunksize=1E6):
     data = spikes['data']
     sp_dict = spikes.copy()
     filename = os.path.join(mkdtemp(), 'newfile.dat')
@@ -36,8 +36,11 @@ def filter_proxy(spikes, filter_obj):
     h5f = tables.openFile(filename,'w')
     carray = h5f.createCArray('/', "test", atom, shape)
     
-    for i,row in enumerate(data):
-        carray[i] = filter_obj(row, sp_dict['FS'])
+    n_chunks = int(np.ceil(shape[1]/chunksize))
+    for i in range(shape[0]):
+        for j in range(n_chunks):
+            stop = np.min(((j+1)*chunksize, shape[1]))
+            carray[i,j*chunksize:stop] = filter_obj(data[i,j*chunksize:stop], sp_dict['FS'])
     sp_dict['data'] = carray
     return sp_dict
     
@@ -121,7 +124,7 @@ def detect_spikes(spike_data, thresh='auto', edge="rising",
         raise TypeError("Edge must be 'rising' or 'falling'")
     spt = i*1000./FS
 
-    spt_dict = {'data': spt}
+    spt_dict = {'data': spt, 'thresh': thresh, 'contact': contact}
 
     return spt_dict
 
