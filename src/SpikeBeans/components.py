@@ -14,17 +14,21 @@ import numpy as np
 
 class BakerlabSource(base.Component, BakerlabFilter):  
     
-    def __init__(self, conf_file, dataset, overwrite=False):
+    def __init__(self, conf_file, dataset, overwrite=False, f_filter=None):
         BakerlabFilter.__init__(self, conf_file)
         self.dataset = dataset
         self._signal = None
         self._events = None
         self.overwrite = overwrite
+        self.f_filter = f_filter
         super(BakerlabSource, self).__init__()
         
     def read_signal(self):
         if self._signal is None:
             self._signal = self.read_sp(self.dataset)
+            if self.f_filter is not None:
+                filter = sort.extract.Filter("ellip", *self.f_filter)
+                self._signal = sort.extract.filter_proxy(self._signal, filter)
         return self._signal
     
     def read_events(self, cell):
@@ -53,15 +57,29 @@ class SpikeDetector(base.Component):
                  type='max', 
                  resample=1, 
                  sp_win=(-0.2, 0.8),
-                 f_filter=None):
-        self.thresh = thresh
+                 f_filter=None,
+                 align=True):
+        self._thresh = thresh
         self.contact = contact
         self.type = type
+        self.align = align
         self.resample = resample
         self.sp_win = sp_win
         self.sp_times = None
         self.f_filter = f_filter
+        self._est_thresh = None
         super(SpikeDetector, self).__init__()
+    
+    def _get_threshold(self):
+        if self.sp_times is None:
+            return self._thresh
+        else:
+            return self._est_thresh
+        
+    def _set_threshold(self, value):
+        self._thresh =  value
+        
+    threshold = property(_get_threshold, _set_threshold)
         
     def _detect(self):
         sp = self.waveform_src.signal
@@ -73,13 +91,16 @@ class SpikeDetector(base.Component):
             sp = sort.extract.filter_proxy(sp, filter)
         spt = sort.extract.detect_spikes(sp,   edge=self.type,
                                                contact=self.contact,
-                                               thresh=self.thresh,
+                                               thresh=self._thresh,
                                                filter=filter)
-
-        self.sp_times = sort.extract.align_spikes(sp, spt, 
-                                                  self.sp_win, 
-                                                  type=self.type,  
-                                                  resample=self.resample)
+        self._est_thresh = spt['thresh']
+        if self.align:
+            self.sp_times = sort.extract.align_spikes(sp, spt, 
+                                                      self.sp_win, 
+                                                      type=self.type,  
+                                                      resample=self.resample)
+        else:
+            self.sp_times = spt
     
     def update(self):
         self._detect()
@@ -269,14 +290,19 @@ class ExportCells(base.Component):
     export_filter = base.RequiredFeature("EventsOutput",
                                         base.HasAttributes("events"))
     
-    def export(self, overwrite=False):
+    def export(self, mapping=None,overwrite=False):
         labels = self.labels_src.labels
         spike_idx = self.marker_src.events
         self.export_filter.overwrite = overwrite
         export_events = self.export_filter.events
         spt_clust = sort.cluster.split_cells(spike_idx, labels)
-        for cell_id, spt in spt_clust.items():
-            export_events['cell{0}'.format(cell_id)]=spt
+        if mapping is None:
+            for cell_id, spt in spt_clust.items():
+                export_events['cell{0}'.format(cell_id)]=spt
+        else:
+            for clust_id, cell_id in mapping.items():
+                export_events['cell{0}'.format(cell_id)]=spt_clust[clust_id]
+                
             
 
 

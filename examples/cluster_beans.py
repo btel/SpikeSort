@@ -2,19 +2,19 @@ from SpikeBeans import base, components
 import numpy as np
 import time
 
-dataset = "/Gollum/s39gollum01/el4"
-contact = 3
+dataset = "/Gollum/s39gollum01/el3"
+contact = 2
 conf_file = "../data/gollum_export.inf"
 sp_win = [-0.3, 1]
 
-io_filter = components.BakerlabSource(conf_file, dataset)
+io_filter = components.BakerlabSource(conf_file, dataset, f_filter=(600., 500.))
 base.features.Provide("SignalSource",      io_filter)
 base.features.Provide("EventsOutput",      io_filter)
 base.features.Provide("SpikeMarkerSource", components.SpikeDetector(contact=contact, 
                                                                     thresh='auto',
-                                                                    type="min",
+                                                                    type="max",
                                                                     resample=10,
-                                                                    f_filter=(700., 600.)))
+                                                                    align=False))
 base.features.Provide("SpikeSource",       components.SpikeExtractor(sp_win=sp_win))
 base.features.Provide("FeatureSource",     components.FeatureExtractor())
 base.features.Provide("LabelSource",       components.ClusterAnalyzer("gmm", 5))
