@@ -101,8 +101,8 @@ class RequiredFeature(object):
         obj = features[self.feature]
         try:
             #handler = getattr(callee, ("on_%s_change" % self.feature).lower())
-            handler = callee.update
-            obj.register_handler(handler)
+            #handler = callee.update
+            obj.register_handler(callee)
         except AttributeError:
             pass
             
@@ -115,6 +115,19 @@ class Component(object):
     "Symbolic base class for components"
     def __init__(self):
         self.observers = []
+    
+    @staticmethod    
+    def _rm_duplicate_deps(deps):
+        for i, d in enumerate(deps):
+            if d in deps[i+1:]: del deps[i]
+        return deps
+    
+    def get_dependencies(self):
+        deps = [o.get_dependencies() for o in self.observers]
+        deps = sum(deps, self.observers)
+        deps = Component._rm_duplicate_deps(deps)
+        return deps
+    
     def register_handler(self, handler):
         if handler not in self.observers:
             self.observers.append(handler)
@@ -122,9 +135,14 @@ class Component(object):
         if handler in self.observers:
             self.observers.remove(handler)
     def notify_observers(self):
-        for handler in self.observers:
-            handler()   
+        for dep in self.get_dependencies():
+            dep._update() 
+                       
+    def _update(self):
+        pass
+    
     def update(self):
+        self._update()
         self.notify_observers()
 
 class dictproperty(object):

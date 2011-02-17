@@ -58,11 +58,10 @@ class DummySignalSource(base.Component):
         spk_data ={"data":spikes,"n_contacts":1, "FS":FS}
         return spk_data
     
-    def update(self):
+    def _update(self):
         self.period = period*2
         self.n_spikes = n_spikes/2
-        super(DummySignalSource, self).update()
-    
+       
     signal = property(read_signal)
     
 class DummySpikeDetector(base.Component):
@@ -114,7 +113,7 @@ def test_spike_detection_update():
     base.features.Provide("SignalSource", DummySignalSource())
     detector = components.SpikeDetector(thresh=50.)
     spt = detector.events
-    detector.thresh = spike_amp*2
+    detector.threshold = spike_amp*2
     detector.update()
     spt_new = detector.events
     ok_(len(spt_new['data'])==0)

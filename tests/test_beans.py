@@ -13,13 +13,19 @@ class Dummy(base.Component):
     con = base.RequiredFeature('Data', base.HasAttributes('data'))
     
     def __init__(self):
-        self.data = False
+        self.data = 0
+        super(Dummy, self).__init__()
 
     def get_data(self):
         return self.con.data
     
-    def update(self):
-        self.data = True
+    def _update(self):
+        self.data += 1
+        
+class DummyTwoWay(Dummy):
+    con2 = base.RequiredFeature('Data2', base.HasAttributes('get_data'))
+    def get_data(self):
+        return self.con.data + self.con2.get_data()
     
 class DummyDataProvider(base.Component):
     data ="some data"
@@ -33,6 +39,15 @@ def test_dependency_resolution():
     comp = Dummy()
     ok_(comp.get_data()=='some data')
 
+@with_setup(setup, teardown)
+def test_diamond_dependency():
+    base.features.Provide("Data", DummyDataProvider())
+    base.features.Provide("Data2", Dummy())
+    out = DummyTwoWay()
+    data = out.get_data()
+    base.features['Data'].update()
+    print out.data
+    ok_(out.data == 1)
     
 @raises(AssertionError)
 @with_setup(setup, teardown)

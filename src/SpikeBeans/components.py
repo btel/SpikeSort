@@ -102,9 +102,8 @@ class SpikeDetector(base.Component):
         else:
             self.sp_times = spt
     
-    def update(self):
+    def _update(self):
         self._detect()
-        super(SpikeDetector, self).update()
 
     def read_events(self):
         if self.sp_times is None:
@@ -134,9 +133,8 @@ class SpikeExtractor(base.Component):
             self._extract_spikes()
         return self._sp_shapes
     
-    def update(self):
+    def _update(self):
         self._extract_spikes()
-        super(SpikeExtractor, self).update()
     
     spikes = property(read_spikes)
     
@@ -165,9 +163,9 @@ class FeatureExtractor(base.Component):
             self._calc_features()
         return self._feature_data
 
-    def update(self):
+    def _update(self):
         self._calc_features()
-        super(FeatureExtractor, self).update()
+        super(FeatureExtractor, self)._update()
     
     features = property(read_features)
         
@@ -246,10 +244,9 @@ class ClusterAnalyzer(base.Component):
             self.cluster_labels[self.cluster_labels==cell]=cell_ids[0]
         self.notify_observers()
         
-    def update(self):
+    def _update(self):
         self._cluster(None, self.method, *self.args, **self.kwargs)
-        super(ClusterAnalyzer, self).update()
-            
+        
     labels = property(read_labels)
 
 class MplPlotComponent(base.Component):
@@ -278,7 +275,7 @@ class MplPlotComponent(base.Component):
         
         #plotting.show()
         
-    def update(self):
+    def _update(self):
         if self.fig is not None:
             self._draw()
 
@@ -349,9 +346,9 @@ class PlotFeatures(MplPlotComponent):
     def _get_features(self):
         return self.feature_src.features   
     
-    def update(self):
+    def _update(self):
         self._showcells = 'all'
-        super(PlotFeatures, self).update()
+        super(PlotFeatures, self)._update()
 
     def _plot(self):
         feats = self._get_features()
@@ -382,9 +379,9 @@ class PlotSpikes(MplPlotComponent):
         super(PlotSpikes, self).__init__()
         self.show_cells = 'all'
     
-    def update(self):
+    def _update(self):
         self.show_cells = 'all'
-        super(PlotSpikes, self).update()
+        super(PlotSpikes, self)._update()
     
     def _get_showcells(self):
         return self._showcells
