@@ -71,13 +71,14 @@ class SpikeDetector(base.Component):
         super(SpikeDetector, self).__init__()
     
     def _get_threshold(self):
-        if self.sp_times is None:
+        if self._est_thresh is None:
             return self._thresh
         else:
             return self._est_thresh
         
     def _set_threshold(self, value):
         self._thresh =  value
+        self._est_thresh = None
         
     threshold = property(_get_threshold, _set_threshold)
         
@@ -354,12 +355,9 @@ class PlotFeatures(MplPlotComponent):
         feats = self._get_features()
         labels = self.cluster_src.labels
         data_range = None if self._autoscale else [0,1]
-        try:
-            plotting.plot_features(feats, labels, show_cells=self._showcells, 
-                                   datarange=data_range, fig=self.fig)
-        except IndexError:
-            pass
-
+        plotting.plot_features(feats, labels, show_cells=self._showcells, 
+                               datarange=data_range, fig=self.fig)
+    
 class PlotFeaturesTimeline(PlotFeatures):
     spk_time_src =  base.RequiredFeature("SpikeMarkerSource", 
                                          base.HasAttributes("events"))
@@ -404,12 +402,9 @@ class PlotSpikes(MplPlotComponent):
     def _plot(self):
         spikes = self.spike_src.spikes
         labels = self.cluster_src.labels
-        try:
-            plotting.plot_spikes(spikes, labels, show_cells=self.show_cells,
-                                 fig=self.fig)
-        except IndexError:
-            pass
-
+        plotting.plot_spikes(spikes, labels, show_cells=self.show_cells,
+                             fig=self.fig)
+       
 class Legend(MplPlotComponent):
     cluster_src = base.RequiredFeature("LabelSource", base.HasAttributes("labels"))
     
