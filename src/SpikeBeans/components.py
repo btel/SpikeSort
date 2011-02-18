@@ -98,7 +98,8 @@ class SpikeDetector(base.Component):
         if self.align:
             self.sp_times = sort.extract.align_spikes(sp, spt, 
                                                       self.sp_win, 
-                                                      type=self.type,  
+                                                      type=self.type,
+                                                      contact=self.contact,  
                                                       resample=self.resample)
         else:
             self.sp_times = spt
@@ -272,8 +273,7 @@ class MplPlotComponent(base.Component):
     def show(self):
         if not self.fig:
             self._draw()
-        plotting.show()
-        
+        #plotting.show()
         #plotting.show()
         
     def _update(self):
@@ -354,8 +354,13 @@ class PlotFeatures(MplPlotComponent):
     def _plot(self):
         feats = self._get_features()
         labels = self.cluster_src.labels
+        if self.show_cells =='all':
+            show_labels = list(np.unique(labels))
+            if 0 in show_labels: show_labels.remove(0)
+        else:
+            show_labels = self.show_cells
         data_range = None if self._autoscale else [0,1]
-        plotting.plot_features(feats, labels, show_cells=self._showcells, 
+        plotting.plot_features(feats, labels, show_cells=show_labels, 
                                datarange=data_range, fig=self.fig)
     
 class PlotFeaturesTimeline(PlotFeatures):
@@ -402,7 +407,12 @@ class PlotSpikes(MplPlotComponent):
     def _plot(self):
         spikes = self.spike_src.spikes
         labels = self.cluster_src.labels
-        plotting.plot_spikes(spikes, labels, show_cells=self.show_cells,
+        if self.show_cells =='all':
+            show_labels = list(np.unique(labels))
+            if 0 in show_labels: show_labels.remove(0)
+        else:
+            show_labels = self.show_cells
+        plotting.plot_spikes(spikes, labels, show_cells=show_labels,
                              fig=self.fig)
        
 class Legend(MplPlotComponent):

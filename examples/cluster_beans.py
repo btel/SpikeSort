@@ -1,20 +1,27 @@
+import matplotlib
+matplotlib.use("TkAgg")
+matplotlib.interactive(True)
+
 from SpikeBeans import base, components
 import numpy as np
 import time
 
-dataset = "/Gollum/s39gollum01/el3"
-contact = 2
-conf_file = "../data/gollum_export.inf"
-sp_win = [-0.3, 1]
+dataset = "/Gollum/s39gollum02/el2"
+contact = 3
+type = "max"
+thresh = "auto"
 
-io_filter = components.BakerlabSource(conf_file, dataset, f_filter=(600., 500.))
+conf_file = "../data/gollum_export.inf"
+sp_win = [-0.6, 0.8]
+
+io_filter = components.BakerlabSource(conf_file, dataset, f_filter=(300., 100.))
 base.features.Provide("SignalSource",      io_filter)
 base.features.Provide("EventsOutput",      io_filter)
 base.features.Provide("SpikeMarkerSource", components.SpikeDetector(contact=contact, 
-                                                                    thresh='auto',
-                                                                    type="max",
+                                                                    thresh=thresh,
+                                                                    type=type,
                                                                     resample=10,
-                                                                    align=False))
+                                                                    align=True))
 base.features.Provide("SpikeSource",       components.SpikeExtractor(sp_win=sp_win))
 base.features.Provide("FeatureSource",     components.FeatureExtractor())
 base.features.Provide("LabelSource",       components.ClusterAnalyzer("gmm", 5))

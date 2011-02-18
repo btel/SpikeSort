@@ -81,7 +81,8 @@ class BakerlabFilter:
             sp = np.memmap(fname, dtype=np.int16, mode='r')
             #read and copy data by chunks
             for j in range(n_chunks):
-                fp[i, j*sz:(j+1)*sz] = sp[j*sz:(j+1)*sz]
+                stop = np.min((npts,(j+1)*sz))
+                fp[i, j*sz:stop] = sp[j*sz:stop]
             #fp[:,i]=sp[:]
             del sp
         return {'data':fp, "FS":conf_dict['FS'], "n_contacts":n_contacts} 
