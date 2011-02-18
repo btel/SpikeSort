@@ -42,16 +42,17 @@ if __name__ == "__main__":
             sort.features.fetSpIdx(sp_waves),
             sort.features.fetP2P(sp_waves),
             sort.features.fetPCs(sp_waves)),
-            normalize=True
+            norm=True
     )
 
     stop = time.time()
 
-    clust_idx = sort.ui.manual_sort.show(features, sp_waves,
-                                         ['Ch0:P2P','Ch3:P2P'],
-                                         show_spikes=True)
+    clust_idx = sort.ui.manual_sort.manual_sort(features,
+                                         ['Ch0:P2P','Ch3:P2P'])
 
     clust, rest = sort.cluster.split_cells(spt, clust_idx, [1,0])
+    sort.ui.plotting.plot_spikes(sp_waves, clust_idx,n_spikes=200)
+    sort.ui.plotting.show()
 
 #    if len(clust)>0:
 #        cell_node = dataset+"/cell1"

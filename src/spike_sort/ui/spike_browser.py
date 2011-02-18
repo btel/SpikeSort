@@ -20,7 +20,7 @@ class SpikeBrowserFrame(wx.Frame):
         
         wx.Frame.__init__(self,parent, id, 'scrollable plot',
                 style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER,
-                size=(800, 400))
+                size=(1200, 400))
         self.panel = wx.Panel(self, -1)
 
         self.fig = Figure((5, 4), 75)
@@ -42,11 +42,11 @@ class SpikeBrowserFrame(wx.Frame):
     def _mpl_init(self):
         self.fig.clf()
         self.axes = self.fig.add_axes([0.05, 0.1, 0.95,0.9])
-        ax_prev = self.fig.add_axes([0.8, 0.0, 0.1,0.05])
-        ax_next = self.fig.add_axes([0.9, 0.0, 0.1,0.05])
+        self.ax_prev = self.fig.add_axes([0.8, 0.0, 0.1,0.05])
+        self.ax_next = self.fig.add_axes([0.9, 0.0, 0.1,0.05])
         
-        self.b_next = Button(ax_next, 'Next')
-        self.b_prev = Button(ax_prev, "Prev")
+        self.b_next = Button(self.ax_next, 'Next')
+        self.b_prev = Button(self.ax_prev, "Prev")
 
         self.b_next.on_clicked(self._next_spike)
         self.b_prev.on_clicked(self._prev_spike)
@@ -75,7 +75,6 @@ class SpikeBrowserFrame(wx.Frame):
             pass
 
     def _on_key(self, event):
-        print event.key
         if event.key=='+' or event.key=='=':
             self.ylims/=2.
         elif event.key == '-':
@@ -93,6 +92,10 @@ class SpikeBrowserFrame(wx.Frame):
         n_chans, n_pts = self.x.shape
         if spk_idx:
             self.spt = spk_idx['data']
+        else:
+            self.spt = None
+            self.ax_next.set_visible(False)
+            self.ax_prev.set_visible(False)
 
 
         self.i_window = int(self.winsz/1000.*self.FS)

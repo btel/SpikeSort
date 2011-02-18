@@ -40,6 +40,13 @@ except ImportError:
     k_means_plus = default_scikits("k_means_plus")
 
 
+from spike_sort.ui import manual_sort
+
+def manual(data):
+    return manual_sort._cluster(data[:,:2])
+
+def none(data):
+    return np.zeros(data.shape[0],dtype='int16')
 
 def _metric_euclidean(data1, data2):
     n_pts1, n_dims1 = data1.shape
@@ -91,7 +98,7 @@ def cluster(method, features,  *args, **kwargs):
     cl = cluster_func(data, *args, **kwargs)
     return cl
 
-def k_means(data, K):
+def k_means(features, K):
     """
     Perform K means clustering
     
@@ -105,7 +112,6 @@ def k_means(data, K):
        `data`
     """
     
-    n_dim = data.shape[1]
     centers = np.random.rand(K, n_dim)
     centers_new = np.random.rand(K, n_dim)
     partition = np.zeros(data.shape[0], dtype=np.int)

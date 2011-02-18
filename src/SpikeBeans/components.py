@@ -182,9 +182,22 @@ class ClusterAnalyzer(base.Component):
         self.cluster_labels = None
         self.trash_label = 0
         super(ClusterAnalyzer, self).__init__()
+        self.use_features='all'
     
     def _cluster(self, idx, method, *args,**kwargs):
         feature_data = self.feature_src.features
+        use_features = self.use_features
+        
+        if use_features != 'all' and use_features is not None:
+            names = list(feature_data['names'])
+            try:
+                ii = np.array([names.index(l) for l in use_features])
+                feature_data  = feature_data.copy()
+                feature_data['data'] = feature_data['data'][:,ii]
+                feature_data['names'] = feature_data['names'][ii]
+            except ValueError:
+                raise ValueError("Feature {0} does not exist" % l)
+            
         if idx is not None:
             new_features  = feature_data.copy()
             new_features['data'] = new_features['data'][idx,:]
@@ -194,11 +207,12 @@ class ClusterAnalyzer(base.Component):
             used_labels = set(np.unique(self.cluster_labels))
             free_labels = list(all_labels - used_labels)
             free_labels.sort(reverse=True)
+            new_clust_idx = np.zeros(len(clust_idx), dtype="int16")
             for l in np.unique(clust_idx):
                 new_label = free_labels.pop()
-                clust_idx[clust_idx==l]= new_label
+                new_clust_idx[clust_idx==l]= new_label
                 
-            self.cluster_labels[idx] = clust_idx
+            self.cluster_labels[idx] = new_clust_idx
         else:
             clust_idx = sort.cluster.cluster(method,feature_data, *self.args, 
                                          **kwargs)

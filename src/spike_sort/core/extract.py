@@ -30,6 +30,10 @@ class Filter:
 def filter_proxy(spikes, filter_obj, chunksize=1E6):
     data = spikes['data']
     sp_dict = spikes.copy()
+    
+    if filter_obj is None:
+        return spikes
+    
     filename = os.path.join(mkdtemp(), 'newfile.dat')
     atom = tables.Atom.from_dtype(np.dtype('float64'))
     shape = data.shape

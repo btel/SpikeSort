@@ -10,11 +10,13 @@ dataset = "/Gollum/s39gollum02/el2"
 contact = 3
 type = "max"
 thresh = "auto"
+#filter_freq= (300., 100.)
+filter_freq = None
 
 conf_file = "../data/gollum_export.inf"
 sp_win = [-0.6, 0.8]
 
-io_filter = components.BakerlabSource(conf_file, dataset, f_filter=(300., 100.))
+io_filter = components.BakerlabSource(conf_file, dataset, f_filter=filter_freq)
 base.features.Provide("SignalSource",      io_filter)
 base.features.Provide("EventsOutput",      io_filter)
 base.features.Provide("SpikeMarkerSource", components.SpikeDetector(contact=contact, 
@@ -24,7 +26,7 @@ base.features.Provide("SpikeMarkerSource", components.SpikeDetector(contact=cont
                                                                     align=True))
 base.features.Provide("SpikeSource",       components.SpikeExtractor(sp_win=sp_win))
 base.features.Provide("FeatureSource",     components.FeatureExtractor())
-base.features.Provide("LabelSource",       components.ClusterAnalyzer("gmm", 5))
+base.features.Provide("LabelSource",       components.ClusterAnalyzer("none"))
 
 
 plot1 = components.PlotFeaturesTimeline()
