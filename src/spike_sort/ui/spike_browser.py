@@ -5,40 +5,102 @@ from numpy import arange, sin, pi, float, size
 import matplotlib
 
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
 from matplotlib.figure import Figure
 from matplotlib.collections import LineCollection
 from matplotlib.widgets import Button
 
 import wx
+import Tkinter as Tk
 import time
 
+class PlotWithScrollBarTk(object):
+    def __init__(self, root):
+        self.root = root
+        self.max = 0
+        self.cur_pos = 0
+        self.page_sz = 0
+    def get_canvas(self, fig):
+        self.canvas = FigureCanvasTkAgg(fig, master=self.root)
+        self.canvas.show()
+        self.scrollbar = Tk.Scrollbar(self.root, orient=Tk.HORIZONTAL)
+        self.scrollbar.pack(side=Tk.BOTTOM, fill=Tk.BOTH)
+        self.canvas.get_tk_widget().pack(side=Tk.TOP, fill=Tk.BOTH, expand=1)
+        self.scrollbar.config(command=self._callback)
+        return self.canvas
+    
+    def _callback(self, mode, *args):
+        if mode == 'moveto':
+            pos, = args
+            self.cur_pos = int(float(pos) * self.max)
+        elif mode=="scroll":
+            delta, units = args
+            delta = float(delta)
+            if units == 'units':
+                self.cur_pos += delta*self.page_sz/5.
+            elif units == 'pages':
+                self.cur_pos += delta*self.page_sz
+        self.set_scroll_pos(self.cur_pos)
+        self.handler(self.cur_pos)
+            
+    def set_scroll_handler(self, handler):
+        self.handler = handler
+    
+    def set_scroll_pos(self, pos):
+        min, max = str(pos*1./self.max), str((pos+self.page_sz)*1./self.max)
+        self.scrollbar.set(min, max)
+    
+    def set_scroll_max(self, max, page_size):
+        self.page_sz = page_size 
+        self.max = max
+    
 class PlotWithScrollBarWx(wx.Frame):
-    pass
-
-class SpikeBrowserFrame(wx.Frame):
     def __init__(self, parent, id):
+        wx.Frame.__init__(self,parent, id, 'scrollable plot',
+                          style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER,
+                           size=(1200, 400))
+    
+    def get_canvas(self, fig):
+        self.panel = wx.Panel(self, -1)
+        self.canvas = FigureCanvasWxAgg(self.panel, -1, fig)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.canvas, -1, wx.EXPAND)
+        self.panel.SetSizer(sizer)
+        self.panel.Fit()
+        self.canvas.Bind(wx.EVT_SCROLLWIN, self._callback)
         
+        return self.canvas
+
+    def _callback(self, event):
+        pos = event.GetPosition()
+        self.handler(pos)
+        
+    def set_scroll_handler(self, handler):
+        self.handler = handler
+    
+    def set_scroll_pos(self, pos):
+        self.canvas.SetScrollPos(wx.HORIZONTAL, pos)
+        
+    def set_scroll_max(self, max, page_size):
+        self.canvas.SetScrollbar(wx.HORIZONTAL, 0, 5, max)  
+        
+        
+
+class SpikeBrowserUI(object):
+    def __init__(self, window):
+        self.window = window
         self.sp_win = [-0.8, 1]
         self.spike_collection = None
         
-        wx.Frame.__init__(self,parent, id, 'scrollable plot',
-                style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER,
-                size=(1200, 400))
-        self.panel = wx.Panel(self, -1)
-
         self.fig = Figure((5, 4), 75)
-        self.canvas = FigureCanvasWxAgg(self.panel, -1, self.fig)
-        self._mpl_init()
-
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(self.canvas, -1, wx.EXPAND)
-
-        self.panel.SetSizer(sizer)
-        self.panel.Fit()
-
-        self.canvas.Bind(wx.EVT_SCROLLWIN, self.OnScrollEvt)
         
+        self.canvas = window.get_canvas(self.fig)
+        
+        self._mpl_init()
         self.canvas.mpl_connect('key_press_event', self._on_key)
+        self.window.set_scroll_handler(self.OnScrollEvt)
+        
         
 
         
@@ -61,7 +123,8 @@ class SpikeBrowserFrame(wx.Frame):
             t_spk = self.spt[self.spt>t][0]
             self.i_start = int(np.ceil(t_spk/1000.*self.FS-self.i_window/2.))
             self.i_end = self.i_start + self.i_window
-            self.canvas.SetScrollPos(wx.HORIZONTAL, self.i_start)
+            self.window.set_scroll_pos(self.i_start)
+            
             self.draw_plot()
         except IndexError:
             pass
@@ -72,7 +135,7 @@ class SpikeBrowserFrame(wx.Frame):
             t_spk = self.spt[self.spt<t][-1]
             self.i_start = int(t_spk/1000.*self.FS-self.i_window/2.)
             self.i_end = self.i_start + self.i_window
-            self.canvas.SetScrollPos(wx.HORIZONTAL, self.i_start)
+            self.window.set_scroll_pos(self.i_start)
             self.draw_plot()
         except IndexError:
             pass
@@ -88,7 +151,7 @@ class SpikeBrowserFrame(wx.Frame):
         self.offsets = np.arange(self.n_chans)*offset
         self.draw_plot()
 
-    def init_data(self, data, spk_idx=None):
+    def set_data(self, data, spk_idx=None):
 
         self.x = data['data']
         self.FS = data['FS']
@@ -107,7 +170,9 @@ class SpikeBrowserFrame(wx.Frame):
         self.i_max = n_pts - self.i_window
         self.n_chans = n_chans
 
-        self.canvas.SetScrollbar(wx.HORIZONTAL, 0, 5, self.i_max)      
+
+        self.window.set_scroll_max(self.i_max, self.i_window)
+    
 
         # Indices of data interval to be plotted:
         self.i_start = 0
@@ -180,30 +245,37 @@ class SpikeBrowserFrame(wx.Frame):
             self.axes.add_collection(self.spike_collection)
             
         
-    def OnScrollEvt(self, event):
+    def OnScrollEvt(self, pos):
 
         # Update the indices of the plot:
-        self.i_start = self.i_min + event.GetPosition()
-        self.i_end = self.i_min + self.i_window + event.GetPosition()
+        self.i_start = self.i_min + pos
+        self.i_end = self.i_min + self.i_window + pos
         self.draw_plot()
 
-class SpikeBrowserApp(wx.App):
-
-    def OnInit(self):
-        self.frame = SpikeBrowserFrame(parent=None,id=-1)
-        self.frame.Show(True)
-        self.SetTopWindow(self.frame)
-        return True
-
-    def init_data(self, data, spk_idx, winsz):
-        self.frame.winsz = winsz
-        self.frame.init_data(data, spk_idx)
 
 def browse_data(data, spk_idx=None, win=100):
     # Generate some data to plot:
+    class SpikeBrowserApp(wx.App):
+
+        def OnInit(self):
+            self.frame = PlotWithScrollBarWx(parent=None,id=-1) 
+            self.browser = SpikeBrowserUI(self.frame)
+            self.frame.Show(True)
+            self.SetTopWindow(self.frame)
+            return True
     
+        def init_data(self, data, spk_idx, winsz):
+            self.browser.winsz = winsz
+            self.browser.set_data(data, spk_idx)
+
     app = SpikeBrowserApp()
     app.init_data(data, spk_idx, win)
     app.MainLoop()
 
-
+def browse_data_tk(data, spk_idx=None, win=100):
+    root = Tk.Tk()
+    frame = PlotWithScrollBarTk(root) 
+    browser = SpikeBrowserUI(frame)
+    browser.winsz = win
+    browser.set_data(data, spk_idx)
+    Tk.mainloop()

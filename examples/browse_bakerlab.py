@@ -35,11 +35,11 @@ if __name__ == "__main__":
     filter = sort.extract.Filter('ellip', 300., 100.)
     #filter = None
     sp = sort.extract.filter_proxy(io_filter.read_sp(dataset,memmap="none"), filter)
-    spt = io_spt_filter.read_spt(dataset+'/cell1')
-    #spt = sort.extract.detect_spikes(sp,  contact=1,
-    #                                 thresh='auto')
+    #spt = io_spt_filter.read_spt(dataset+'/cell1')
+    spt = sort.extract.detect_spikes(sp,  contact=1,
+                                     thresh='auto')
     
     spike_browser.browse_data(sp, spt, win=50)
-    sort.plotting.show()
+    #sort.plotting.show()
     
     
