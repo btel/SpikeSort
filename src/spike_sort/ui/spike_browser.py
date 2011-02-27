@@ -16,12 +16,13 @@ import Tkinter as Tk
 import time
 
 class PlotWithScrollBarTk(object):
-    def __init__(self, root):
-        self.root = root
+    def __init__(self):
+        
         self.max = 0
         self.cur_pos = 0
         self.page_sz = 0
     def get_canvas(self, fig):
+        self.root = Tk.Tk()
         self.canvas = FigureCanvasTkAgg(fig, master=self.root)
         self.canvas.show()
         self.scrollbar = Tk.Scrollbar(self.root, orient=Tk.HORIZONTAL)
@@ -273,8 +274,8 @@ def browse_data(data, spk_idx=None, win=100):
     app.MainLoop()
 
 def browse_data_tk(data, spk_idx=None, win=100):
-    root = Tk.Tk()
-    frame = PlotWithScrollBarTk(root) 
+    
+    frame = PlotWithScrollBarTk() 
     browser = SpikeBrowserUI(frame)
     browser.winsz = win
     browser.set_data(data, spk_idx)

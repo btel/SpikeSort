@@ -29,6 +29,7 @@ base.features.Provide("FeatureSource",     components.FeatureExtractor())
 base.features.Provide("LabelSource",       components.ClusterAnalyzer("gmm", 5))
 
 
+browser = components.SpikeBrowser()
 plot1 = components.PlotFeaturesTimeline()
 plot2 = components.PlotSpikes()
 legend = components.Legend()
@@ -37,6 +38,7 @@ export = components.ExportCells()
 base.features["FeatureSource"].add_feature("P2P")
 base.features["FeatureSource"].add_feature("PCs", ncomps=1)
 
+browser.show()
 plot1.show()
 plot2.show()
 legend.show()

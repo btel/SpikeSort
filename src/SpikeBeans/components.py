@@ -294,28 +294,7 @@ class MplPlotComponent(base.Component):
         if self.fig is not None:
             self._draw()
 
-class ExportCells(base.Component):
-    labels_src = base.RequiredFeature("LabelSource", 
-                                      base.HasAttributes("labels"))
-    marker_src = base.RequiredFeature("SpikeMarkerSource",
-                                      base.HasAttributes("events"))
-    export_filter = base.RequiredFeature("EventsOutput",
-                                        base.HasAttributes("events"))
-    
-    def export(self, mapping=None,overwrite=False):
-        labels = self.labels_src.labels
-        spike_idx = self.marker_src.events
-        self.export_filter.overwrite = overwrite
-        export_events = self.export_filter.events
-        spt_clust = sort.cluster.split_cells(spike_idx, labels)
-        if mapping is None:
-            for cell_id, spt in spt_clust.items():
-                export_events['cell{0}'.format(cell_id)]=spt
-        else:
-            for clust_id, cell_id in mapping.items():
-                export_events['cell{0}'.format(cell_id)]=spt_clust[clust_id]
-                
-            
+
 
 
 class PlotFeatures(MplPlotComponent):
@@ -376,6 +355,30 @@ class PlotFeatures(MplPlotComponent):
         data_range = None if self._autoscale else [0,1]
         plotting.plot_features(feats, labels, show_cells=show_labels, 
                                datarange=data_range, fig=self.fig)
+        
+from spike_sort.ui import spike_browser
+
+class SpikeBrowser(base.Component):
+    raw_src = base.RequiredFeature("SignalSource")
+    spt_src = base.RequiredFeature("SpikeMarkerSource")
+    
+    def __init__(self):
+        self.win = 50
+        self.fig = None
+        
+    def _draw(self):
+        sp_data = self.raw_src.signal
+        spike_time = self.spt_src.events
+        
+        frame = spike_browser.PlotWithScrollBarTk() 
+        browser = spike_browser.SpikeBrowserUI(frame)
+        browser.winsz = self.win
+        browser.set_data(sp_data, spike_time)
+        
+    def show(self):
+        if not self.fig:
+            self._draw()
+    
     
 class PlotFeaturesTimeline(PlotFeatures):
     spk_time_src =  base.RequiredFeature("SpikeMarkerSource", 
@@ -440,5 +443,27 @@ class Legend(MplPlotComponent):
         labels = np.unique(self.cluster_src.labels)
         ax = self.fig.add_axes([0,0,1,1])
         plotting.legend(labels, ax=ax)
+
+class ExportCells(base.Component):
+    labels_src = base.RequiredFeature("LabelSource", 
+                                      base.HasAttributes("labels"))
+    marker_src = base.RequiredFeature("SpikeMarkerSource",
+                                      base.HasAttributes("events"))
+    export_filter = base.RequiredFeature("EventsOutput",
+                                        base.HasAttributes("events"))
     
+    def export(self, mapping=None,overwrite=False):
+        labels = self.labels_src.labels
+        spike_idx = self.marker_src.events
+        self.export_filter.overwrite = overwrite
+        export_events = self.export_filter.events
+        spt_clust = sort.cluster.split_cells(spike_idx, labels)
+        if mapping is None:
+            for cell_id, spt in spt_clust.items():
+                export_events['cell{0}'.format(cell_id)]=spt
+        else:
+            for clust_id, cell_id in mapping.items():
+                export_events['cell{0}'.format(cell_id)]=spt_clust[clust_id]
+                
+            
             
