@@ -9,9 +9,9 @@ import time
 dataset = "/Gollum/s39gollum02/el2"
 contact = 3
 type = "max"
-thresh = "auto"
-#filter_freq= (300., 100.)
-filter_freq = None
+thresh = 70
+filter_freq= (300., 100.)
+#filter_freq = None
 
 conf_file = "../data/gollum_export.inf"
 sp_win = [-0.6, 0.8]
@@ -23,10 +23,10 @@ base.features.Provide("SpikeMarkerSource", components.SpikeDetector(contact=cont
                                                                     thresh=thresh,
                                                                     type=type,
                                                                     resample=10,
-                                                                    align=True))
+                                                                    align=False))
 base.features.Provide("SpikeSource",       components.SpikeExtractor(sp_win=sp_win))
 base.features.Provide("FeatureSource",     components.FeatureExtractor())
-base.features.Provide("LabelSource",       components.ClusterAnalyzer("none"))
+base.features.Provide("LabelSource",       components.ClusterAnalyzer("gmm", 5))
 
 
 plot1 = components.PlotFeaturesTimeline()
