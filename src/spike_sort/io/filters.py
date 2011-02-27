@@ -46,7 +46,7 @@ class BakerlabFilter:
         n_contacts = conf_dict['n_contacts']
         f_spike = conf_dict['fspike']
         
-        dirname = conf_dict['dirname']
+        dirname = conf_dict['dirname'].format(**os.environ)
         rec_dict['contact_id']=1
         
         full_path = os.path.join(dirname, f_spike)
@@ -100,11 +100,12 @@ class BakerlabFilter:
         m = re.match(self._regexp, dataset)
         n_contacts = sp.shape[0]
         rec_dict = m.groupdict()
+        dirname = conf_dict['dirname'].format(**os.environ)
         
         for i in range(n_contacts):
             rec_dict['contact_id']=i+1
             fname = conf_dict['fspike'].format(**rec_dict)
-            full_path = os.path.join(conf_dict['dirname'], fname)
+            full_path = os.path.join(dirname, fname)
             sp_int = (sp[i,:]).astype(np.int16)
             sp_int.tofile(full_path)
     
@@ -123,7 +124,7 @@ class BakerlabFilter:
         conf_dict = self.conf_dict
         rec = self._match_dataset(dataset)
         
-        dirname = conf_dict['dirname']
+        dirname = conf_dict['dirname'].format(**os.environ)
         fspt = conf_dict['fspt']
         full_path = os.path.join(dirname, fspt)
         fname = full_path.format(**rec)
@@ -141,7 +142,8 @@ class BakerlabFilter:
         conf_dict = self.conf_dict
         rec = self._match_dataset(dataset)
         spt = spt_dict['data']
-        dirname = conf_dict['dirname']
+        dirname = conf_dict['dirname'].format(**os.environ)
+        
         fspt = conf_dict['fspt']
         full_path = os.path.join(dirname, fspt)
         fname = full_path.format(**rec)
