@@ -12,6 +12,9 @@ from matplotlib.widgets import Button
 import wx
 import time
 
+class PlotWithScrollBarWx(wx.Frame):
+    pass
+
 class SpikeBrowserFrame(wx.Frame):
     def __init__(self, parent, id):
         
