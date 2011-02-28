@@ -364,19 +364,24 @@ class SpikeBrowser(base.Component):
     
     def __init__(self):
         self.win = 50
-        self.fig = None
+        self.frame = None
+        
+    def _on_close(self):
+        self.frame.root.destroy()
+        self.frame = None
         
     def _draw(self):
         sp_data = self.raw_src.signal
         spike_time = self.spt_src.events
         
-        frame = spike_browser.PlotWithScrollBarTk() 
-        browser = spike_browser.SpikeBrowserUI(frame)
+        self.frame = spike_browser.PlotWithScrollBarTk() 
+        self.frame.root.protocol("WM_DELETE_WINDOW", self._on_close)
+        browser = spike_browser.SpikeBrowserUI(self.frame)
         browser.winsz = self.win
         browser.set_data(sp_data, spike_time)
         
     def show(self):
-        if not self.fig:
+        if not self.frame:
             self._draw()
     
     

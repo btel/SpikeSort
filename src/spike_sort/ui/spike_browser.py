@@ -21,8 +21,9 @@ class PlotWithScrollBarTk(object):
         self.max = 0
         self.cur_pos = 0
         self.page_sz = 0
-    def get_canvas(self, fig):
         self.root = Tk.Tk()
+    def get_canvas(self, fig):
+        
         self.canvas = FigureCanvasTkAgg(fig, master=self.root)
         self.canvas.show()
         self.scrollbar = Tk.Scrollbar(self.root, orient=Tk.HORIZONTAL)
@@ -201,7 +202,7 @@ class SpikeBrowserUI(object):
         self.axes.set_xlim((self.time[0], self.time[-1]))
         self.axes.set_ylim((self.ylims[0]+self.offsets.min(), 
                             self.ylims[1]+self.offsets.max()))
-        start = time.time()
+
         self.canvas.draw()
 
     def draw_plot(self):
