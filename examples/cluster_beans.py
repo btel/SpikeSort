@@ -29,7 +29,7 @@ base.features.Provide("FeatureSource",     components.FeatureExtractor())
 base.features.Provide("LabelSource",       components.ClusterAnalyzer("gmm", 5))
 
 
-browser = components.SpikeBrowser()
+browser = components.SpikeBrowserWithLabels()
 plot1 = components.PlotFeaturesTimeline()
 plot2 = components.PlotSpikes()
 legend = components.Legend()

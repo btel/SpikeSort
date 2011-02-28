@@ -363,26 +363,47 @@ class SpikeBrowser(base.Component):
     spt_src = base.RequiredFeature("SpikeMarkerSource")
     
     def __init__(self):
+        super(SpikeBrowser, self).__init__()
         self.win = 50
         self.frame = None
         
     def _on_close(self):
         self.frame.root.destroy()
         self.frame = None
-        
-    def _draw(self):
+    
+    def _set_data(self):
         sp_data = self.raw_src.signal
         spike_time = self.spt_src.events
+        self.browser.winsz = self.win
+        self.browser.set_data(sp_data, spike_time)
         
+    def _draw(self):
         self.frame = spike_browser.PlotWithScrollBarTk() 
         self.frame.root.protocol("WM_DELETE_WINDOW", self._on_close)
-        browser = spike_browser.SpikeBrowserUI(self.frame)
-        browser.winsz = self.win
-        browser.set_data(sp_data, spike_time)
+        self.browser = spike_browser.SpikeBrowserUI(self.frame)
+        self._set_data()
         
+    def _update(self):
+        if self.frame:
+            self._set_data()
+            self.browser.draw_plot()
+
     def show(self):
         if not self.frame:
             self._draw()
+            
+            
+class SpikeBrowserWithLabels(SpikeBrowser):
+    label_src = base.RequiredFeature("LabelSource", base.HasAttributes("labels"))
+    
+    def _set_data(self):
+        sp_data = self.raw_src.signal
+        spike_time = self.spt_src.events
+        labels = self.label_src.labels
+        self.browser.winsz = self.win
+        self.browser.set_data(sp_data, spike_time, labels)
+        
+        
     
     
 class PlotFeaturesTimeline(PlotFeatures):

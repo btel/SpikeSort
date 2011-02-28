@@ -13,7 +13,8 @@ from matplotlib.widgets import Button
 
 import wx
 import Tkinter as Tk
-import time
+
+from spike_sort.ui import label_color
 
 class PlotWithScrollBarTk(object):
     def __init__(self):
@@ -118,6 +119,8 @@ class SpikeBrowserUI(object):
         self.b_next.on_clicked(self._next_spike)
         self.b_prev.on_clicked(self._prev_spike)
         self.i_spike = 0
+        self.i_start = 0
+        self.line_collection = None
         
     def _next_spike(self, event):
         try:
@@ -153,13 +156,18 @@ class SpikeBrowserUI(object):
         self.offsets = np.arange(self.n_chans)*offset
         self.draw_plot()
 
-    def set_data(self, data, spk_idx=None):
+    def set_data(self, data, spk_idx=None, labels=None):
 
         self.x = data['data']
         self.FS = data['FS']
         n_chans, n_pts = self.x.shape
         if spk_idx:
             self.spt = spk_idx['data']
+            if labels is not None:
+                self.labels = labels
+                self.color_func = label_color(np.unique(labels))
+            else:
+                self.labels = None
         else:
             self.spt = None
             self.ax_next.set_visible(False)
@@ -177,7 +185,7 @@ class SpikeBrowserUI(object):
     
 
         # Indices of data interval to be plotted:
-        self.i_start = 0
+        
         self.i_end = self.i_start + self.i_window
         
         
@@ -193,6 +201,9 @@ class SpikeBrowserUI(object):
         self.segs[:,:,1] += self.offsets[:,np.newaxis]
         
         self.ylims = np.array(ylims)
+        
+        if self.line_collection:
+            self.line_collection.remove()
 
         self.line_collection = LineCollection(self.segs,
                                               offsets=None,
@@ -240,9 +251,15 @@ class SpikeBrowserUI(object):
                 sp_segs[i,:,:,0] = (time[np.newaxis,start:stop]/1000.)
                 sp_segs[i,:,:,1] = self.segs[:, start:stop, 1]
             sp_segs = sp_segs.reshape(-1, n_pts, 2)
+            if self.labels is not None:
+                labs = self.labels[(self.spt>t_min) & (self.spt<t_max)]
+                colors = np.repeat(self.color_func(labs), self.n_chans, 0)
+                #import pdb; pdb.set_trace()
+            else:
+                colors = 'r'
             self.spike_collection = LineCollection(sp_segs,
                                                   offsets=None,
-                                                  color='r',
+                                                  color=colors,
                                                   transform=self.axes.transData)
             self.axes.add_collection(self.spike_collection)
             
