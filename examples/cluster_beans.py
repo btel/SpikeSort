@@ -10,7 +10,7 @@ dataset = "/Gollum/s39gollum02/el2"
 contact = 3
 type = "max"
 thresh = 70
-filter_freq= (300., 100.)
+filter_freq= (800., 100.)
 #filter_freq = None
 
 conf_file = "../data/gollum_export.inf"
@@ -22,8 +22,9 @@ base.features.Provide("EventsOutput",      io_filter)
 base.features.Provide("SpikeMarkerSource", components.SpikeDetector(contact=contact, 
                                                                     thresh=thresh,
                                                                     type=type,
+                                                                    sp_win=sp_win,
                                                                     resample=10,
-                                                                    align=False))
+                                                                    align=True))
 base.features.Provide("SpikeSource",       components.SpikeExtractor(sp_win=sp_win))
 base.features.Provide("FeatureSource",     components.FeatureExtractor())
 base.features.Provide("LabelSource",       components.ClusterAnalyzer("gmm", 5))
@@ -36,9 +37,9 @@ legend = components.Legend()
 export = components.ExportCells()
 
 base.features["FeatureSource"].add_feature("P2P")
-base.features["FeatureSource"].add_feature("PCs", ncomps=1)
+base.features["FeatureSource"].add_feature("PCs", ncomps=2)
 
 browser.show()
-#plot1.show()
-#plot2.show()
+plot1.show()
+plot2.show()
 #legend.show()

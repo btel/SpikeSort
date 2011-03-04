@@ -233,13 +233,14 @@ def align_spikes(spike_data, spt_dict, sp_win, type="max", resample=1,
     #spt_align = {'data': spt}
     
     #go in a loop until all spikes are correctly aligned
+    iter_id = 0
     while len(idx_align) > 0:
         spt_align = {'data': spt[idx_align]}
         spt_inbound = filter_spt(spike_data, spt_align, sp_win)
         idx_align = idx_align[spt_inbound]
         #spt_align = {'data': spt[idx_align]}
         sp_waves_dict = extract_spikes(spike_data, spt_align, sp_win,
-                resample=resample, contacts=contact)
+                                       resample=resample, contacts=contact)
     
         sp_waves = sp_waves_dict['data'][:,:,0]
         time = sp_waves_dict['time']
@@ -257,6 +258,9 @@ def align_spikes(spike_data, spt_dict, sp_win, type="max", resample=1,
         # new marker and repeat the alignment
         tol = 0.1
         idx_align = idx_align[(shift<(sp_win[0]+tol)) | (shift>(sp_win[1]-tol))]
+        iter_id +=1
+        #print "Align. iteration %d, remaining idx %d" % (iter_id, len(idx_align))
+        #print shift
     
     #remove double spikes
     spt = np.unique(spt)

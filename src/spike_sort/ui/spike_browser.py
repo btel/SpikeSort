@@ -207,7 +207,8 @@ class SpikeBrowserUI(object):
 
         self.line_collection = LineCollection(self.segs,
                                               offsets=None,
-                                              transform=self.axes.transData)
+                                              transform=self.axes.transData,
+                                              color='k')
 
         self.axes.add_collection(self.line_collection)
         self.axes.set_xlim((self.time[0], self.time[-1]))
@@ -254,7 +255,6 @@ class SpikeBrowserUI(object):
             if self.labels is not None:
                 labs = self.labels[(self.spt>t_min) & (self.spt<t_max)]
                 colors = np.repeat(self.color_func(labs), self.n_chans, 0)
-                #import pdb; pdb.set_trace()
             else:
                 colors = 'r'
             self.spike_collection = LineCollection(sp_segs,
