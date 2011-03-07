@@ -65,13 +65,13 @@ def dist_euclidean(spike_waves1, spike_waves2=None):
     """Given spike_waves calculate pairwise Euclidean distance between
     them"""
 
-    sp_data1 = spike_waves1['data']
+    sp_data1 = np.concatenate(spike_waves1['data'],1)
+    
     if spike_waves2 is None:
         sp_data2 = sp_data1
     else:
-        sp_data2 = spike_waves2['data']
-
-    d = _metric_euclidean(sp_data1.T, sp_data2.T)
+        sp_data2 = np.concatenate(spike_waves2['data'],1)
+    d = _metric_euclidean(sp_data1, sp_data2)
 
     return d
 

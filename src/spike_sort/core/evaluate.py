@@ -220,8 +220,8 @@ def calc_isolation_score(spike_waves, noise_waves, spike_type='positive',
     n_spikes = spike_waves['data'].shape[1]
     
     #calculate distance between spikes and all other events
-    all_waves = {'data': np.hstack((spike_waves['data'],
-                                    noise_waves['data']))}
+    all_waves = {'data': np.concatenate((spike_waves['data'],
+                                    noise_waves['data']),1)}
     dist_matrix = cluster.dist_euclidean(spike_waves, all_waves)
     #d_0 = dist_matrix[:,:n_spikes].mean()
    
