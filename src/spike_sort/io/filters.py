@@ -158,7 +158,7 @@ class BakerlabFilter:
             del f
             os.unlink(fname)
         self._tempfiles = []
-        
+    
 class PyTablesFilter:
     """
     HDF5 is a hierarchical datafile -- data is organised in a tree. The
@@ -228,9 +228,10 @@ class PyTablesFilter:
         FS = electrode_node.raw.attrs['sampfreq']
     
         try:
-            n_contacts = sp_raw.shape[0]
-        except IndexError:
+            n_contacts, _ = sp_raw.shape
+        except ValueError:
             n_contacts = 1
+            sp_raw = sp_raw.read()[np.newaxis, :]
         
         return {"data": sp_raw, "FS": FS, "n_contacts":n_contacts} 
     

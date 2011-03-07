@@ -137,7 +137,10 @@ def filter_spt(spike_data, spt_dict, sp_win):
     sp_data = spike_data['data']
     FS = spike_data['FS']
     
-    n_pts = sp_data.shape[1]
+    try:
+        n_pts = sp_data.shape[1]
+    except IndexError:
+        n_pts = len(sp_data)
     max_time = (n_pts)*1000./FS
     
     t_min = np.max((-sp_win[0],0))
@@ -162,7 +165,7 @@ def extract_spikes(spike_data, spt_dict, sp_win, resample=None,
 
     sp_data = spike_data['data']
     n_contacts = spike_data['n_contacts']
-
+    
     if contacts == "all":
         contacts = np.arange(n_contacts)
     elif type(contacts) is int:
