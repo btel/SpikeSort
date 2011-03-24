@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #coding=utf-8
 import glob, re
+import os
 
 def read_dataset(filter, dataset):
     spt = filter.read_spt(dataset)
@@ -13,7 +14,7 @@ def list_cells(filter, dataset):
     regexp =  "^/(?P<subject>[a-zA-z\*]+)/s(?P<ses_id>.+)/el(?P<el_id>[0-9\*]+)/?(?P<type>[a-zA-Z]+)?(?P<cell_id>[0-9\*]+)?$"
     
     conf = filter.conf_dict
-    fpath = conf['dirname']+conf['cell']
+    fpath = (conf['dirname'].format(DATAPATH=os.environ['DATAPATH'])+conf['cell'])
     rec_wildcard = re.match(regexp, dataset).groupdict()
     fname =fpath.format(**rec_wildcard) 
 
