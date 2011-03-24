@@ -1,6 +1,6 @@
 {
 "fspike":"{subject}/{ses_id}/{ses_id}-{el_id}{contact_id}.sp",
-"cell":  "{subject}/{ses_id}/{ses_id}-{cell_id}.spt",
+"cell":  "{subject}/spt/{ses_id}-{el_id}-{cell_id}.spt",
 "stim":  "{subject}/{ses_id}/{ses_id}-10.spt",
 "n_contacts":4,
 "dirname":"{DATAPATH}",
