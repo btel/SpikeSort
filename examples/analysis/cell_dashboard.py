@@ -11,7 +11,7 @@ from bakerlab import read_bakerlab_dataset
 from spike_sort.io.filters import BakerlabFilter
 
 if __name__ == "__main__":
-    cell = "/Gollum/s39gollum02/el5/cell1"
+    cell = "/Gollum/s39gollum03/el1/cell1"
     filter = BakerlabFilter("../../data/gollum_export.inf") 
     
     dashboard.show_cell(filter, cell)

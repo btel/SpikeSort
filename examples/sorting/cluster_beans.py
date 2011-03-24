@@ -6,14 +6,14 @@ from spike_beans import base, components
 import numpy as np
 import time
 
-dataset = "/Gollum/s39gollum02/el2"
-contact = 3
-type = "max"
-thresh = 70
+dataset = "/Gollum/s39gollum03/el1"
+contact = 1
+type = "min"
+thresh = -400
 filter_freq= (800., 100.)
 #filter_freq = None
 
-conf_file = "../data/gollum_export.inf"
+conf_file = "../../data/gollum_export.inf"
 sp_win = [-0.6, 0.8]
 
 io_filter = components.BakerlabSource(conf_file, dataset, f_filter=filter_freq)
