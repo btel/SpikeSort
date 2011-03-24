@@ -5,8 +5,7 @@ import numpy as np
 from scipy import stats
 import tables
 import os, sys
-import patterns
-import hdf5tools
+import basic
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -17,7 +16,7 @@ def plot_psth(ax, dataset, **kwargs):
     stim = dataset['stim']
     ev = dataset['ev']
 
-    patterns.plotPSTH(spt, stim,ax=ax, **kwargs)
+    basic.plotPSTH(spt, stim,ax=ax, **kwargs)
     ymin, ymax = plt.ylim()
     if len(ev)>0:
         plt.vlines(ev, ymin, ymax)
@@ -51,7 +50,7 @@ def plot_trains(ax, dataset, **kwargs):
     stim = dataset['stim']
     ev = dataset['ev']
     
-    patterns.plotraster(spt, stim,ax=ax, **kwargs)
+    basic.plotraster(spt, stim,ax=ax, **kwargs)
     ymin, ymax = plt.ylim()
     if len(ev)>0:
         plt.vlines(ev, ymin, ymax)
@@ -60,7 +59,7 @@ def plot_nspikes(ax, dataset, win=[0,30], color="k"):
     spt = dataset['spt']
     stim = dataset['stim']
     
-    trains = patterns.SortSpikes(spt, stim, win)
+    trains = basic.SortSpikes(spt, stim, win)
     n_spks = np.array([len(t) for t in trains])
     count, bins = np.histogram(n_spks, np.arange(10))
     ax.bar(bins[:-1]-0.5, count, color=color)
