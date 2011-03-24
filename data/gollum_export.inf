@@ -1,7 +1,8 @@
 {
 "fspike":"{subject}/{ses_id}/{ses_id}-{el_id}{contact_id}.sp",
-"fspt":  "spike_sort/{ses_id}-{el_id}-{cell_id}.spt",
+"cell":  "spike_sort/{ses_id}-{el_id}-{cell_id}.spt",
+"stim": "{subject}/{ses_id}/{ses_id}-10.spt",
 "n_contacts":4,
-"dirname":"/Users/bartosz/Data",
+"dirname":"{DATAPATH}",
 "FS":25000
 }

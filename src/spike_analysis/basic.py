@@ -24,7 +24,7 @@ def SortSpikes(spt,stim,win=None):
     if win:
         corrected = filter(lambda x: win[1]>x[0]>=win[0], zip(spt2,i))
         spt2 = np.array([x[0] for x in corrected])
-        i= np.array([x[1] for x in corrected])
+        i = np.array([x[1] for x in corrected])
     return [spt2[i==j] for j in xrange(1,len(stim))] 
 
 def plotraster(spt,stim,win=[0,30],ntrials=None,ax=None,height=1.):
