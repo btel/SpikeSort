@@ -1,4 +1,4 @@
-from SpikeBeans import base
+from spike_beans import base
 from nose.tools import ok_,raises
 from nose import with_setup
 

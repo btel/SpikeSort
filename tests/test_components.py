@@ -1,4 +1,4 @@
-from SpikeBeans import base, components
+from spike_beans import base, components
 from nose.tools import ok_,raises
 from nose import with_setup
 import numpy as np

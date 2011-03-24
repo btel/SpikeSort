@@ -2,7 +2,7 @@ import matplotlib
 matplotlib.use("TkAgg")
 matplotlib.interactive(True)
 
-from SpikeBeans import base, components
+from spike_beans import base, components
 import numpy as np
 import time
 
