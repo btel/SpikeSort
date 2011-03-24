@@ -24,7 +24,7 @@ import os.path
 class BakerlabFilter:
     
     def __init__(self, conf_file):
-        self._regexp="^/(?P<subject>[a-zA-z]+)/s(?P<ses_id>.+)/el(?P<el_id>[0-9]+)(/cell)?(?P<cell_id>[0-9]+)?$"
+        self._regexp="^/(?P<subject>[a-zA-z]+)/s(?P<ses_id>.+)/el(?P<el_id>[0-9]+)/?(?P<type>[a-zA-Z]+)?(?P<cell_id>[0-9]+)?$"
         self.conf_file = conf_file
         self._tempfiles=[]
         with file(conf_file) as fid:
@@ -125,7 +125,7 @@ class BakerlabFilter:
         rec = self._match_dataset(dataset)
         
         dirname = conf_dict['dirname'].format(**os.environ)
-        fspt = conf_dict['fspt']
+        fspt = conf_dict[rec['type']]
         full_path = os.path.join(dirname, fspt)
         fname = full_path.format(**rec)
         
@@ -144,7 +144,7 @@ class BakerlabFilter:
         spt = spt_dict['data']
         dirname = conf_dict['dirname'].format(**os.environ)
         
-        fspt = conf_dict['fspt']
+        fspt = conf_dict[rec['type']]
         full_path = os.path.join(dirname, fspt)
         fname = full_path.format(**rec)
         if os.path.exists(fname) and not overwrite:

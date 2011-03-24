@@ -70,7 +70,7 @@ class TestHDF:
 class TestBakerlab:
     def setup(self):
         file_descr = {"fspike":"{ses_id}{el_id}.sp",
-                      "fspt":"{ses_id}{el_id}{cell_id}.spt",
+                      "cell":"{ses_id}{el_id}{cell_id}.spt",
                       "dirname":".",
                       "FS":5.E3,
                       "n_contacts":1}
