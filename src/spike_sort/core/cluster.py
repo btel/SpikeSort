@@ -42,7 +42,7 @@ except ImportError:
 
 from spike_sort.ui import manual_sort
 
-def manual(data):
+def manual(data, *args, **kwargs):
     return manual_sort._cluster(data[:,:2])
 
 def none(data):
@@ -112,20 +112,21 @@ def k_means(features, K):
        `data`
     """
     
+    n_dim = features.shape[1]
     centers = np.random.rand(K, n_dim)
     centers_new = np.random.rand(K, n_dim)
-    partition = np.zeros(data.shape[0], dtype=np.int)
+    partition = np.zeros(features.shape[0], dtype=np.int)
     while not (centers_new == centers).all():
         centers = centers_new.copy()
     
-        distances = (centers[:,np.newaxis,:] - data)
+        distances = (centers[:,np.newaxis,:] - features)
         distances *= distances
         distances = distances.sum(axis=2)
         partition = distances.argmin(axis=0)
 
         for i in range(K):
             if np.sum(partition==i)>0:
-                centers_new[i, :] = data[partition==i, :].mean(0)
+                centers_new[i, :] = features[partition==i, :].mean(0)
     return partition
 
 def split_cells(spt_dict, idx, which='all'):
