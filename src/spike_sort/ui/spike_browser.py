@@ -156,24 +156,33 @@ class SpikeBrowserUI(object):
         self.offsets = np.arange(self.n_chans)*offset
         self.draw_plot()
 
-    def set_data(self, data, spk_idx=None, labels=None):
-
-        self.x = data['data']
-        self.FS = data['FS']
-        n_chans, n_pts = self.x.shape
+    def set_spiketimes(self, spk_idx, labels=None, all_labels=None):
         if spk_idx:
             self.spt = spk_idx['data']
             if labels is not None:
                 self.labels = labels
-                self.color_func = label_color(np.unique(labels))
+                if all_labels is None:
+                    self.color_func = label_color(np.unique(labels))
+                else:
+                    self.color_func = label_color(all_labels)
+                self.ax_next.set_visible(True)
+                self.ax_prev.set_visible(True)
             else:
                 self.labels = None
         else:
             self.spt = None
             self.ax_next.set_visible(False)
             self.ax_prev.set_visible(False)
+            
+    def set_data(self, data):
 
-
+        self.x = data['data']
+        self.FS = data['FS']
+        n_chans, n_pts = self.x.shape
+        
+        #reset spike times data/hide buttons
+        self.set_spiketimes(None)
+        
         self.i_window = int(self.winsz/1000.*self.FS)
         # Extents of data sequence: 
         self.i_min = 0
@@ -286,6 +295,7 @@ def browse_data(data, spk_idx=None, win=100):
         def init_data(self, data, spk_idx, winsz):
             self.browser.winsz = winsz
             self.browser.set_data(data, spk_idx)
+            self.browser.set_spiketimes(spk_idx)
 
     app = SpikeBrowserApp()
     app.init_data(data, spk_idx, win)
@@ -296,5 +306,6 @@ def browse_data_tk(data, spk_idx=None, win=100):
     frame = PlotWithScrollBarTk() 
     browser = SpikeBrowserUI(frame)
     browser.winsz = win
-    browser.set_data(data, spk_idx)
+    browser.set_data(data)
+    browser.set_spiketimes(spk_idx)
     Tk.mainloop()

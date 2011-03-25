@@ -366,6 +366,7 @@ class SpikeBrowser(base.Component):
         super(SpikeBrowser, self).__init__()
         self.win = 50
         self.frame = None
+        self._showcells = 'all' 
         
     def _on_close(self):
         self.frame.root.destroy()
@@ -375,7 +376,8 @@ class SpikeBrowser(base.Component):
         sp_data = self.raw_src.signal
         spike_time = self.spt_src.events
         self.browser.winsz = self.win
-        self.browser.set_data(sp_data, spike_time)
+        self.browser.set_data(sp_data)
+        self.browser.set_spiketimes(spike_time)
         
     def _draw(self):
         self.frame = spike_browser.PlotWithScrollBarTk() 
@@ -395,14 +397,41 @@ class SpikeBrowser(base.Component):
             
 class SpikeBrowserWithLabels(SpikeBrowser):
     label_src = base.RequiredFeature("LabelSource", base.HasAttributes("labels"))
-    
+
+    def __init__(self):
+        super(SpikeBrowserWithLabels, self).__init__()
+        self._showcells = 'all' 
+         
     def _set_data(self):
         sp_data = self.raw_src.signal
         spike_time = self.spt_src.events
         labels = self.label_src.labels
         self.browser.winsz = self.win
-        self.browser.set_data(sp_data, spike_time, labels)
+        self.browser.set_data(sp_data)
+        if self._showcells == 'all':
+            self.browser.set_spiketimes(spike_time, labels)
+        else:
+            i = np.in1d(labels, self._showcells)
+            spike_time = spike_time.copy()
+            spike_time['data'] = spike_time['data'][i]
+            self.browser.set_spiketimes(spike_time, labels[i], np.unique(labels))
+    
+    def _get_showcells(self):
+        return self._showcells
+    
+    def _set_showcells(self, value):
+        if value == 'all':
+            self._showcells = value
+        else:
+            try: 
+                it = iter(value)
+                self._showcells = value
+            except TypeError:
+                self._showcells = [value]
+        self._set_data()
         
+    show_cells = property(_get_showcells, _set_showcells, None, 
+                         "list of labels of cells to plot")
         
     
     

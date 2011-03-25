@@ -9,8 +9,8 @@ import time
 dataset = "/Gollum/s39gollum03/el1"
 contact = 1
 type = "min"
-thresh = -400
-filter_freq= (800., 100.)
+thresh = -200
+filter_freq= (1000., 800.)
 #filter_freq = None
 
 conf_file = "../../data/gollum_export.inf"
