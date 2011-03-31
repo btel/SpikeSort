@@ -12,16 +12,15 @@ from spike_sort import features
 from spike_sort.ui import plotting
 import numpy as np
 
-class BakerlabSource(base.Component, BakerlabFilter):  
+class GenericSource(base.Component):
     
-    def __init__(self, conf_file, dataset, overwrite=False, f_filter=None):
-        BakerlabFilter.__init__(self, conf_file)
+    def __init__(self, dataset, overwrite=False, f_filter=None):
         self.dataset = dataset
         self._signal = None
         self._events = None
         self.overwrite = overwrite
         self.f_filter = f_filter
-        super(BakerlabSource, self).__init__()
+        super(GenericSource, self).__init__()
         
     def read_signal(self):
         if self._signal is None:
@@ -47,6 +46,20 @@ class BakerlabSource(base.Component, BakerlabFilter):
     signal = property(read_signal, write_signal)
     events = base.dictproperty(read_events, write_events)
     
+
+class BakerlabSource(GenericSource, BakerlabFilter):  
+    
+    def __init__(self, conf_file, dataset, overwrite=False, f_filter=None):
+        GenericSource.__init__(self, dataset, overwrite, f_filter)
+        BakerlabFilter.__init__(self, conf_file)
+
+class PyTablesSource(GenericSource, PyTablesFilter):
+    #TODO: add unit test
+    
+    def __init__(self, h5file, dataset, overwrite=False, f_filter=None):
+        GenericSource.__init__(self, dataset, overwrite, f_filter)
+        PyTablesFilter.__init__(self, h5file)
+ 
 class SpikeDetector(base.Component):
     """Detect Spikes with alignment"""
     waveform_src = base.RequiredFeature("SignalSource", 
