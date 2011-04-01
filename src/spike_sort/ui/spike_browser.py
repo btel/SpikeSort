@@ -281,7 +281,7 @@ class SpikeBrowserUI(object):
         self.draw_plot()
 
 
-def browse_data(data, spk_idx=None, win=100):
+def browse_data(data, spk_idx=None, labels=None, win=100):
     # Generate some data to plot:
     class SpikeBrowserApp(wx.App):
 
@@ -294,18 +294,18 @@ def browse_data(data, spk_idx=None, win=100):
     
         def init_data(self, data, spk_idx, winsz):
             self.browser.winsz = winsz
-            self.browser.set_data(data, spk_idx)
-            self.browser.set_spiketimes(spk_idx)
+            self.browser.set_data(data)
+            self.browser.set_spiketimes(spk_idx, labels)
 
     app = SpikeBrowserApp()
     app.init_data(data, spk_idx, win)
     app.MainLoop()
 
-def browse_data_tk(data, spk_idx=None, win=100):
+def browse_data_tk(data, spk_idx=None, labels=None, win=100):
     
     frame = PlotWithScrollBarTk() 
     browser = SpikeBrowserUI(frame)
     browser.winsz = win
     browser.set_data(data)
-    browser.set_spiketimes(spk_idx)
+    browser.set_spiketimes(spk_idx, labels)
     Tk.mainloop()

@@ -115,8 +115,14 @@ def detect_spikes(spike_data, thresh='auto', edge="rising",
 
     FS = spike_data['FS']
 
-    if thresh=='auto':
-        thresh = 8*np.sqrt(float(np.var(sp_data[:int(10*FS)])))
+    if type(thresh) is str:
+        
+        if thresh=='auto':
+            thresh_frac = 8
+        else:
+            thresh_frac = float(thresh)
+            
+        thresh = thresh_frac*np.sqrt(float(np.var(sp_data[:int(10*FS)])))
         if edge == 'falling' or edge =="min":
             thresh = -thresh
     
@@ -226,7 +232,7 @@ def resample_spikes(spikes_dict, FS_new):
 
 
 def align_spikes(spike_data, spt_dict, sp_win, type="max", resample=1,
-                contact=0):
+                contact=0, remove=True):
     
     """aligns spike waves and returns corrected spike times"""
 
@@ -265,14 +271,27 @@ def align_spikes(spike_data, spt_dict, sp_win, type="max", resample=1,
         #print "Align. iteration %d, remaining idx %d" % (iter_id, len(idx_align))
         #print shift
     
-    #remove double spikes
-    spt = np.unique(spt)
-    FS = spike_data['FS']
+    ret_dict = {'data':spt}
+    
+    if remove:
+        #remove double spikes
+        FS = spike_data['FS']
+        ret_dict = remove_doubles(ret_dict, 1000./FS)
+
+    return ret_dict
+
+def remove_doubles(spt_dict,tol):
+    
+    new_dict = spt_dict.copy()
+    spt = spt_dict['data']
+    
     if len(spt)>0:
-        spt=spt[np.concatenate(([True],np.diff(spt)>1000./FS))]
-
-    return {"data": spt}
-
+        spt=spt[np.concatenate(([True],np.diff(spt)>tol))]
+        
+    new_dict['data']=spt
+    
+    return new_dict
+    
 
 def merge_spikes(spike_waves1, spike_waves2):
     """Merges two sets of spike waves
