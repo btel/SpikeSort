@@ -115,7 +115,7 @@ def detect_spikes(spike_data, thresh='auto', edge="rising",
 
     FS = spike_data['FS']
 
-    if type(thresh) is str:
+    if type(thresh) is str or type(thresh) is unicode:
         
         if thresh=='auto':
             thresh_frac = 8
@@ -277,6 +277,7 @@ def align_spikes(spike_data, spt_dict, sp_win, type="max", resample=1,
         #remove double spikes
         FS = spike_data['FS']
         ret_dict = remove_doubles(ret_dict, 1000./FS)
+
 
     return ret_dict
 

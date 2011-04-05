@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import sys
 
 from spike_analysis import dashboard
-from bakerlab import read_bakerlab_dataset
 from spike_sort.io.filters import BakerlabFilter
 
 if __name__ == "__main__":
