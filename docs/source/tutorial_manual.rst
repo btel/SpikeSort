@@ -1,6 +1,6 @@
-========
-Tutorial
-========
+==========================
+Tutorial on manual sorting
+==========================
 
 .. testsetup::
    
