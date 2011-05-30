@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from spike_sort.io.filters import BakerlabFilter
 from spike_analysis import io_tools, xcorr
 
-cell_pattern = "/Gollum/s4gollum01/el*/cell*"
+cell_pattern = "/Gollum/s4gollum*/el*/cell*"
 filter = BakerlabFilter("../../data/gollum.inf") 
 
 if __name__ == "__main__":

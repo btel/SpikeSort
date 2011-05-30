@@ -11,6 +11,13 @@ def read_dataset(filter, dataset):
     return {'spt':spt['data'], 'stim': stim['data'], 'ev':[]} 
 
 def list_cells(filter, dataset):
+    """List all cells which fit the pattern given in dataset. Dataset can contain
+       wildcards.
+       
+       Example:
+       
+       dataset = "/Subject/sSession01/el*/cell*"
+    """
     regexp =  "^/(?P<subject>[a-zA-z\*]+)/s(?P<ses_id>.+)/el(?P<el_id>[0-9\*]+)/?(?P<type>[a-zA-Z]+)?(?P<cell_id>[0-9\*]+)?$"
     
     conf = filter.conf_dict
@@ -30,7 +37,9 @@ def list_cells(filter, dataset):
     pattern = re.compile(f_regexp)
     nodes = []
     for f in files:
-        rec = pattern.match(f).groupdict()
+        dataset_match = pattern.match(f)
+        rec = rec_wildcard.copy()
+        rec.update(dataset_match.groupdict())
         nodes.append(node_fmt.format(**rec))
         
     return nodes
