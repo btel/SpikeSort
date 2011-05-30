@@ -520,19 +520,36 @@ class ExportCells(base.Component):
                                       base.HasAttributes("events"))
     export_filter = base.RequiredFeature("EventsOutput",
                                         base.HasAttributes("events"))
+    spike_source = base.RequiredFeature("SpikeSource",
+                                        base.HasAttributes("sp_win"))
     
-    def export(self, mapping=None,overwrite=False):
+    def export(self, mapping=None,overwrite=False, metadata='default'):
         labels = self.labels_src.labels
         spike_idx = self.marker_src.events
         self.export_filter.overwrite = overwrite
         export_events = self.export_filter.events
         spt_clust = sort.cluster.split_cells(spike_idx, labels)
+        
+        if metadata=='default': md = self.get_metadata()
+        else: md = metadata
+        
         if mapping is None:
             for cell_id, spt in spt_clust.items():
+                if cell_id!=0: spt['metadata'] = md
                 export_events['cell{0}'.format(cell_id)]=spt
         else:
             for clust_id, cell_id in mapping.items():
-                export_events['cell{0}'.format(cell_id)]=spt_clust[clust_id]
+                spt = spt_clust[clust_id]
+                if cell_id!=0: spt['metadata'] = md
+                export_events['cell{0}'.format(cell_id)]=spt
+                
+    def get_metadata(self):
+        metadata = {'contact' : self.marker_src.contact,
+                    'threshold' : self.marker_src.threshold,
+                    'type' : self.marker_src.type,
+                    'filter' : self.export_filter.f_filter,
+                    'sp_win' : self.spike_source.sp_win}
+        return metadata
                 
             
             

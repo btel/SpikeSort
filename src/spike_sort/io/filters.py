@@ -152,6 +152,14 @@ class BakerlabFilter:
         export_spt = (spt*200).astype(np.int32)
         export_spt.tofile(fname)
         
+        if spt_dict.has_key('metadata'):
+            log_fname = fname[:-3]+'log'
+            if os.path.exists(log_fname) and not overwrite:
+                raise IOError("file {0} already exists".format(log_fname))
+            logfile = open(log_fname, 'w')   
+            json.dump(spt_dict['metadata'], logfile)
+            logfile.close()
+        
     def close(self):
         for f in self._tempfiles:
             fname = f.filename

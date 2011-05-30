@@ -78,9 +78,11 @@ class TestBakerlab:
         self.cell_node = self.el_node+'/cell1'
         self.data = np.random.randint(-1000, 1000, (100,))
         self.spt_data = np.random.randint(0,100, (10,))/200.
+        self.spt_metadata = {'element1':5, 'element2':10}
         self.conf_file = 'test.conf'
         self.fname = "32test011.sp"
         self.spt_fname = "32test0111.spt"
+        self.spt_log_fname = "32test0111.log"
         
         with open(self.conf_file, 'w') as fp:
              json.dump(file_descr, fp)
@@ -88,10 +90,14 @@ class TestBakerlab:
         (self.data).astype(np.int16).tofile(self.fname)
         (self.spt_data*200).astype(np.int32).tofile(self.spt_fname)
         
+        with open(self.spt_log_fname, 'w') as lf:
+            json.dump(self.spt_metadata, lf)
+        
     def tearDown(self):
         os.unlink(self.conf_file)
         os.unlink(self.fname)
         os.unlink(self.spt_fname)
+        os.unlink(self.spt_log_fname)
         
     def test_write_spt(self):
         cell_node_tmp = '/Test/s32test01/el2/cell1'
@@ -100,6 +106,17 @@ class TestBakerlab:
         filter.write_spt(spt_dict,  cell_node_tmp)
         files_eq = filecmp.cmp(self.spt_fname,"32test0121.spt", shallow=0)
         os.unlink("32test0121.spt")
+        ok_(files_eq)
+        
+    def test_write_spt_metadata(self):
+        cell_node_tmp = '/Test/s32test01/el2/cell1'
+        spt_dict = {'data':self.spt_data,
+                    'metadata':self.spt_metadata}
+        filter = BakerlabFilter(self.conf_file)
+        filter.write_spt(spt_dict,  cell_node_tmp, overwrite=True)
+        files_eq = filecmp.cmp(self.spt_log_fname,"32test0121.log", shallow=0)
+        os.unlink("32test0121.spt")
+        os.unlink("32test0121.log")
         ok_(files_eq)
                
     @raises(IOError)
