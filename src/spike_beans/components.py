@@ -10,6 +10,7 @@ import base
 from spike_sort.io.filters import BakerlabFilter, PyTablesFilter
 from spike_sort import features
 from spike_sort.ui import plotting
+from spike_analysis import dashboard
 import numpy as np
 
 class GenericSource(base.Component):
@@ -517,11 +518,13 @@ class ExportCells(base.Component):
     labels_src = base.RequiredFeature("LabelSource", 
                                       base.HasAttributes("labels"))
     marker_src = base.RequiredFeature("SpikeMarkerSource",
-                                      base.HasAttributes("events"))
+                                      base.HasAttributes("events",
+                                                         "threshold",
+                                                         "type",
+                                                         "sp_win"))
     export_filter = base.RequiredFeature("EventsOutput",
-                                        base.HasAttributes("events"))
-    spike_source = base.RequiredFeature("SpikeSource",
-                                        base.HasAttributes("sp_win"))
+                                        base.HasAttributes("events",
+                                                           "f_filter"))
     
     def export(self, mapping=None,overwrite=False, metadata='default'):
         labels = self.labels_src.labels
@@ -548,8 +551,39 @@ class ExportCells(base.Component):
                     'threshold' : self.marker_src.threshold,
                     'type' : self.marker_src.type,
                     'filter' : self.export_filter.f_filter,
-                    'sp_win' : self.spike_source.sp_win}
+                    'sp_win' : self.marker_src.sp_win}
         return metadata
                 
-            
-            
+class Dashboard(MplPlotComponent):
+    labels_src = base.RequiredFeature("LabelSource", 
+                                      base.HasAttributes("labels"))
+    marker_src = base.RequiredFeature("SpikeMarkerSource",
+                                      base.HasAttributes("events"))
+    export_filter = base.RequiredFeature("EventsOutput",
+                                        base.HasAttributes("dataset"))
+    
+    def _plot(self):
+        stim = self.export_filter.read_spt("/".join((self.export_filter.dataset, 'stim')))
+        
+        labels = self.labels_src.labels
+        spike_idx = self.marker_src.events
+        
+        try:
+            spt = sort.cluster.split_cells(spike_idx, labels)[self.cell]
+        except:
+            old_cell=self.cell
+            for c in range(max(self.labels_src.labels) + 1)[::-1]:
+                try: 
+                    spt = sort.cluster.split_cells(spike_idx, labels)[c]
+                    self.cell=c
+                    break
+                except: pass
+            print "Dashboard: cell %s doesn't exist any more, plotting cell %s" % (old_cell, self.cell)
+        
+        dataset = {'spt':spt['data'], 'stim': stim['data'], 'ev':[]}
+        dashboard.plot_dataset(dataset, self.fig)
+        
+    def show(self, cell):
+        self.cell = cell
+        if not self.fig:
+            self._draw()
