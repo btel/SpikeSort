@@ -10,6 +10,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from spike_sort.ui import plotting
 
+import time
+
 class LassoManager:
     def __init__(self, ax, data,labels=None, color_on='r', color_off='k'):
         self.axes = ax
@@ -85,7 +87,10 @@ def _cluster(data, names=None):
     ax_cluster = fig_cluster.add_subplot(111, xlim=(-0.1,1.1), ylim=(-0.1,1.1),
             autoscale_on=False)
     lman = LassoManager(ax_cluster, data, names)
-    plt.show()
+    
+    while lman.ind is None:
+        time.sleep(.01)
+        fig_cluster.canvas.flush_events()
 
     n_spikes = data.shape[0]
     clust_idx = np.zeros(n_spikes, dtype='int16')

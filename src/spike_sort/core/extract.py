@@ -8,16 +8,18 @@ from tempfile import mkdtemp
 import os
 
 class Filter:
-    def __init__(self, ftype, f_pass, f_stop):
+    def __init__(self, ftype, f_pass, f_stop,gpass=1,gstop=60):
         self.ftype = ftype
         self.fp = np.asarray(f_pass)
         self.fs = np.asarray(f_stop)
         self._coefs_cache = {}
+	self.gstop = gstop
+	self.gpass = gpass
  
     def _design_filter(self, FS):
         if not FS in self._coefs_cache:
             wp, ws = self.fp*2/FS, self.fs*2/FS
-            b,a = signal.iirdesign(wp=wp, ws=ws, gstop= 60, gpass=1, ftype=self.ftype)
+            b,a = signal.iirdesign(wp=wp, ws=ws, gstop=self.gstop, gpass=self.gpass, ftype=self.ftype)
             self._coefs_cache[FS]=(b,a)
         else:
             b,a = self._coefs_cache[FS]
