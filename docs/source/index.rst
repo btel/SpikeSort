@@ -27,6 +27,8 @@ Modules:
    modules/evaluate
    modules/io
    modules/ui
+   
+   modules/components
 
 
 
