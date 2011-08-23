@@ -68,26 +68,31 @@ Now everything is ready to start sorting the spikes.
 2. Spike sorting
 ----------------
 
-1. **Visualizing the data**
+\I. **Visualizing the data**
 
-   To provide some useful data visualization, the :file:`cluster_beans.py` creates four plotting objects:
+To provide some useful data visualization tools, the :file:`cluster_beans.py` creates four plotting objects:
 	
-   * *browser* - the Spike Browser
-   * *plot1* - feature space viewer
-   * *plot2* - spike waveshape viewer
-   * *legend* - no comments
+* *browser* - the Spike Browser
+* *plot1* - feature space viewer
+* *plot2* - spike waveshape viewer
+* *legend* - no comments
 	
-   In order to see the output of such an object, just call its :py:func:`show` method, e.g.
+In order to see the output of such an object, just call its :py:func:`show` method, e.g.
    
-   .. doctest::
+.. doctest::
    
-   		>>> browser.show()	
-   		
-   |
-   
+	>>> browser.show()	
+
+Each plotting component is described in detail below.
+
+|
+
    *Spike Browser*
    
-   `TODO: add the figure here`
+   		.. image:: images_beans/browser_nozoom.png
+   		   :scale: 70
+
+   |
    
    The four horizontal black curves are the [filtered] voltage traces recorded
    from different channels (sorted by id from bottom to up) of the electrode
@@ -95,13 +100,22 @@ Now everything is ready to start sorting the spikes.
    waveshapes. The cell-color correspondence can be found in the legend.
    
    Use the "+" and "-" keys to scale the vertical axis, and the "Prev" and "Next"
-   buttons to navigate across the temporal axis.
+   buttons to navigate across the temporal axis. Now it looks more comprehensible:
    
    |
    
-   *Feature space viewer*
+   		.. image:: images_beans/browser_zoom.png
+   		   :scale: 70
+
+   |
    
-   `TODO: add the figure here`
+   *Feature space viewer*
+
+   		.. image:: images_beans/features.png
+   			:scale: 50
+	
+   |
+
    
    To sort the spikes, some characteristic features that may be used to differentiate
    between the waveshapes have been calculated (e.g. peak-to-peak amplitude,
@@ -111,8 +125,8 @@ Now everything is ready to start sorting the spikes.
    labels. For example, feature ``Ch0:P2P`` denotes peak-to-peak amplitude in contact 
    (channel) 0.
    
-   The Feature space viewer plots the two-dimensional projections of the feature space
-   and histograms of features.
+   The Feature space viewer plots the spikes' projections in the feature space 
+   (pair-wise 2D plots) and 1D projection histograms for every feature.
    
    .. note::
    
@@ -123,7 +137,11 @@ Now everything is ready to start sorting the spikes.
        
    *Spike waveshape viewer*
    	
-   `TODO: add the figure here`
+      		.. image:: images_beans/waves.png
+   		   :scale: 50
+
+   |
+   
    	
    This component plots the aligned and overlapped spike waveshapes. The spikes
    recorded from different channels are shown in different subplots, numbered in the
@@ -134,108 +152,114 @@ Now everything is ready to start sorting the spikes.
    |
    
    *Legend*
-   	
-   `TODO: add the figure here`
    
    For the convenience, the legend is plotted on the separate figure with this
    component.
    
    |
    
-#. **Managing the spikes**
+\II. **Managing the spikes**
    
-   The aim of the spike sorting is to differentiate one or several cells' firing
-   from other unnecessary activity (such as background noise or stimulus artifacts).
-   This can be partially done by the automatic clustering in the feature space.
-   However, for the reliable results, some manual manipulations are needed and the
-   best settings have to be identified using trial-and-error procedure. It usually
-   involves removing/merging cells (clusters), reclustering the data, and changing
-   the spike detection threshold.
+The aim of the spike sorting is to differentiate one or several cells' firing
+from other unnecessary activity (such as background noise or stimulus artifacts).
+This can be partially done by the automatic clustering in the feature space.
+However, for the reliable results, some manual manipulations are needed and the
+best settings have to be identified using trial-and-error procedure. It usually
+involves removing/merging cells (clusters), reclustering the data, and changing
+the spike detection threshold.
    
-   Before we proceed, it will be convenient to create some references:
+Before we proceed, it will be convenient to create some references:
    
-   .. doctest::
+.. doctest::
    
-   	  >>> ca = base.features['LabelSource']         # points to the ClusterAnalyzer instance
-   	  >>> sd = base.features['SpikeMarkerSource']   # points to the SpikeDetector instance
+	>>> ca = base.features['LabelSource']         # points to the ClusterAnalyzer instance
+	>>> sd = base.features['SpikeMarkerSource']   # points to the SpikeDetector instance
 
-   Looking at the spike waveshapes, one might find, that the Cell 3 is most probably
-   not really a cell, but some noise. Thus, it is not interesting and we want to
-   **remove** it.
+Looking at the spike waveshapes, one might find, that the blue "Cell 2" (in your case, it may have
+different index and/or coloring since the clustering algorithm uses random initial state)
+is most probably not really a cell, but some noise. Thus, it is not interesting and we want
+to **remove** it.
   
-   To remove one or more cells (i.e. clusters), you have to look up their id's
-   in the legend and then pass them as arguments to the :py:func:`ca.delete_cells` function:
+To remove one or more cells (i.e. clusters), you have to look up their id's
+in the legend and then pass them as arguments to the :py:func:`ca.delete_cells` function:
    
-   .. doctest::
+.. doctest::
    
-      >>> ca.delete_cells(3)
+    >>> ca.delete_cells(2)
       
-   After we got rid of the unnesessaey stuff, the waveshape plot looks as follows:
-   
-   `TODO: add plot here`
-   
-   All the deleted cells are now assigned the id 0, which can be considered as a trash.
-   
-   The clusters 1 and 2 are probably contain responses of the same cell (their mean
-   waveshapes are very similar). It will be then very convenient to **merge** them into a
-   single cluster.
+After we got rid of the unnesessaey stuff, the waveshape plot looks as follows:
+
+|
+
+	.. image:: images_beans/waves_2_deleted.png
+		:scale: 50
+
+|
+
+All the deleted cells are now assigned the id 0, which can be considered as a trash.
+  
+Sometimes the clustering algorithm discriminates the same cell into two. In such cases
+it is convenient to **merge** them back into a single cell. In our example, there is no
+need to merge anything. However, cells 1 and 4 (blue and brown) also look like trash,
+so let's merge them (just practice) and delete afterwards.
      
-   The merging procedure is similar to deletion:
+The merging procedure is similar to deletion:
    
-   .. doctest::
+.. doctest::
    
-      >>> ca.merge_cells(1,2)
+    >>> ca.merge_cells(1,4)		# after merging, they form a cell with index 1
+    >>> ca.delete_cells(1)		# removing the cell 1
       
-   `TODO: add plot here`
-   
-   If we now look at the feature space viewer, we will see that the Cell4's spikes seem to form
-   two clusters instead of just one. So we better **recluster** it into two new cells.
-   
-   `DISCUSS WITH BARTOSZ: I don't think the above is applicable here...`
+Now, only the right cluster is left (brown):
 
-   To do so, use the :py:func:`ca.recluster` function:
-   
-   .. doctest::
-   
-      >>> ca.recluster(4, 'gmm', 2)
-      
-   where the arguments are: `cell to recluster`, `clustering algorithm` [#f1]_, and the necessary
-   `number of new clusters`
-   
-   `TODO: add plot here`
+|
 
-   In practice, it may happen that the **threshold** used during the spike detection is too
-   high to detect some important activity or too low to leave the noise out. In this case
-   you can easily change it (as well as any other SpikeDetector property) adjusting the
-   corresponding SpikeDetector property:
+	.. image:: images_beans/waves_one_left.png
+		:scale: 50
+
+|
    
-   .. doctest::
+Sometimes, we need to break (**recluster**) the cluster into two or more (again, 
+because of the incorrect clustering).
+
+To do so, use the :py:func:`ca.recluster` function:
    
-      >>> sd.threshold = 90
-      >>> sd.update()
+.. doctest::
+   
+    >>> ca.recluster(1, 'gmm', 2) 	# this particular one doesn't need reclustering though
       
-   `TODO: MAYBE add plot here`
+where the arguments are: `cell to recluster`, `clustering algorithm` [#f1]_, and the necessary
+`number of new clusters`
+
+In practice, it may happen that the **threshold** used during the spike detection is too
+high to detect some important activity or too low to leave the noise out. In this case
+you can easily change it (as well as any other SpikeDetector property) adjusting the
+corresponding SpikeDetector property:
+ 
+.. doctest::
+   
+    >>> sd.threshold = 90
+    >>> sd.update()
+      
       
 3. Exporting the results
 ------------------------   
    
-   Once you done with the cells' differentiation, it is necessary to save the results
-   somewhere. Depending on the type of the data used, the differentiated spike times
-   can be stored differently. The tutorial data is in the *HDF5* format, so the
-   results will be stored inside the initial :file:`tutorial.h5` file.
+Once you done with the cells' differentiation, it is necessary to save the results
+somewhere. Depending on the type of the data used, the differentiated spike times
+can be stored differently. The tutorial data is in the *HDF5* format, so the
+results will be stored inside the initial :file:`tutorial.h5` file.
    
-   To export the data we'll use an instance of the :py:class:`ExportCells` component
-   which is already created by :file:`cluster_beans.py`. So make sure the data file
-   is writable for python and run:
+To export the data we'll use an instance of the :py:class:`ExportCells` component
+which is already created by :file:`cluster_beans.py`. So make sure the data file
+is writable for python and run:
+ 
+.. doctest::
    
-   .. doctest::
-   
-      >>> export.export()
+    >>> export.export()
       
       
-   Good luck!!!
-
-   `CLARIFY: this didn't work in my case though...`
+Good luck!!!
 
 Appendix: Configuring the spike_beans.py script
 -----------------------------------------------
