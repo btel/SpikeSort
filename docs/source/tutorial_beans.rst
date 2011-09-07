@@ -1,6 +1,5 @@
-========================
-Tutorial on ClusterBeans
-========================
+Interactive spike sorting
+=========================
 
 .. testsetup::
    
@@ -9,7 +8,7 @@ Tutorial on ClusterBeans
    
 This tutorial shows the basic procedure of detecting, sorting, and exporting the spike data 
 with the SpikeSort software. Here we use the built-in component based command-line interface
-SpikeBeans, which is abstract and very easy to use.
+SpikeBeans, which is very easy to use.
  
 You will also find the information on how to adjust the provided scripts for your needs.
  

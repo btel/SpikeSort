@@ -12,8 +12,7 @@ Contents:
    :maxdepth: 2
 
    intro
-   tutorial_beans
-   tutorial_manual
+   tutorials
    datastructures
 
 Modules:

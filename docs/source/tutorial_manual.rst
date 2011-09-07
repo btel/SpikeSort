@@ -1,5 +1,4 @@
-==========================
-Tutorial on manual sorting
+Using low-level interface
 ==========================
 
 .. testsetup::
