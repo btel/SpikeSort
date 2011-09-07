@@ -1,0 +1,14 @@
+The documentation was created using Sphinx. You may create a HTML
+version of the documentation using:
+
+make html
+
+Alternatively, you can call your sphinx-build tool manually running the
+following command from docs directory:
+
+sphinx-build-2.6 -b html -d build/doctrees source build/html
+
+Note: In order to compile figures in tutorials you need to download
+tutorial.h5 file and copy it to spike_sort/data directory. In
+addition, matplotlib has to be installed at the time of compilation
+(it is also a dependency of spike_sort). 

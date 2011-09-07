@@ -9,7 +9,9 @@ from spike_sort.ui import plotting
 import os
 
 dataset = '/SubjectA/session01/el1'
-io_filter = PyTablesFilter(os.environ['DATAPATH']+'tutorial.h5')
+datapath = '../../../data/tutorial.h5'
+
+io_filter = PyTablesFilter(datapath)
 raw = io_filter.read_sp(dataset)
 spt = extract.detect_spikes(raw,  contact=3, thresh='auto')
 
