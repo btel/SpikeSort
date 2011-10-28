@@ -7,6 +7,32 @@ import tables
 from tempfile import mkdtemp
 import os
 
+class ZeroPhaseFilter:
+
+    def __init__(self, ftype, fband, tw=200., stop=20):
+        self.gstop=stop
+        self.gpass=1
+        self.fband = fband
+        self.tw = tw
+        self.ftype = ftype
+        self._coefs_cache = {}
+
+    def _design_filter(self, FS):
+        
+        if not FS in self._coefs_cache:
+            wp = np.array(self.fband)
+            ws = wp + np.array([-self.tw, self.tw])
+            wp, ws = wp*2./FS, ws*2./FS
+            b,a = signal.iirdesign(wp=wp, ws=ws, gstop=self.gstop, gpass=self.gpass, ftype=self.ftype)
+            self._coefs_cache[FS]=(b,a)
+        else:
+            b,a = self._coefs_cache[FS]
+        return b, a  
+
+    def __call__(self, x, FS):
+        b, a = self._design_filter(FS)
+        return signal.filtfilt(b,a, x)
+
 class Filter:
     def __init__(self, ftype, f_pass, f_stop,gpass=1,gstop=60):
         self.ftype = ftype

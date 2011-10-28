@@ -20,7 +20,7 @@ import tables
 import time
 from spike_sort.io.filters import PyTablesFilter, BakerlabFilter
 from spike_sort.ui import spike_browser
-
+        
 
 DATAPATH = "../data" 
 
