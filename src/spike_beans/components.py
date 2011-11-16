@@ -185,7 +185,8 @@ class FeatureExtractor(base.Component):
         
     def add_feature(self, name, *args, **kwargs):
         func_name = "fet" + name
-        func = lambda x: features.__getattribute__(func_name)(x, *args, **kwargs)
+        _func = features.__getattribute__(func_name)
+        func = lambda x: _func(x, *args, **kwargs)
         self.feature_methods.append(func)
     
     def _calc_features(self):
