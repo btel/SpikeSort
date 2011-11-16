@@ -27,7 +27,7 @@ class GenericSource(base.Component):
         if self._signal is None:
             self._signal = self.read_sp(self.dataset)
             if self.f_filter is not None:
-                filter = sort.extract.Filter("ellip", *self.f_filter)
+                filter = sort.extract.Filter(*self.f_filter)
                 self._signal = sort.extract.filter_proxy(self._signal, filter)
         return self._signal
     
@@ -128,6 +128,25 @@ class SpikeDetector(base.Component):
     
     events = property(read_events)
     
+    def delete_spikes(self, band):
+        band=np.array(band)
+        
+        if (np.argsort(band)==np.arange(len(band))).all() and\
+           (band<=1).all() and\
+           len(band) % 2 == 0:
+            
+            nsp = self.sp_times['data']
+            t_max=np.max(nsp)
+            
+            for t_start, t_end in zip(band[::2], band[1::2]):
+                nsp=nsp[(nsp<t_start*t_max) + (nsp>t_end*t_max)]
+            
+            self.sp_times['data'] = nsp
+            self.notify_observers()
+            
+        else:
+            raise Exception("The 'bands' array must be of even length, with values sorted from 0 to 1")
+        
 class SpikeExtractor(base.Component):
     waveform_src = base.RequiredFeature("SignalSource", 
                                     base.HasAttributes("signal"))

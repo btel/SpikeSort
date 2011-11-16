@@ -32,7 +32,8 @@ class LassoManager:
             offsets = self.data,
             transOffset = ax.transData)
 
-        ax.add_collection(self.collection)
+        ax.add_collection(self.collection, autolim=True)
+        ax.autoscale_view()
         
         if labels is not None:
             ax.set_xlabel(labels[0])
@@ -85,7 +86,7 @@ def manual_sort(features_dict,feat_idx):
 def _cluster(data, names=None):
     fig_cluster = figure(figsize=(6,6))
     ax_cluster = fig_cluster.add_subplot(111, xlim=(-0.1,1.1), ylim=(-0.1,1.1),
-            autoscale_on=False)
+            autoscale_on=True)
     lman = LassoManager(ax_cluster, data, names)
     
     while lman.ind is None:

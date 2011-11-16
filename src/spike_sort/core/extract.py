@@ -33,14 +33,35 @@ class ZeroPhaseFilter:
         b, a = self._design_filter(FS)
         return signal.filtfilt(b,a, x)
 
-class Filter:
-    def __init__(self, ftype, f_pass, f_stop,gpass=1,gstop=60):
-        self.ftype = ftype
-        self.fp = np.asarray(f_pass)
-        self.fs = np.asarray(f_stop)
+class FilterFir:
+    def __init__(self, f_pass, f_stop, order):
         self._coefs_cache = {}
-	self.gstop = gstop
-	self.gpass = gpass
+        self.fp = f_pass
+        self.fs = f_stop
+        self.order = order
+        
+    def _design_filter(self, FS):
+        if not FS in self._coefs_cache:
+            bands = [0, min(self.fs, self.fp), max(self.fs, self.fp),  FS/2]
+            gains = [int(self.fp < self.fs), int(self.fp > self.fs)]
+            b, a = signal.remez(self.order, bands, gains, Hz=FS), [1]
+            self._coefs_cache[FS]=(b, a)
+        else:
+            b,a = self._coefs_cache[FS]
+        return b, a
+    
+    def __call__(self, x, FS):
+        b, a = self._design_filter(FS)
+        return signal.filtfilt(b, a, x)
+
+class Filter:
+    def __init__(self, fpass, fstop, gpass=1, gstop=10, ftype='butter'):
+        self.ftype = ftype
+        self.fp = np.asarray(fpass)
+        self.fs = np.asarray(fstop)
+        self._coefs_cache = {}
+        self.gstop = gstop
+        self.gpass = gpass
  
     def _design_filter(self, FS):
         if not FS in self._coefs_cache:
@@ -53,7 +74,7 @@ class Filter:
     
     def __call__(self, x, FS):
         b, a = self._design_filter(FS)
-        return signal.lfilter(b,a, x)
+        return signal.filtfilt(b,a, x)
     
 def filter_proxy(spikes, filter_obj, chunksize=1E6):
     data = spikes['data']
