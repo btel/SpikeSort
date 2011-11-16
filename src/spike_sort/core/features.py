@@ -226,15 +226,41 @@ def fetSpIdx(spikes_data):
 
 def fetSpTime(spt_dict):
     """
-    Spike occurance time im milliseconds.
+    Spike occurrence time in milliseconds.
 
     :arguments:
         * spt_dict -- dictionary with `data` key containing spike times
     :output:
-        * spt -- spike times
-        * label
+        * feature dictionary
     """
 
     spt = spt_dict['data']
 
     return {'data': spt[:, np.newaxis], 'names':["SpTime"]}
+
+def fetSpProjection(spikes_data, labels, cell_id=1):
+    """
+    Projection coefficient of spikes on an averaged waveform
+    
+    :arguments:
+        * spikes_data -- waveform data
+        * labels -- array of length equal to number of spikes that contains 
+          cluster labels
+        * cell_id -- label of cell on which all spikes should be projected.
+        
+    :note:
+        *labels* can be also a boolean array in which case only spikes for 
+        which label is True value will be averaged to determine projection
+        coefficient
+    """ 
+    
+    spikes = spikes_data["data"]
+    
+    proj_matrix = np.mean(spikes[:, labels==cell_id, :],1)
+    projection = (proj_matrix[:,np.newaxis,:]*spikes).sum(0)
+    projection /= np.sqrt((spikes**2).sum(0)*(proj_matrix**2).sum(0))
+    
+    ncomps = len(projection)
+    names = ["Ch%d:Proj" % i for i in range(ncomps)]
+    return {'data': projection, 'names':names}
+    

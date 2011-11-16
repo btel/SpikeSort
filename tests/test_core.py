@@ -131,7 +131,6 @@ class TestFeatures:
         
         n_pts = 100
         FS = 5E3
-        n_contacts = 4
         time = np.arange(n_pts, dtype=np.float32)/n_pts - 0.5
         cells = self.gain*np.vstack(
             (np.sin(time*2*np.pi)/2.,
@@ -141,7 +140,7 @@ class TestFeatures:
         self.cells = cells.astype(np.int)
         
         #define data interface (dictionary) 
-        self.spikes_dict = {"data":self.cells, "time":time, "FS":FS}
+        self.spikes_dict = {"data":self.cells.T[:, :, np.newaxis], "time":time, "FS":FS}
 
     def test_fetP2P(self):
         spikes_dict = self.spikes_dict.copy()
@@ -190,6 +189,15 @@ class TestFeatures:
         correct = np.sum(compare)
 
         eq_(n_spikes, correct)
+        
+    def test_getSpProjection(self):
+        spikes_dict = self.spikes_dict.copy()
+        cells = spikes_dict['data']
+        spikes_dict['data'] = np.repeat(cells, 10, 1)
+        labels = np.repeat([0,1], 10,0)
+        
+        feat = ss.features.fetSpProjection(spikes_dict, labels)
+        ok_(((feat['data'][:,0]>0.5) == labels).all())
         
 class TestCluster:
     """test clustering algorithms"""
