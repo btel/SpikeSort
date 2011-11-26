@@ -102,7 +102,7 @@ class SpikeDetector(base.Component):
         if self.f_filter is None:
             filter = None
         else:
-            filter = sort.extract.Filter("ellip", *self.f_filter)
+            filter = sort.extract.Filter(*self.f_filter)
             sp = sort.extract.filter_proxy(sp, filter)
         spt = sort.extract.detect_spikes(sp,   edge=self.type,
                                                contact=self.contact,
