@@ -590,13 +590,9 @@ class ExportCells(base.Component):
     labels_src = base.RequiredFeature("LabelSource", 
                                       base.HasAttributes("labels"))
     marker_src = base.RequiredFeature("SpikeMarkerSource",
-                                      base.HasAttributes("events",
-                                                         "threshold",
-                                                         "type",
-                                                         "sp_win"))
+                                      base.HasAttributes("events"))
     export_filter = base.RequiredFeature("EventsOutput",
-                                        base.HasAttributes("events",
-                                                           "f_filter"))
+                                        base.HasAttributes("events"))
     
     def export(self, mapping=None,overwrite=False, metadata='default'):
         labels = self.labels_src.labels
@@ -619,12 +615,25 @@ class ExportCells(base.Component):
                 export_events['cell{0}'.format(cell_id)]=spt
                 
     def get_metadata(self):
+        return {}
+       
+class ExportWithMetadata(ExportCells):
+    marker_src = base.RequiredFeature("SpikeMarkerSource",
+                                      base.HasAttributes("events",
+                                                         "threshold",
+                                                         "type",
+                                                         "sp_win"))
+    export_filter = base.RequiredFeature("EventsOutput",
+                                        base.HasAttributes("events",
+                                                           "f_filter"))
+                
+    def get_metadata(self):
         metadata = {'contact' : self.marker_src.contact,
                     'threshold' : self.marker_src.threshold,
                     'type' : self.marker_src.type,
                     'filter' : self.export_filter.f_filter,
                     'sp_win' : self.marker_src.sp_win}
-        return metadata
+        return metadata  
                 
 class Dashboard(MplPlotComponent):
     labels_src = base.RequiredFeature("LabelSource", 
