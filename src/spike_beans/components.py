@@ -184,14 +184,14 @@ class SpikeDetector(base.Component):
         band=np.array(band)
         
         if (np.argsort(band)==np.arange(len(band))).all() and\
-           (band<=1).all() and\
+           (band<=1.0).all() and\
            len(band) % 2 == 0:
             
             nsp = self.sp_times['data']
             t_max=np.max(nsp)
             
             for t_start, t_end in zip(band[::2], band[1::2]):
-                nsp=nsp[(nsp<t_start*t_max) + (nsp>t_end*t_max)]
+                nsp=nsp[(nsp<t_start*t_max) + (nsp>=t_end*t_max)]
             
             self.sp_times['data'] = nsp
             self.notify_observers()
