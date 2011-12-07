@@ -30,7 +30,10 @@ try:
          :output:
           * k -- number of clusters to fit
         """
-        clf = mixture.GMM(n_states=k, cvtype='full')
+        try:
+            clf = mixture.GMM(n_states=k, cvtype='full')
+        except TypeError:
+            clf = mixture.GMM(n_components=k, cvtype='full')
         clf.fit(data)
         cl = clf.predict(data)
         return cl
