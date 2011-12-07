@@ -11,14 +11,14 @@ def default_scikits(method):
     return foo
 
 try:
-    import scikits.learn.cluster
+    from scikits.learn import cluster as skcluster
     from scikits.learn import mixture
     
     def k_means_plus(*args, **kwargs):
         """k means with smart initialization.
         
         see also kmeans"""
-        return scikits.learn.cluster.k_means(*args, **kwargs)[1]
+        return skcluster.k_means(*args, **kwargs)[1]
     
     def gmm(data, k):
         """cluster based on gaussian mixture models (from scikits.learn)
