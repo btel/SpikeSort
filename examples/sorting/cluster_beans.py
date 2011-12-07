@@ -16,7 +16,7 @@ filter_freq= (1000., 800.)
 conf_file = "../../data/gollum_export.inf"
 sp_win = [-0.6, 0.8]
 
-io_filter = components.BakerlabSource(conf_file, dataset, f_filter=None)
+io_filter = components.BakerlabSource(conf_file, dataset, f_filter=filter_freq)
 base.features.Provide("SignalSource",      io_filter)
 base.features.Provide("EventsOutput",      io_filter)
 base.features.Provide("SpikeMarkerSource", components.SpikeDetector(contact=contact, 
@@ -40,6 +40,6 @@ base.features["FeatureSource"].add_feature("P2P")
 base.features["FeatureSource"].add_feature("PCs", ncomps=2)
 
 browser.show()
-#plot1.show()
-#plot2.show()
+plot1.show()
+plot2.show()
 #legend.show()

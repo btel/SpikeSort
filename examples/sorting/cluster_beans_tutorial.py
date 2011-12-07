@@ -26,7 +26,7 @@ import time
 import os
 
 hd5file = os.environ['DATAPATH']+hd5file
-io_filter = components.PyTablesSource(hd5file, dataset, f_filter=None)
+io_filter = components.PyTablesSource(hd5file, dataset, f_filter=filter_freq)
 base.features.Provide("SignalSource",      io_filter)
 base.features.Provide("EventsOutput",      io_filter)
 base.features.Provide("SpikeMarkerSource", components.SpikeDetector(contact=contact, 
