@@ -124,21 +124,28 @@ class SpikeBrowserUI(object):
         
     def _next_spike(self, event):
         try:
-            t = (self.i_start+self.i_window/2.)*1000./self.FS
-            t_spk = self.spt[self.spt>t][0]
-            self.i_start = int(np.ceil(t_spk/1000.*self.FS-self.i_window/2.))
+            if self.i_spike<len(self.spt)-1:
+                self.i_spike+=1
+            t_spk = self.spt[self.i_spike]
+            i_start =  int(np.ceil(t_spk/1000.*self.FS-self.i_window/2.))
+            i_start = np.maximum(self.i_min, i_start)
+            i_start = np.minimum(self.i_max, i_start)
+            self.i_start = i_start
             self.i_end = self.i_start + self.i_window
             self.window.set_scroll_pos(self.i_start)
-            
             self.draw_plot()
         except IndexError:
             pass
         
     def _prev_spike(self, event):
         try:
-            t = (self.i_start+self.i_window/2.)*1000./self.FS
-            t_spk = self.spt[self.spt<t][-1]
-            self.i_start = int(t_spk/1000.*self.FS-self.i_window/2.)
+            if self.i_spike>0:
+                self.i_spike-=1
+            t_spk = self.spt[self.i_spike]
+            i_start =  int(np.ceil(t_spk/1000.*self.FS-self.i_window/2.))
+            i_start = np.maximum(self.i_min, i_start)
+            i_start = np.minimum(self.i_max, i_start)
+            self.i_start = i_start
             self.i_end = self.i_start + self.i_window
             self.window.set_scroll_pos(self.i_start)
             self.draw_plot()
@@ -278,6 +285,12 @@ class SpikeBrowserUI(object):
         # Update the indices of the plot:
         self.i_start = self.i_min + pos
         self.i_end = self.i_min + self.i_window + pos
+        t_center = (self.i_start+self.i_window/2.)*1000./self.FS
+        idx, = np.where(self.spt<t_center)
+        if len(idx)>0:
+            self.i_spike = idx[-1]
+        else:
+            self.i_spike = 0
         self.draw_plot()
 
 
