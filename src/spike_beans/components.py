@@ -10,6 +10,7 @@ import base
 from spike_sort.io.filters import BakerlabFilter, PyTablesFilter
 from spike_sort import features
 from spike_sort.ui import plotting
+from spike_sort.ui import zoomer
 from spike_analysis import dashboard
 import numpy as np
 
@@ -363,7 +364,7 @@ class MplPlotComponent(base.Component):
         if new_figure or self.fig is None:
             self.fig = plotting.figure(figsize=self.figsize)
             self.fig.canvas.mpl_connect("close_event", self._close_callback)
-            self.zoomer = base.Zoomer(plotting.plt, self.fig)
+            self.zoomer = zoomer.Zoomer(plotting.plt, self.fig)
         self.fig.clf()
         self._plot()
         self.fig.canvas.draw()

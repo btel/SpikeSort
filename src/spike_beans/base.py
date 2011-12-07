@@ -185,43 +185,6 @@ class dictproperty(object):
             return self
         return self._proxy(obj, self._fget, self._fset, self._fdel)
 
-class Zoomer(object):
-    '''Allows to zoom subplots'''
-    def __init__(self, plt, fig):
-        self.axlist=[]
-        self.geometry=[]
-        plt.connect('key_press_event', self.zoom)
-        self.fig=fig
-    
-    def zoom(self, event):
-        axis=event.inaxes
-        
-        if axis==None or event.key!='z':
-            return
-        
-        if axis.get_geometry() == (1,1,1):
-            zoomed=True
-        else:
-            zoomed=False
-        
-        if zoomed==False:
-            self.geometry.append(axis.get_geometry())
-            self.axlist=list(self.fig.get_axes())
-            for ax in self.axlist:
-                self.fig.delaxes(ax)
-      
-            axis.change_geometry(1,1,1)
-            self.fig.add_axes(axis)
-            self.fig.show()
-            
-        else:
-            self.fig.delaxes(axis)
-            for ax in self.axlist:
-                self.fig.add_axes(ax)
-            geom = self.geometry.pop()
-            axis.change_geometry(*geom)
-            axis.autoscale()
-            self.fig.show()
 
 
 ######################################################################

@@ -153,13 +153,17 @@ def featuresgraph(features_dict, color='k', size=1, datarange=None, fig=None):
                     ax.set_xlim(datarange)
             ax.set_xticks([])
             ax.set_yticks([])
-    
+            ax.set_xlabel(names[i])
+            ax.set_ylabel(names[j])
+            ax.xaxis.set_label_position("top")
+            ax.xaxis.label.set_visible(False)
+            ax.yaxis.label.set_visible(False)
+
     for i in range(n_feats):
         ax = axes[i][0] 
-        ax.set_xlabel(names[i])
-        ax.xaxis.set_label_position("top")
+        ax.xaxis.label.set_visible(True)
         ax = axes[0][i]
-        ax.set_ylabel(names[i])
+        ax.yaxis.label.set_visible(True)
 
 def legend(labels, colors=None, ax=None):
     
