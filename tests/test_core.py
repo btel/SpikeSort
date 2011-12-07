@@ -18,7 +18,7 @@ class TestExtract:
         
     def test_filter_proxy(self):
         sp_freq = 1000./self.period
-        filter = ss.extract.Filter("ellip",  sp_freq*0.5, sp_freq*0.4)
+        filter = ss.extract.Filter(sp_freq*0.5, sp_freq*0.4, 1, 10, 'ellip')
         spk_filt = ss.extract.filter_proxy(self.spk_data, filter)
         ok_(self.spk_data['data'].shape == spk_filt['data'].shape)
         
@@ -42,7 +42,7 @@ class TestExtract:
         threshold = 0.5
         sp_freq = 1000./self.period
         self.spk_data['data']+=2
-        filter = ss.extract.Filter("ellip",  sp_freq*0.5, sp_freq*0.4)
+        filter = ss.extract.Filter(sp_freq*0.5, sp_freq*0.4, 1, 10, 'ellip')
         spt = ss.extract.detect_spikes(self.spk_data, thresh=threshold, filter=filter)
         ok_(len(spt['data'])==n_spikes)
         
