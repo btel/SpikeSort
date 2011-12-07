@@ -31,7 +31,7 @@ electrodes. SpikeSort currently supports data saved in Bakerlab and HDF5 format
 but new formats can be easily added.
    
 To start with, you can download a sample data file from 
-:download:`here <../../data/tutorial.h5>`.
+:download:`here <../../../data/tutorial.h5>`.
   
 This hierarchical file is organized as following::
    
@@ -272,7 +272,7 @@ want to adjust:
 * **contact** 		sets the contact (channel) for the initial spike detection (e.g. `3`)
 * **type** 			the type of spike waveshapes' alignment (e.g. `\'max\'` - align by the peak value)
 * **thresh** 		sets the threshold for the automatic spike detection in milivolts ??? (e.g. `70`)
-* **filter_freq** 	specifies the filter properties in the form `(pass freq, cut-off freq)` (e.g. `(800., 100.)`)
+* **filter_freq** 	specifies the filter properties in the form (see scipy.signal.iirdesign documentation) `(pass freq, cut-off freq[, gpass, gstop, ftype])` (e.g. `(800., 100., 1, 7, 'butter')`)
 * **sp_win** 		specifies the window for spike alignment (e.g. `[-0.6, 0.8]`)
 
 Additionally, you can add some features to be taken into account during clustering

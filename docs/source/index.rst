@@ -12,7 +12,7 @@ Contents:
    :maxdepth: 2
 
    intro
-   tutorials
+   tutorials/index
    datastructures
 
 Modules:
