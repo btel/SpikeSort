@@ -89,10 +89,11 @@ def filter_proxy(spikes, filter_obj, chunksize=1E6):
     h5f = tables.openFile(filename,'w')
     carray = h5f.createCArray('/', "test", atom, shape)
     
+    chunksize = int(chunksize)
     n_chunks = int(np.ceil(shape[1]/chunksize))
     for i in range(shape[0]):
         for j in range(n_chunks):
-            stop = np.min(((j+1)*chunksize, shape[1]))
+            stop = int(np.min(((j+1)*chunksize, shape[1])))
             carray[i,j*chunksize:stop] = filter_obj(data[i,j*chunksize:stop], sp_dict['FS'])
     sp_dict['data'] = carray
     return sp_dict
