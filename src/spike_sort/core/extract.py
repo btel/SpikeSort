@@ -4,7 +4,7 @@
 import numpy as np
 from scipy import interpolate, signal
 import tables
-from tempfile import mkdtemp
+import tempfile 
 import os
 
 class ZeroPhaseFilter:
@@ -83,7 +83,8 @@ def filter_proxy(spikes, filter_obj, chunksize=1E6):
     if filter_obj is None:
         return spikes
     
-    filename = os.path.join(mkdtemp(), 'newfile.dat')
+    tmp_file = tempfile.NamedTemporaryFile(mode='w')
+    filename = tmp_file.name
     atom = tables.Atom.from_dtype(np.dtype('float64'))
     shape = data.shape
     h5f = tables.openFile(filename,'w')
