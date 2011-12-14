@@ -90,7 +90,7 @@ def filter_proxy(spikes, filter_obj, chunksize=1E6):
     carray = h5f.createCArray('/', "test", atom, shape)
     
     chunksize = int(chunksize)
-    n_chunks = int(np.ceil(shape[1]/chunksize))
+    n_chunks = int(np.ceil(shape[1]*1./chunksize))
     for i in range(shape[0]):
         for j in range(n_chunks):
             stop = int(np.min(((j+1)*chunksize, shape[1])))
