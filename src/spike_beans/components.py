@@ -607,12 +607,12 @@ class ExportCells(base.Component):
         
         if mapping is None:
             for cell_id, spt in spt_clust.items():
-                if cell_id!=0: spt['metadata'] = md
+                if md and cell_id!=0: spt['metadata'] = md
                 export_events['cell{0}'.format(cell_id)]=spt
         else:
             for clust_id, cell_id in mapping.items():
                 spt = spt_clust[clust_id]
-                if cell_id!=0: spt['metadata'] = md
+                if md and cell_id!=0: spt['metadata'] = md
                 export_events['cell{0}'.format(cell_id)]=spt
                 
     def get_metadata(self):
