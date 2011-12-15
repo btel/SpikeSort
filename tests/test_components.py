@@ -41,6 +41,7 @@ class DummySignalSource(base.Component):
         
         self.period = period
         self.n_spikes = n_spikes
+        self.f_filter = None
         super(DummySignalSource, self).__init__()
         
     def read_signal(self):
@@ -65,6 +66,14 @@ class DummySignalSource(base.Component):
     signal = property(read_signal)
     
 class DummySpikeDetector(base.Component):
+    def __init__(self):
+        
+        self.threshold = 500
+        self.type = 'min'
+        self.contact = 0
+        self.sp_win = [-0.6, 0.8]
+        super(DummySpikeDetector, self).__init__()
+        
     def read_events(self):
         n_pts = int(n_spikes*period/1000.*FS)
         sp_idx = (np.arange(1,n_spikes-1)*period*FS/1000).astype(int)
@@ -163,6 +172,26 @@ def test_export_component():
         assert os.path.exists(fname)
         os.unlink(fname)
         
+@with_setup(setup_io, teardown_io)
+def test_export_with_metadata_component():
+    base.features.Provide("SpikeMarkerSource", DummySpikeDetector())
+    base.features.Provide("LabelSource", DummyLabelSource())
+    base.features.Provide("EventsOutput",
+                          components.BakerlabSource(conf_file, el_node))
+    
+    labels = np.unique(base.features['LabelSource'].labels)
+    export_comp = components.ExportWithMetadata()
+    export_comp.export()
+    
+    for i in labels:
+        fname = "32test011{0}.spt".format(i)
+        assert os.path.exists(fname)
+        os.unlink(fname)
+        
+        if i!=0:
+            log_fname = "32test011{0}.log".format(i)
+            assert os.path.exists(log_fname)
+            os.unlink(log_fname)
 
     
 @with_setup(setup_io, teardown_io)
