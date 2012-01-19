@@ -1,22 +1,32 @@
+#############################################
+# Adjust these fields for your needs
+
+#data source
+hd5file = 'tutorial.h5'
+dataset = "/SubjectA/session01/el1"
+
+#spike detection/extraction properties
+contact = 3
+type = "max"
+thresh = 70
+filter_freq= (800., 100.)
+
+#conf_file = "../data/gollum.inf"
+sp_win = [-0.6, 0.8]
+
+#############################################
+
 import matplotlib
 matplotlib.use("TkAgg")
 matplotlib.interactive(True)
 
-from spike_beans import base, components
+from spike_beans import components, base
 import numpy as np
 import time
+import os
 
-dataset = "/Gollum/s39gollum03/el1"
-contact = 1
-type = "min"
-thresh = -200
-filter_freq= (1000., 800.)
-#filter_freq = None
-
-conf_file = "../../data/gollum_export.inf"
-sp_win = [-0.6, 0.8]
-
-io_filter = components.BakerlabSource(conf_file, dataset, f_filter=filter_freq)
+hd5file = os.environ['DATAPATH']+hd5file
+io_filter = components.PyTablesSource(hd5file, dataset, f_filter=filter_freq)
 base.features.Provide("SignalSource",      io_filter)
 base.features.Provide("EventsOutput",      io_filter)
 base.features.Provide("SpikeMarkerSource", components.SpikeDetector(contact=contact, 
@@ -27,7 +37,7 @@ base.features.Provide("SpikeMarkerSource", components.SpikeDetector(contact=cont
                                                                     align=True))
 base.features.Provide("SpikeSource",       components.SpikeExtractor(sp_win=sp_win))
 base.features.Provide("FeatureSource",     components.FeatureExtractor())
-base.features.Provide("LabelSource",       components.ClusterAnalyzer("gmm", 5))
+base.features.Provide("LabelSource",       components.ClusterAnalyzer("gmm", 4))
 
 
 browser = components.SpikeBrowserWithLabels()
@@ -36,10 +46,8 @@ plot2 = components.PlotSpikes()
 legend = components.Legend()
 export = components.ExportCells()
 
+#############################################################
+# Add the features here: 
+
 base.features["FeatureSource"].add_feature("P2P")
 base.features["FeatureSource"].add_feature("PCs", ncomps=2)
-
-browser.show()
-plot1.show()
-plot2.show()
-#legend.show()
