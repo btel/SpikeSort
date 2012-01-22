@@ -30,9 +30,8 @@ recordings. Such data can be obtained from microelectrodes, tetrodes or shank
 electrodes. SpikeSort currently supports data saved in Bakerlab and HDF5 format
 but new formats can be easily added.
    
-To start with, you can download a sample data file from 
-:download:`here <../../../data/tutorial.h5>`.
-  
+To start with, you can download a sample `data file`_. 
+
 This hierarchical file is organized as following::
    
    /subject/session/electrodeid
@@ -294,7 +293,9 @@ Adding 3 Principal Components to the feature list:
 |
 |
 |
-   
+
+.. _data file: http://itb.biologie.hu-berlin.de/~bartosz/spikesort/_downloads/tutorial.h5
+
 .. [#f1] There are several automatic, semi-automatic and manual methods for clustering.
    Their performance and accuracy depends to large degree on a particular dataset
    and recording setup. In SpikeSort you can choose from several available methods,

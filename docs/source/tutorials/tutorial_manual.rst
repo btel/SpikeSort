@@ -13,9 +13,8 @@ Using low-level interface
    electrodes. SpikeSort currently supports data saved in Bakerlab and HDF5 format
    but new formats can be easily added.
    
-   To start with, you can download a sample data file from 
-   :download:`here <../../data/tutorial.h5>`.
-   
+   To start with, you can download a sample `data file`_. 
+
    This hierachical file is organised as following::
    
       /subject/session/electrodeid
@@ -259,8 +258,4 @@ Using low-level interface
    
    Good luck!!!
    
-   TODO: this must be automated: rewrite io module to provide basic I/O functions
-   (read_spt, write_spt, etc.) and implement a module with abstract operations,
-   such as write clustering results to a file (''template design pattern'').
-   
-   
+.. _data file: http://itb.biologie.hu-berlin.de/~bartosz/spikesort/_downloads/tutorial.h5 

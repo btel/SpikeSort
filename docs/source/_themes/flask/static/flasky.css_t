@@ -68,7 +68,11 @@ div.footer a {
 }
 
 div.related {
-    display: none;
+    display:inline;
+}
+
+div.related h3 {
+    display:none;
 }
  
 div.sphinxsidebar a {
