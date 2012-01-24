@@ -95,6 +95,14 @@ class TestExtract:
         ok_((np.abs(sp_waves['data'][:,:,0].mean(1)-ref_sp)<2*1000*np.pi/(self.FS*self.period)).all())
         #ok_(np.abs(np.sum(sp_waves['data'][:,:,0].mean(1)-ref_sp))<1E-6)
         
+    def test_extract_truncated(self):
+        zero_crossing = self.period*np.arange(self.n_spikes+1)
+        spt_dict = {"data":zero_crossing}
+        sp_win = [0, self.period]
+        sp_waves = ss.extract.extract_spikes(self.spk_data, spt_dict, sp_win)
+        ok_(sp_waves['truncate']==np.arange(self.n_spike))
+        #ok_(np.abs(np.sum(sp_waves['data'][:,:,0].mean(1)-ref_sp))<1E-6)
+        
     def test_filter_spt(self):
         #out of band spikes  should be removed
         zero_crossing = self.period*(np.arange(self.n_spikes))
@@ -198,6 +206,18 @@ class TestFeatures:
         
         feat = ss.features.fetSpProjection(spikes_dict, labels)
         ok_(((feat['data'][:,0]>0.5) == labels).all())
+        
+    def test_propagate_truncate_key(self):
+        spikes_dict = self.spikes_dict.copy()
+        
+        n_spikes = 200
+        amps = np.random.randint(1, 100, n_spikes)
+        amps = amps[:, np.newaxis]
+        spikes = amps*self.cells[0,:]
+        spikes_dict['data'] = spikes.T[:,:,np.newaxis]
+        spikes_dict['truncate'] = np.arange(n_spikes-1)
+        p2p = ss.features.fetP2P(spikes_dict)
+        ok_((p2p['data']==amps*self.gain).all())
         
 class TestCluster:
     """test clustering algorithms"""
