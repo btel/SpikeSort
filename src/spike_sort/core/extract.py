@@ -328,8 +328,10 @@ def align_spikes(spike_data, spt_dict, sp_win, type="max", resample=1,
         #spt_align = {'data': spt[idx_align]}
         sp_waves_dict = extract_spikes(spike_data, spt_align, sp_win,
                                        resample=resample, contacts=contact)
-    
+        
         sp_waves = sp_waves_dict['data'][:,:,0]
+        if sp_waves_dict.has_key('is_masked'):
+            sp_waves = sp_waves[:, sp_waves_dict['is_masked']]
         time = sp_waves_dict['time']
     
         if type=="max":
