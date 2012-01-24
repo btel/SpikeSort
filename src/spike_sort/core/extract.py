@@ -231,8 +231,10 @@ def extract_spikes(spike_data, spt_dict, sp_win, resample=None,
         contacts = np.asarray(contacts)
 
     FS = spike_data['FS']
-    idx = filter_spt(spike_data, spt_dict, sp_win)
-    spt = spt_dict['data'][idx]
+    spt = spt_dict['data']
+    idx = np.arange(len(spt))
+    inner_idx = filter_spt(spike_data, spt_dict, sp_win)
+    outer_idx = idx[np.in1d(idx, inner_idx) == False]
 
     indices = (spt/1000.*FS).astype(np.int32)
     win = (np.asarray(sp_win)/1000.*FS).astype(np.int32)
@@ -243,9 +245,21 @@ def extract_spikes(spike_data, spt_dict, sp_win, resample=None,
     if resample is None or resample==1:
         spWave = np.zeros((len(time), len(spt), len(contacts)), 
                           dtype=np.float32)
-        for i,sp in enumerate(indices):
+        for i,sp in zip(inner_idx, indices[inner_idx]):
             spWave[:,i,:] = sp_data[contacts, sp+win[0]:sp+win[1]].T
-        return {"data":spWave, "time": time, "FS": FS}
+        for i,sp in zip(outer_idx, indices[outer_idx]):
+            if i==0:
+                zeros = np.zeros((len(contacts), -(win[0]+sp)))
+                spWave[:,i,:] = np.hstack((zeros, sp_data[contacts, :sp+win[1]])).T
+            else:
+                zeros = np.zeros((len(contacts), sp + win[1] - sp_data.shape[1]))
+                spWave[:,i,:] = np.hstack((sp_data[contacts, sp+win[0]:], zeros)).T
+    
+        wavedict = {"data":spWave, "time": time, "FS": FS}
+        if len(idx) != len(inner_idx):
+            wavedict['is_masked'] = inner_idx
+            
+        return wavedict
 
     else:
         FS_new = FS*resample
@@ -255,12 +269,25 @@ def extract_spikes(spike_data, spt_dict, sp_win, resample=None,
        
         for i,sp in enumerate(indices):
             time = np.arange(sp+win[0]-1, sp+win[1]+1)*1000./FS
+            new_waves = sp_data[contacts,sp+win[0]-1:sp+win[1]+1]
+            if i in outer_idx:
+                if i==0:
+                    zeros = np.zeros((len(contacts), 1 - (win[0]+sp)))
+                    new_waves = np.hstack((zeros, sp_data[contacts, :sp+win[1]+1]))
+                else:
+                    zeros = np.zeros((len(contacts), sp + win[1] + 1 - sp_data.shape[1]))
+                    new_waves = np.hstack((sp_data[contacts, sp+win[0]-1:], zeros))
+                    
             for j, contact in enumerate(contacts):
-                new_wave  = sp_data[contact,sp+win[0]-1:sp+win[1]+1]
+                new_wave  = new_waves[j]
                 tck = interpolate.splrep(time, new_wave, s=0)
                 spWave[:,i,j] = interpolate.splev(resamp_time+spt[i], tck, der=0)
 
-        return {"data":spWave, "time": resamp_time, "FS": FS_new}
+        wavedict = {"data":spWave, "time": resamp_time, "FS": FS_new}
+        if len(idx) != len(inner_idx):
+            wavedict['is_masked'] = inner_idx
+            
+        return wavedict
 
 def resample_spikes(spikes_dict, FS_new):
 
