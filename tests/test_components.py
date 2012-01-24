@@ -288,9 +288,11 @@ def test_truncated_spikes_from_end():
     base.features.Provide("SignalSource",      signal_src)
     base.features.Provide("SpikeMarkerSource", DummySpikeDetector())
     sp_waves = components.SpikeExtractor().spikes
-    
-    ok_(sp_waves['truncate'] == np.arange(n_spikes-3))
 
+    correct_mask = np.ones(n_spikes-2).astype(np.bool)
+    correct_mask[-1] = False
+    ok_((sp_waves['is_masked'] == correct_mask).all())    
+   
 @with_setup(setup, teardown)
 def test_truncated_spikes_from_begin():
     signal_src = DummySignalSource()
@@ -299,7 +301,9 @@ def test_truncated_spikes_from_begin():
     base.features.Provide("SpikeMarkerSource", DummySpikeDetector())
     sp_waves = components.SpikeExtractor().spikes
     
-    ok_(sp_waves['truncate'] == (np.arange(n_spikes-3)+1))
+    correct_mask = np.ones(n_spikes-2).astype(np.bool)
+    correct_mask[0] = False
+    ok_((sp_waves['is_masked'] == correct_mask).all())
 
 @with_setup(setup, teardown)    
 def test_labels_returned_for_truncated_spikes():
@@ -320,8 +324,9 @@ def test_labels_returned_for_truncated_spikes():
 def test_propagate_truncate_to_features():
     
     spike_src = DummySpikeSource()
-    truncate = np.arange(n_spikes-3)
-    spike_src._sp_waves['truncate'] = truncate
+    sp_waves = spike_src._sp_waves
+    is_masked = np.ones(sp_waves['data'].shape[1]).astype(bool)
+    spike_src._sp_waves['is_masked'] = is_masked
 
     base.features.Provide("SpikeSource",  spike_src)
     
@@ -330,7 +335,7 @@ def test_propagate_truncate_to_features():
     
     features = feat_comp.features
     
-    ok_((features['truncate']==truncate).all())  
+    ok_((features['is_masked']==truncate).all())  
     
 
 @with_setup(setup, teardown)
