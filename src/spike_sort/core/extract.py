@@ -209,7 +209,7 @@ def filter_spt(spike_data, spt_dict, sp_win):
     return idx
     
 
-def extract_spikes(spike_data, spt_dict, sp_win, resample=None,
+def extract_spikes(spike_data, spt_dict, sp_win, resample=1,
                    contacts='all'):
     """Returns spike wave shapes.
 
@@ -264,7 +264,7 @@ def extract_spikes(spike_data, spt_dict, sp_win, resample=None,
         is_masked[inner_idx]=True
         wavedict['is_masked']=is_masked
     
-    if resample:
+    if resample<>1:
         warn("resample argument is deprecated."
              "Please update your code to use function"
              "resample_spikes", DeprecationWarning)
