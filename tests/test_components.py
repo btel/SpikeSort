@@ -76,13 +76,16 @@ class DummySpikeDetector(base.Component):
         self.contact = 0
         self.sp_win = [-0.6, 0.8]
         super(DummySpikeDetector, self).__init__()
+        self._generate_data()
         
-    def read_events(self):
+    def _generate_data(self):
         n_pts = int(n_spikes*period/1000.*FS)
         sp_idx = (np.arange(1,n_spikes-1)*period*FS/1000).astype(int)
         spt = (sp_idx+0.5)*1000./FS
-        spt_data = {'data':spt}
-        return spt_data
+        self._spt_data = {'data':spt}
+        
+    def read_events(self):
+        return self._spt_data
     
     events = property(read_events)
     
@@ -284,7 +287,7 @@ def test_cluster_component_relabel():
 @with_setup(setup, teardown)
 def test_truncated_spikes_from_end():
     signal_src = DummySignalSource()
-    signal_src._spikes = signal_src._spikes[:, :period/1000.*FS*2.5]
+    signal_src._spikes = signal_src._spikes[:, :-period/1000.*FS*2.5]
     base.features.Provide("SignalSource",      signal_src)
     base.features.Provide("SpikeMarkerSource", DummySpikeDetector())
     sp_waves = components.SpikeExtractor().spikes
@@ -296,12 +299,14 @@ def test_truncated_spikes_from_end():
 @with_setup(setup, teardown)
 def test_truncated_spikes_from_begin():
     signal_src = DummySignalSource()
-    signal_src._spikes = signal_src._spikes[:, period/1000.*FS*2.5:]
+    detector = DummySpikeDetector()
+    spt = detector._spt_data['data']
+    detector._spt_data['data'] = np.insert(spt, 0, 0)
     base.features.Provide("SignalSource",      signal_src)
-    base.features.Provide("SpikeMarkerSource", DummySpikeDetector())
+    base.features.Provide("SpikeMarkerSource", detector)
     sp_waves = components.SpikeExtractor().spikes
     
-    correct_mask = np.ones(n_spikes-2).astype(np.bool)
+    correct_mask = np.ones(n_spikes-1).astype(np.bool)
     correct_mask[0] = False
     ok_((sp_waves['is_masked'] == correct_mask).all())
 

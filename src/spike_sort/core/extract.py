@@ -6,6 +6,7 @@ from scipy import interpolate, signal
 import tables
 import tempfile 
 import os
+from warnings import warn
 
 class ZeroPhaseFilter:
 
@@ -236,58 +237,41 @@ def extract_spikes(spike_data, spt_dict, sp_win, resample=None,
     inner_idx = filter_spt(spike_data, spt_dict, sp_win)
     outer_idx = idx[np.in1d(idx, inner_idx) == False]
 
-    indices = (spt/1000.*FS).astype(np.int32)
+    indices = np.round(spt/1000.*FS).astype(np.int32)
     win = (np.asarray(sp_win)/1000.*FS).astype(np.int32)
    
     time = np.arange(win[1]-win[0])*1000./FS+sp_win[0]
-
-
-    if resample is None or resample==1:
-        spWave = np.zeros((len(time), len(spt), len(contacts)), 
-                          dtype=np.float32)
-        for i,sp in zip(inner_idx, indices[inner_idx]):
-            spWave[:,i,:] = sp_data[contacts, sp+win[0]:sp+win[1]].T
-        for i,sp in zip(outer_idx, indices[outer_idx]):
-            if i==0:
-                zeros = np.zeros((len(contacts), -(win[0]+sp)))
-                spWave[:,i,:] = np.hstack((zeros, sp_data[contacts, :sp+win[1]])).T
-            else:
-                zeros = np.zeros((len(contacts), sp + win[1] - sp_data.shape[1]))
-                spWave[:,i,:] = np.hstack((sp_data[contacts, sp+win[0]:], zeros)).T
+    n_contacts, n_pts = sp_data.shape
     
-        wavedict = {"data":spWave, "time": time, "FS": FS}
-        if len(idx) != len(inner_idx):
-            wavedict['is_masked'] = inner_idx
-            
-        return wavedict
+    #auxiliarly function to find a valid spike window within data range
+    minmax = lambda x: np.max([np.min([n_pts, x]), 0])
 
-    else:
-        FS_new = FS*resample
-        resamp_time = np.arange(sp_win[0], sp_win[1], 1000./FS_new)
-        spWave = np.zeros((len(resamp_time), len(indices), len(contacts)), 
-                          dtype=np.float32)
-       
-        for i,sp in enumerate(indices):
-            time = np.arange(sp+win[0]-1, sp+win[1]+1)*1000./FS
-            new_waves = sp_data[contacts,sp+win[0]-1:sp+win[1]+1]
-            if i in outer_idx:
-                if i==0:
-                    zeros = np.zeros((len(contacts), 1 - (win[0]+sp)))
-                    new_waves = np.hstack((zeros, sp_data[contacts, :sp+win[1]+1]))
-                else:
-                    zeros = np.zeros((len(contacts), sp + win[1] + 1 - sp_data.shape[1]))
-                    new_waves = np.hstack((sp_data[contacts, sp+win[0]-1:], zeros))
-                    
-            for j, contact in enumerate(contacts):
-                new_wave  = new_waves[j]
-                tck = interpolate.splrep(time, new_wave, s=0)
-                spWave[:,i,j] = interpolate.splev(resamp_time+spt[i], tck, der=0)
+   
+    spWave = np.zeros((len(time), len(spt), len(contacts)), 
+                      dtype=np.float32)
+    for i in inner_idx:
+        sp = indices[i]
+        spWave[:,i,:] = sp_data[contacts, sp+win[0]:sp+win[1]].T
+    for i in outer_idx:
+        sp = indices[i]
+        l, r = map(minmax, sp+win)
+        spWave[(l-sp)-win[0]:(r-sp)-win[0],i,:] = sp_data[contacts, l:r].T
 
-        wavedict = {"data":spWave, "time": resamp_time, "FS": FS_new}
-        if len(idx) != len(inner_idx):
-            wavedict['is_masked'] = inner_idx
-            
-        return wavedict
+    wavedict = {"data":spWave, "time": time, "FS": FS}
+        
+    if len(idx) != len(inner_idx):
+        is_masked = np.zeros(len(spt), dtype=np.bool)
+        is_masked[inner_idx]=True
+        wavedict['is_masked']=is_masked
+    
+    if resample:
+        warn("resample argument is deprecated."
+             "Please update your code to use function"
+             "resample_spikes", DeprecationWarning)
+        wavedict = resample_spikes(wavedict, FS*resample)
+        
+    
+    return wavedict
 
 def resample_spikes(spikes_dict, FS_new):
 
