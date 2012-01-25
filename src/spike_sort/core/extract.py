@@ -255,7 +255,8 @@ def extract_spikes(spike_data, spt_dict, sp_win, resample=1,
     for i in outer_idx:
         sp = indices[i]
         l, r = map(minmax, sp+win)
-        spWave[(l-sp)-win[0]:(r-sp)-win[0],i,:] = sp_data[contacts, l:r].T
+        if l<>r:
+            spWave[(l-sp)-win[0]:(r-sp)-win[0],i,:] = sp_data[contacts, l:r].T
 
     wavedict = {"data":spWave, "time": time, "FS": FS}
         
