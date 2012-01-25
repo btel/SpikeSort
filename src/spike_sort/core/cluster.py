@@ -98,8 +98,16 @@ def cluster(method, features,  *args, **kwargs):
                     )
     
     data = features['data']
-    cl = cluster_func(data, *args, **kwargs)
-    return cl
+    mask = features.get('is_masked')
+    if mask is not None:
+        valid_data = data[mask,:]
+        cl = cluster_func(valid_data, *args, **kwargs)
+        labels = np.zeros(data.shape[0])-1
+        labels[mask] = cl
+    else:
+        labels = cluster_func(data, *args, **kwargs)
+        
+    return labels
 
 def k_means(features, K):
     """

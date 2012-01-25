@@ -311,19 +311,22 @@ def test_truncated_spikes_from_begin():
     ok_((sp_waves['is_masked'] == correct_mask).all())
 
 @with_setup(setup, teardown)    
-def test_labels_returned_for_truncated_spikes():
+def test_null_labels_returned_for_truncated_spikes():
     signal_src = DummySignalSource()
-    signal_src._spikes = signal_src._spikes[:, :period/1000.*FS*2.5]
+    signal_src._spikes = signal_src._spikes[:, :-period/1000.*FS*2.5]
     
     base.features.Provide("SignalSource",      signal_src)
     base.features.Provide("SpikeMarkerSource", DummySpikeDetector())
     base.features.Provide("SpikeSource",       components.SpikeExtractor())
     base.features.Provide("FeatureSource",     components.FeatureExtractor(normalize=False))
-    base.features.Provide("ClusterAnalyzer",   components.ClusterAnalyzer("k_means", 2))
+    base.features.Provide("ClusterAnalyzer",   components.ClusterAnalyzer("k_means", 1))
     base.features['FeatureSource'].add_feature("P2P")
     cl = base.features["ClusterAnalyzer"].labels
     
-    ok_((len(cl) == (n_spikes-2)) and (cl[-1]==0))
+    true_labels = np.ones(n_spikes-2)
+    true_labels[-1]= 0
+    
+    ok_((cl==true_labels).all())
 
 @with_setup(setup, teardown)
 def test_propagate_truncate_to_features():
