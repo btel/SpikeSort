@@ -261,8 +261,8 @@ def extract_spikes(spike_data, spt_dict, sp_win, resample=1,
         
     if len(idx) != len(inner_idx):
         is_masked = np.zeros(len(spt), dtype=np.bool)
-        is_masked[inner_idx]=True
-        wavedict['is_masked']=is_masked
+        is_masked[inner_idx] = True
+        wavedict['is_masked'] = is_masked
     
     if resample<>1:
         warn("resample argument is deprecated."

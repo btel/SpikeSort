@@ -340,7 +340,7 @@ def test_propagate_truncate_to_features():
     
     features = feat_comp.features
     
-    ok_((features['is_masked']==truncate).all())  
+    ok_((features['is_masked']==is_masked).all())  
     
 
 @with_setup(setup, teardown)

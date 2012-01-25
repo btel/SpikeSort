@@ -172,10 +172,6 @@ class TestExtract:
         spt_filt = ss.extract.filter_spt(self.spk_data, spt_dict, sp_win)
         ok_(len(spt_filt)==(self.n_spikes-1))
         
-    
-        
-    
-   
 
 class TestFeatures:
 
@@ -251,7 +247,35 @@ class TestFeatures:
         
         feat = ss.features.fetSpProjection(spikes_dict, labels)
         ok_(((feat['data'][:,0]>0.5) == labels).all())
-    
+        
+    def test_add_mask_decorator(self):
+        spikes_dict = {'data':np.zeros((10,2)), 
+                       'is_masked':np.zeros(2, )}
+        
+        fetIdentity = lambda x:{'data':x['data'], 'names':'Identity'}
+        deco_fet = ss.features.add_mask(fetIdentity)
+        features = deco_fet(spikes_dict)
+        
+        ok_((features['is_masked'] == spikes_dict['is_masked']).all())
+        
+    def test_combine_features_with_one_mask(self):
+        feature1 = {'data':np.ones((5, 1)), 'names': ['feature1']}
+        feature2 = {'data':np.ones((5, 1)), 'names': ['feature2'],
+                    'is_masked':np.ones(5,dtype=np.bool)}
+        combined = ss.features.combine((feature1, feature2))
+        ok_((combined['is_masked']==feature2['is_masked']).all()) 
+        
+    def test_combine_features_with_different_masks(self):
+        mask1 = np.ones(5, dtype=np.bool)
+        mask1[-1] = False
+        mask2 = mask1.copy()
+        mask2[:2] = False
+        feature1 = {'data':np.ones((5, 1)), 'names': ['feature1'],
+                    'is_masked':mask1}
+        feature2 = {'data':np.ones((5, 1)), 'names': ['feature2'],
+                    'is_masked':mask2}
+        combined = ss.features.combine((feature1, feature2))
+        ok_((combined['is_masked']==(mask1 & mask2)).all())   
         
 class TestCluster:
     """test clustering algorithms"""

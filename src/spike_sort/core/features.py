@@ -34,7 +34,6 @@ def split_cells(features, idx, which='all'):
 
 
 def select(features_dict, features_ids):
-
     """Choose selected features from the collection"""
     
     def _feat2idx(id):
@@ -65,16 +64,60 @@ def combine(args, norm=True):
 
     features = [d['data'] for d in args]
     names = [d['names'] for d in args]
-
-    data  = np.hstack(features)
+    
+    #get mask, if it exist
+    mask = [d['is_masked'] for d in args if 'is_masked' in d]
+    
+    try:
+        if mask:
+            #combine masks using AND
+            mask = reduce(np.logical_and, mask)
+        data  = np.hstack(features)
+    except ValueError:
+        raise ValueError, 'all features must contain the same number of spikes'
+    
     combined_features = {"data": data,
-                "names":np.concatenate(names)}
+                         "names":np.concatenate(names),
+                         "is_masked": mask}
     
     if norm:
         normalize(combined_features, copy=False)
 
     
     return combined_features
+
+def calculate(spike_data, feature):
+    """Calculate feature from spike data.
+    
+    Parameters
+    ----------
+    spike_data : spikewave structure
+                 spike waveforms to calculate features from
+    
+    feature : string or function
+               name of the feature (without the 'fet' prefix) or the function
+               to calculate the features
+               
+    Returns
+    -------
+    feature_data : features structure
+                   features mapping with at least two keys: names (names of the
+                   features) and data (array of size n_spikes, n_features)
+    """
+    pass
+
+def add_mask(feature_function):
+    """Decorator to copy mask from waveshapes to features"""
+    
+    def _decorated(spike_data, *args, **kwargs):
+        feature_data = feature_function(spike_data, *args, **kwargs)
+        if 'is_masked' in spike_data:
+            feature_data['is_masked'] = spike_data['is_masked']
+        return feature_data
+            
+    return _decorated
+    
+    
 
 def normalize(features, copy=True):
     if copy:
@@ -88,13 +131,9 @@ def normalize(features, copy=True):
     
     features_norm['data'] = data
 
-    return features_norm
+    return features_norm    
 
-    
-    
-    
-    
-
+@add_mask
 def PCA(data,ncomps=2):
     """
     Perfrom a principle component analysis on `data` and project
@@ -137,6 +176,7 @@ def _get_data(spk_dict, contacts):
                              " contact indices" )
     return spikes
 
+@add_mask
 def fetPCs(spikes_data,ncomps=2, contacts='all'):
     """Calculate principal components (PCs).
     
@@ -172,6 +212,7 @@ def fetPCs(spikes_data,ncomps=2, contacts='all'):
     
     return {'data': sc, "names":names}
 
+@add_mask
 def fetP2P(spikes_data, contacts='all'):
     """Calculate peak-to-peak amplitudes of spike waveforms.
 
@@ -213,6 +254,7 @@ def fetP2P(spikes_data, contacts='all'):
 
     return {'data':p2p, 'names':names}
 
+@add_mask
 def fetSpIdx(spikes_data):
     """
     Spike sequential index (0,1,2, ...)
@@ -224,6 +266,7 @@ def fetSpIdx(spikes_data):
 
     return {'data':np.arange(n_datapts)[:, np.newaxis],'names':["SpIdx"]}
 
+@add_mask
 def fetSpTime(spt_dict):
     """
     Spike occurrence time in milliseconds.
@@ -238,6 +281,7 @@ def fetSpTime(spt_dict):
 
     return {'data': spt[:, np.newaxis], 'names':["SpTime"]}
 
+@add_mask
 def fetSpProjection(spikes_data, labels, cell_id=1):
     """
     Projection coefficient of spikes on an averaged waveform
