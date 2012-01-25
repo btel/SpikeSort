@@ -91,6 +91,7 @@ class TestExtract:
     
     def test_extract(self):
         zero_crossing = self.period*np.arange(self.n_spikes)
+        zero_crossing += 1000./self.FS/2.# move by half a sample to avoid round-off errors
         spt_dict = {"data":zero_crossing}
         sp_win = [0, self.period]
         sp_waves = ss.extract.extract_spikes(self.spk_data, spt_dict, sp_win)
@@ -99,17 +100,19 @@ class TestExtract:
         #ok_((np.abs(sp_waves['data'][:,:,0].mean(1)-ref_sp)<2*1000*np.pi/(self.FS*self.period)).all())
         #ok_(np.abs(np.sum(sp_waves['data'][:,:,0].mean(1)-ref_sp))<1E-6)
         
-    def test_extract_resample_deprecation(self):
-        zero_crossing = self.period*np.arange(self.n_spikes)
-        spt_dict = {"data":zero_crossing}
-        sp_win = [0, self.period]
-        with warnings.catch_warnings(True) as w:
-            sp_waves = ss.extract.extract_spikes(self.spk_data, spt_dict, sp_win,
-                                                 resample=2.)
-            ok_(len(w)>=1)
+    #def test_extract_resample_deprecation(self):
+    #    zero_crossing = self.period*np.arange(self.n_spikes)
+    #    spt_dict = {"data":zero_crossing}
+    #    sp_win = [0, self.period]
+    #    with warnings.catch_warnings(True) as w:
+    #        sp_waves = ss.extract.extract_spikes(self.spk_data, spt_dict, sp_win,
+    #                                             resample=2.)
+    #        ok_(len(w)>=1)
             
     def test_extract_and_resample(self):
+
         zero_crossing = self.period*np.arange(self.n_spikes)
+        zero_crossing += 1000./self.FS/2.# move by half a sample to avoid round-off errors
         spt_dict = {"data":zero_crossing}
         sp_win = [0, self.period]
         sp_waves = ss.extract.extract_spikes(self.spk_data, spt_dict, sp_win)
