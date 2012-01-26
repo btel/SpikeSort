@@ -77,8 +77,8 @@ def combine(args, norm=True):
         raise ValueError, 'all features must contain the same number of spikes'
     
     combined_features = {"data": data,
-                         "names":np.concatenate(names),
-                         "is_masked": mask}
+                         "names":np.concatenate(names)}
+    if list(mask): combined_features["is_masked"] = mask
     
     if norm:
         normalize(combined_features, copy=False)
