@@ -100,7 +100,7 @@ class NoMeanSource(object):
         
         print 'subtracting mean...'
 
-        wshapes = sort.extract.extract_spikes(sp, stim, window, resample=None, contacts='all')
+        wshapes = sort.extract.extract_spikes(sp, stim, window)
         mean_waves = np.mean(wshapes['data'], 1)
         
         stim_idx = sort.extract.filter_spt(sp, stim, window)
