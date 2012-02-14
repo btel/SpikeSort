@@ -3,7 +3,14 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from NeuroTools.analysis import crosscorrelate
+
+def raise_exception(*args, **kwargs):
+    raise NotImplementedError, "This function requires NeuroTools"
+
+try:
+    from NeuroTools.analysis import crosscorrelate
+except:
+    crosscorrelate = raise_exception
 
 def show_xcorr(cells):
     n = len(cells)
