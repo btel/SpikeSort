@@ -4,6 +4,9 @@ import spike_sort as ss
 
 from nose.tools import ok_, eq_, raises
 from numpy.testing import assert_array_almost_equal as almost_equal
+from numpy.testing import assert_allclose as allclose
+
+import warnings
 
 class TestExtract:
     
@@ -88,12 +91,62 @@ class TestExtract:
     
     def test_extract(self):
         zero_crossing = self.period*np.arange(self.n_spikes)
+        zero_crossing += 1000./self.FS/2.# move by half a sample to avoid round-off errors
         spt_dict = {"data":zero_crossing}
         sp_win = [0, self.period]
         sp_waves = ss.extract.extract_spikes(self.spk_data, spt_dict, sp_win)
         ref_sp = np.sin(2*np.pi/self.period*sp_waves['time'])
-        ok_((np.abs(sp_waves['data'][:,:,0].mean(1)-ref_sp)<2*1000*np.pi/(self.FS*self.period)).all())
+        ok_((np.abs(ref_sp[:,np.newaxis]-sp_waves['data'][:,:,0])<1E-6).all())
+        #ok_((np.abs(sp_waves['data'][:,:,0].mean(1)-ref_sp)<2*1000*np.pi/(self.FS*self.period)).all())
         #ok_(np.abs(np.sum(sp_waves['data'][:,:,0].mean(1)-ref_sp))<1E-6)
+        
+    #def test_extract_resample_deprecation(self):
+    #    zero_crossing = self.period*np.arange(self.n_spikes)
+    #    spt_dict = {"data":zero_crossing}
+    #    sp_win = [0, self.period]
+    #    with warnings.catch_warnings(True) as w:
+    #        sp_waves = ss.extract.extract_spikes(self.spk_data, spt_dict, sp_win,
+    #                                             resample=2.)
+    #        ok_(len(w)>=1)
+            
+    def test_extract_and_resample(self):
+
+        zero_crossing = self.period*np.arange(self.n_spikes)
+        zero_crossing += 1000./self.FS/2.# move by half a sample to avoid round-off errors
+        spt_dict = {"data":zero_crossing}
+        sp_win = [0, self.period]
+        sp_waves = ss.extract.extract_spikes(self.spk_data, spt_dict, sp_win)
+        sp_resamp = ss.extract.resample_spikes(sp_waves, self.FS*2)
+        ref_sp = np.sin(2*np.pi/self.period*sp_resamp['time'])
+        ok_((np.abs(ref_sp[:,np.newaxis]-sp_resamp['data'][:,:,0])<1E-6).all())
+        
+    def test_mask_of_truncated_spikes(self):
+        zero_crossing = self.period*np.arange(self.n_spikes+1)
+        spt_dict = {"data":zero_crossing}
+        sp_win = [0, self.period]
+        sp_waves = ss.extract.extract_spikes(self.spk_data, spt_dict, sp_win)
+        correct_mask = np.ones(self.n_spikes+1, np.bool)
+        correct_mask[-1] = False
+        ok_((sp_waves['is_masked']==correct_mask).all())
+        #ok_(np.abs(np.sum(sp_waves['data'][:,:,0].mean(1)-ref_sp))<1E-6)
+        
+    def test_extract_truncated_spike_end(self):
+        zero_crossing = np.array([self.period*(self.n_spikes-0.5)])
+        spt_dict = {"data":zero_crossing}
+        sp_win = [0, self.period]
+        sp_waves = ss.extract.extract_spikes(self.spk_data, spt_dict, sp_win)
+        ref_sp = -np.sin(2*np.pi/self.period*sp_waves['time'])
+        ref_sp[len(ref_sp)/2:] = 0
+        almost_equal(sp_waves['data'][:,0,0],ref_sp)
+        
+    def test_extract_truncated_spike_end(self):
+        zero_crossing = np.array([-self.period*0.5])
+        spt_dict = {"data":zero_crossing}
+        sp_win = [0, self.period]
+        sp_waves = ss.extract.extract_spikes(self.spk_data, spt_dict, sp_win)
+        ref_sp = -np.sin(2*np.pi/self.period*sp_waves['time'])
+        ref_sp[:len(ref_sp)/2] = 0
+        almost_equal(sp_waves['data'][:,0,0],ref_sp)
         
     def test_filter_spt(self):
         #out of band spikes  should be removed
@@ -119,10 +172,6 @@ class TestExtract:
         spt_filt = ss.extract.filter_spt(self.spk_data, spt_dict, sp_win)
         ok_(len(spt_filt)==(self.n_spikes-1))
         
-    
-        
-    
-   
 
 class TestFeatures:
 
@@ -198,6 +247,41 @@ class TestFeatures:
         
         feat = ss.features.fetSpProjection(spikes_dict, labels)
         ok_(((feat['data'][:,0]>0.5) == labels).all())
+        
+    def test_add_mask_decorator(self):
+        spikes_dict = {'data':np.zeros((10,2)), 
+                       'is_masked':np.zeros(2, )}
+        
+        fetIdentity = lambda x:{'data':x['data'], 'names':'Identity'}
+        deco_fet = ss.features.add_mask(fetIdentity)
+        features = deco_fet(spikes_dict)
+        
+        ok_((features['is_masked'] == spikes_dict['is_masked']).all())
+    
+    def test_combine_features_without_mask(self):
+        feature1 = {'data':np.random.uniform(size=(5, 1)), 'names': ['feature1']}
+        feature2 = {'data':np.random.uniform(size=(5, 1)), 'names': ['feature2']}
+        combined = ss.features.combine((feature1, feature2))
+        ok_('is_masked' not in combined) 
+        
+    def test_combine_features_with_one_mask(self):
+        feature1 = {'data':np.random.uniform(size=(5, 1)), 'names': ['feature1']}
+        feature2 = {'data':np.random.uniform(size=(5, 1)), 'names': ['feature2'],
+                    'is_masked':np.ones(5,dtype=np.bool)}
+        combined = ss.features.combine((feature1, feature2))
+        ok_((combined['is_masked']==feature2['is_masked']).all()) 
+        
+    def test_combine_features_with_different_masks(self):
+        mask1 = np.ones(5, dtype=np.bool)
+        mask1[-1] = False
+        mask2 = mask1.copy()
+        mask2[:2] = False
+        feature1 = {'data':np.random.uniform(size=(5, 1)), 'names': ['feature1'],
+                    'is_masked':mask1}
+        feature2 = {'data':np.random.uniform(size=(5, 1)), 'names': ['feature2'],
+                    'is_masked':mask2}
+        combined = ss.features.combine((feature1, feature2))
+        ok_((combined['is_masked']==(mask1 & mask2)).all())   
         
 class TestCluster:
     """test clustering algorithms"""
