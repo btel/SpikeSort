@@ -643,22 +643,20 @@ class Dashboard(MplPlotComponent):
         labels = self.labels_src.labels
         spike_idx = self.marker_src.events
         
-        try:
-            spt = sort.cluster.split_cells(spike_idx, labels)[self.cell]
-        except:
+        spt_all =  sort.cluster.split_cells(spike_idx, labels)
+        
+        if self.cell not in spt_all.keys():
             old_cell=self.cell
             for c in range(max(self.labels_src.labels) + 1)[::-1]:
-                try: 
-                    spt = sort.cluster.split_cells(spike_idx, labels)[c]
+                if spt_all.has_key(c):
                     self.cell=c
+                    print "Dashboard: cell %s doesn't exist, plotting cell %s" % \
+                          (old_cell, self.cell)
                     break
-                except: pass
-            print "Dashboard: cell %s doesn't exist any more, plotting cell %s" % (old_cell, self.cell)
         
-        dataset = {'spt':spt['data'], 'stim': stim['data'], 'ev':[]}
+        dataset = {'spt':spt_all[self.cell]['data'], 'stim': stim['data'], 'ev':[]}
         dashboard.plot_dataset(dataset, self.fig)
         
     def show(self, cell):
         self.cell = cell
-        if not self.fig:
-            self._draw()
+        self._draw()
