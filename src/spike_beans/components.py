@@ -320,6 +320,18 @@ class ClusterAnalyzer(base.Component):
         for cell_id in cell_ids:
             self.cluster_labels[self.cluster_labels==cell_id] = self.trash_label
         self.notify_observers()
+        
+    def delete_spikes(self, idx_list):
+        """moves specified spikes to trash
+        
+        Parameters
+        ----------
+        idx_list : list
+            list of spike indices to remove
+            
+        """
+        self.cluster_labels[idx_list] = self.trash_label
+        self.notify_observers()
     
     def merge_cells(self, *cell_ids):
         """merge selected cells. after merging all cells receive the label of the
