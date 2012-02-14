@@ -8,5 +8,12 @@ Requirements:
 * Python >= 2.6
 * PyTables
 * NumPy
+* matplotlib
+
+
+Optional:
+
+* scikits.learn -- clustering algorithms
+* neurotools  -- spike train analysis
 
 To see the library in actions see examples folder.

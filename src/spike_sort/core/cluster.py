@@ -41,6 +41,7 @@ try:
     
 except ImportError:
     k_means_plus = default_scikits("k_means_plus")
+    gmm = default_scikits("gmm")
 
 
 from spike_sort.ui import manual_sort
