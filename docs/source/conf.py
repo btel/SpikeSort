@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# SortSpikes documentation build configuration file, created by
+# SpikeSort documentation build configuration file, created by
 # sphinx-quickstart on Thu Jan 27 14:09:31 2011.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -172,7 +172,7 @@ html_static_path = ['_static']
 #html_file_suffix = ''
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'SortSpikesdoc'
+htmlhelp_basename = 'SpikeSortsdoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -186,7 +186,7 @@ htmlhelp_basename = 'SortSpikesdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'SortSpikes.tex', u'SortSpikes Documentation',
+  ('index', 'SpikeSort.tex', u'SpikeSort Documentation',
    u'Bartosz Telenczuk', 'manual'),
 ]
 
@@ -219,6 +219,6 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'sortspikes', u'SortSpikes Documentation',
+    ('index', 'sortspikes', u'SpikeSorts Documentation',
      [u'Bartosz Telenczuk'], 1)
 ]
