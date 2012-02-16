@@ -1,10 +1,20 @@
 Data Structures
 ===============
 
-.. _spikewave:
+.. _raw_recording:
 
-Spikewave
----------
+Raw recording
+-------------
+
+.. _spike_times:
+
+Spike times
+-----------
+
+.. _spike_wave:
+
+Spike waveforms
+---------------
 
 Spikewave structure contains waveforms of extracted spikes. It may be
 any mapping datastructure (usually a dictionary) with following keys:
@@ -35,5 +45,15 @@ any mapping datastructure (usually a dictionary) with following keys:
 
    (Auxilarly variable) Number of independent channels with spike
    waveshapes (see also :py:attr::`data` definition).
+
+.. _spike_features:
+
+Spike features
+--------------
+
+.. _spike_labels:
+
+Spike labels
+------------
 
 

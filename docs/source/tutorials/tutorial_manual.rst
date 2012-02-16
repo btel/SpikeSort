@@ -37,7 +37,7 @@ To start this tutorial you will need:
 ------------
 
    
-   We will assume that you downloaded the sample :ref:`tutorial.h5` and saved it to the :file:`data` 
+   We will assume that you downloaded the sample data file :file:`tutorial.h5` and saved it to the :file:`data` 
    directory. 
    
    You can load this file using one of I/O fiters from 

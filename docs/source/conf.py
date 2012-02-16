@@ -30,8 +30,10 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.coverage',
               'sphinx.ext.pngmath', 
               'sphinx.ext.viewcode',
+              'sphinx.ext.autosummary',
               'matplotlib.sphinxext.only_directives',
               'matplotlib.sphinxext.plot_directive',
+              'numpydoc'
              ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -45,6 +47,10 @@ source_suffix = '.rst'
 
 # The master toctree document.
 master_doc = 'index'
+
+#automatically generate stub files
+import glob
+autosummary_generate = glob.glob('modules/extract.rst')
 
 # General information about the project.
 project = u'SpikeSort'

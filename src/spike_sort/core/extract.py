@@ -9,6 +9,7 @@ import os
 from warnings import warn
 
 class ZeroPhaseFilter:
+    """IIR Filter with zero phase delay"""
 
     def __init__(self, ftype, fband, tw=200., stop=20):
         self.gstop=stop
@@ -35,6 +36,21 @@ class ZeroPhaseFilter:
         return signal.filtfilt(b,a, x)
 
 class FilterFir:
+    """FIR filter with zero phase delay
+    
+    Attributes
+    ----------
+    f_pass : float
+             normalised low-cutoff frequency
+    
+    f_stop : float
+             normalised high-cutoff frequency
+             
+    order : int
+            filter order
+      
+    
+    """
     def __init__(self, f_pass, f_stop, order):
         self._coefs_cache = {}
         self.fp = f_pass
@@ -78,6 +94,22 @@ class Filter:
         return signal.filtfilt(b,a, x)
     
 def filter_proxy(spikes, filter_obj, chunksize=1E6):
+    """Proxy object to read filtered data
+    
+    Parameters
+    ----------
+    spikes : dict
+        unfiltered raw recording
+    filter_object : object
+        Filter to filter the data
+    chunksize : int
+        size of segments in which data is filtered
+        
+    Returns
+    -------
+    sp_dict : dict
+        filtered recordings 
+    """
     data = spikes['data']
     sp_dict = spikes.copy()
     
@@ -102,7 +134,8 @@ def filter_proxy(spikes, filter_obj, chunksize=1E6):
     
 
 def split_cells(spikes, idx, which='all'):
-    """return the spike features splitted into separate cells"""
+    """Return the spike features splitted into separate cells
+    """
 
     if which == 'all':
         classes = np.unique(idx)
@@ -117,6 +150,8 @@ def split_cells(spikes, idx, which='all'):
     return spikes_dict
 
 def remove_spikes(spt_dict, remove_dict, tolerance):
+    """Remove spikes with given spike times from the spike time
+    structure """
     spt_data = spt_dict['data']
     spt_remove = remove_dict['data']
 
@@ -132,28 +167,29 @@ def remove_spikes(spt_dict, remove_dict, tolerance):
     return spt_ret
 
 def detect_spikes(spike_data, thresh='auto', edge="rising",
-                  contact=0, chunksize=3E6, filter=None):
-    
-    
-    """Detects spikes in extracellular data using amplitude thresholding.
+                  contact=0, filter=None):
+    r"""Detects spikes in extracellular data using amplitude thresholding.
 
-    Arguments:
+    Parameters
+    ----------
+    spike_data : dict
+        extracellular waveforms
+    thresh : float or 'auto'
+        threshold for detection. if thresh is 'auto' it will be
+        estimated from the data.
+    edge : {'rising', 'falling'}
+        which edge to trigger on
+    contact : int, optional
+        index of tetrode contact to use for detection, defaults to
+        first contact
+    filter : object, optional
+        filter used for spike detection; defaults to no filtering
 
-    -- spike_data : dict
-       extracellular waveforms
-
-    -- thresh : float or 'auto'
-       threshold for detection. if thresh is 'auto' it will be
-       estimated from the data.
-
-    -- edge : {"rising" or "falling"}
-       which edge to trigger on
-
-    -- contact: index of tetrode contact to use for detection
-
-    Returns: 
-    dictionary with 'data' key which contains detected threshold
-    crossing in miliseconds
+    Returns
+    -------
+    spt_dict : dict
+        dictionary with 'data' key which contains detected threshold
+        crossing in miliseconds
 
     """ 
     
@@ -211,13 +247,22 @@ def filter_spt(spike_data, spt_dict, sp_win):
 
 def extract_spikes(spike_data, spt_dict, sp_win, resample=1,
                    contacts='all'):
-    """Returns spike wave shapes.
+    """Extract spikes from recording.
 
-    Arguments:
+    Parameters
+    ----------
+    spike_data : dict
+       extracellular data (see :ref:`raw_recording`) 
+    spt : dict
+       spike times structure (see :ref:`spike_times`) 
+    sp_win : list of int
+       temporal extent of the wave shape 
 
-    -- spike_data: extracellular waveforms (n_pts, n_spikes, n_contacts)
-    -- spt : spike times
-    -- sp_win : temporal extent of the wave shape 
+    Returns
+    -------
+    wavedict : dict
+       spike waveforms structure (see :ref:`spike_wave`) 
+
 
     """
 
@@ -275,6 +320,7 @@ def extract_spikes(spike_data, spt_dict, sp_win, resample=1,
     return wavedict
 
 def resample_spikes(spikes_dict, FS_new):
+    """Upsample spike waveforms using spline interpolation"""
 
     sp_waves = spikes_dict['data']
     time = spikes_dict['time']
@@ -296,8 +342,24 @@ def resample_spikes(spikes_dict, FS_new):
 
 def align_spikes(spike_data, spt_dict, sp_win, type="max", resample=1,
                 contact=0, remove=True):
+    """Aligns spike waves and returns corrected spike times
     
-    """aligns spike waves and returns corrected spike times"""
+    Parameters
+    ----------
+    spike_data : dict
+    spt_dict : dict
+    sp_win : list of int
+    type : {'max', 'min'}, optional
+    resample : int, optional
+    contact : int, optional
+    remove : bool, optiona
+
+    Returns
+    -------
+    ret_dict : dict
+       spike times of aligned spikes
+
+    """
 
     spt = spt_dict['data'].copy()
     
@@ -362,22 +424,23 @@ def remove_doubles(spt_dict,tol):
 def merge_spikes(spike_waves1, spike_waves2):
     """Merges two sets of spike waves
     
-    Arguments:
+    Parameters
+    ----------
     
-    * spike_waves1 : dictionary
-    * spike_waves2 : dictionary
-      both spike wave sets must be defined within the same time window
-      and with the same sampling frequency
+    spike_waves1 : dict
+    spike_waves2 : dict
+        spike wavefroms to merge; both spike wave sets must be defined
+        within the same time window and with the same sampling
+        frequency
 
-    Returns:
+    Returns
+    -------
 
-    * spike_waves : dictionary
-      merged spike waveshapes
+    spike_waves : dict
+        merged spike waveshapes
 
-    * clust_idx : array
-      labels denoting to which set the given spike originally belonged
-      to
-    
+    clust_idx : array
+        labels denoting to which set the given spike originally belonged to
     """
 
     sp_data1 = spike_waves1['data']
@@ -395,21 +458,20 @@ def merge_spikes(spike_waves1, spike_waves2):
 def merge_spiketimes(spt1, spt2, sort=True):
     """Merges two sets of spike times 
     
-    Arguments:
-    
-    * spt1 : dictionary
-    * spt2 : dictionary
-    * sort : bool
-      False if you don't want to be the spike times sorted.
+    Parameters
+    ----------
+    spt1 : dict
+    spt2 : dict
+    sort : bool, optional
+        False if you don't want to be the spike times sorted.
 
-    Returns:
-
-    * spt : dictionary
-      dictionary with merged spike time arrrays under data key
-
-    * clust_idx : array
-      labels denoting to which set the given spike originally belonged
-      to
+    Returns
+    -------
+    spt : dict
+        dictionary with merged spike time arrrays under data key
+    clust_idx : array
+        labels denoting to which set the given spike originally belonged
+        to
     
     """
 
