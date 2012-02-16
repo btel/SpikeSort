@@ -14,6 +14,7 @@ Contents:
    intro
    tutorials/index
    datastructures
+   datafiles
 
 Modules:
 

@@ -205,8 +205,7 @@ which use SpikeSort for spike sorting
 * :file:`cluster_beans.py` - run full stack spike-sorting evnvironment
   and show spikes in a spike browser (see our tutorial :ref:`beans_tutorial`)
 
-In order to run these examples, you need to download an example data
-file: `tutorial.h5`_ and define an environment variable ``DATAPATH``::
+In order to run these examples, you need to download :ref:`tutorial_data` and define an environment variable ``DATAPATH``::
 
    export DATAPATH=/path/to/data/directory
 

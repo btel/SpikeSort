@@ -6,7 +6,7 @@
  * :license: Flask Design License, see LICENSE for details.
  */
 
-{% set page_width = '940px' %}
+{% set page_width = '90%' %}
 {% set sidebar_width = '220px' %}
  
 @import url("basic.css");
@@ -24,7 +24,7 @@ body {
 
 div.document {
     width: {{ page_width }};
-    margin: 30px auto 0 auto;
+    margin: 30px auto 0 20px;
 }
 
 div.documentwrapper {

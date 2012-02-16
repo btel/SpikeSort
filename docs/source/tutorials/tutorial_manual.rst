@@ -19,25 +19,25 @@ Using low-level interface
 
    os.removedirs(temp_path)
 
+
+In this tutorial we will go deeper into the lower-level interface of
+SpikeSort: :py:mod:`spike_sort.core`. This interface is a bit more
+complex than the SpikeBeans (see :ref:`beans_tutorial`), but it offers
+more flexibility and allows you to embbedd SpikeSort in your own
+programs.
+
+To start this tutorial you will need:
+
+* working installation of SpikeSort 
+
+* the sample :ref:`tutorial_data`
+
+
 1. Read data
 ------------
 
-   Before you can start spike sorting you have to load data with raw extracellular
-   recordings. Such data can be obtained from microelectrodes,
-   tetrodes or shank electrodes. SpikeSort currently supports data
-   saved in custom binary format and HDF5 files but new formats can
-   be easily added.
    
-   To start with, you can download a sample `data file`_. 
-
-   This hierachical file is organised as following::
-   
-      /subject/session/electrodeid
-      
-   For example, data from electrode `el1` recorded in session `session01` of 
-   subject `SubjectA` can be found under `/SubjectA/session01/el1`
-   
-   I will assume that you downloaded this file and saved it to :file:`data` 
+   We will assume that you downloaded the sample :ref:`tutorial.h5` and saved it to the :file:`data` 
    directory. 
    
    You can load this file using one of I/O fiters from 
@@ -61,7 +61,13 @@ Using low-level interface
       
    The size of the data is 23512500 samples in 4 independent channels (`contacts`
    in the tetrode).
-   
+
+   .. note::
+      
+      HDF5 are organised hierarchically and may contain multiple
+      datasets. You can access the datasets via simple paths - in this
+      case `/SubjectA/session01/el1` which means dataset of SubjectA
+      recorded in session01 from el1
 
 2. Detect spikes
 ----------------
@@ -277,4 +283,4 @@ Using low-level interface
    
    Good luck!!!
    
-.. _data file: http://itb.biologie.hu-berlin.de/~bartosz/spikesort/_downloads/tutorial.h5 
+
