@@ -25,21 +25,21 @@ def label_color(labels):
 def plot_spikes(spikes, clust_idx=None, show_cells='all', **kwargs):
     """Plot Spike waveshapes
 
-    :arguments:
-    
-     * spike_data : dict
-     * clust_idx : sequence
-       sequence of the length equal to the number of spikes; labels of
-       clusters to which spikes belong
-     * n_spikes : int or "all"
-       number of spikes to plot; 'all' if all
-     * plot_avg: bool
-       plot waveform averages?
+    Parameters
+    ----------
+    spike_data : dict
+    clust_idx : sequence
+        sequence of the length equal to the number of spikes; labels of
+        clusters to which spikes belong
+    show_cells : list or 'all'
+        list of identifiers of clusters (cells) to plot
+    plot_avg: bool
+        if True plot waveform averages
 
-    :output:
-    
-     * lines_segments
-       matplotlib line collection of spike waveshapes
+    Returns
+    -------
+    lines_segments : object
+        matplotlib line collection of spike waveshapes
     """
     
     if clust_idx is None:
@@ -99,13 +99,15 @@ def spikegraph(spike_data, color='k', alpha=0.2, n_spikes='all', contacts='all',
 def plot_features(features, clust_idx=None, show_cells='all', **kwargs):
     """Plot features and their histograms
     
-    :arguments:
-     * features_dict --features data structure (dicitionary with
-       `data` and `names` keys)
-     * clust_idx (default: None) -- array of size (n_spikes,)
-       containing indices of clusters to which each spike was
-       classfied
-     * size (default: 1)
+    Parameters
+    ----------
+    features_dict : dict
+        features data structure
+    clust_idx : array or None
+        array of size (n_spikes,) containing indices of clusters to which
+        each spike was classfied
+    show_cells : list or 'all'
+        list of identifiers of clusters (cells) to plot
     
     """
 

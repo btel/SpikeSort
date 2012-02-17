@@ -16,19 +16,36 @@ try:
     
     def k_means_plus(*args, **kwargs):
         """k means with smart initialization.
+       
+        Notes
+        -----
+        This function requires scikits-learn
         
-        see also kmeans"""
+        See Also
+        --------
+        kmeans
+        """
         return skcluster.k_means(*args, **kwargs)[1]
     
     def gmm(data, k):
-        """cluster based on gaussian mixture models (from scikits.learn)
+        """Cluster based on gaussian mixture models 
         
-        :arguments:
-         * data -- features structures
-         * k -- number of clusters
+        Parameters
+        ----------
+        data : dict
+            features structure
+        k :  int
+            number of clusters
+
+        Returns
+        -------
+        cl : int array
+            cluster indicies
+       
+        Notes
+        -----
+        This function requires scikits-learn
          
-         :output:
-          * k -- number of clusters to fit
         """
         try:
             clf = mixture.GMM(n_states=k, cvtype='full')
@@ -47,9 +64,21 @@ except ImportError:
 from spike_sort.ui import manual_sort
 
 def manual(data, *args, **kwargs):
+    """Sort spikes manually by cluster cutting
+    
+    Opens a new window in which you can draw cluster of arbitrary
+    shape.
+    
+    Notes
+    -----
+    Only two first features are plotted
+    """
+
+
     return manual_sort._cluster(data[:,:2])
 
 def none(data):
+    """Do nothing"""
     return np.zeros(data.shape[0],dtype='int16')
 
 def _metric_euclidean(data1, data2):
@@ -80,15 +109,37 @@ def dist_euclidean(spike_waves1, spike_waves2=None):
     return d
 
 def cluster(method, features,  *args, **kwargs):
-    """
-    Automatically cluster spikes using K means algorithm
+    """Automatically cluster spikes using K means algorithm
     
-    :arguments:
-     * features -- spike features datastructure
-     * n_clusters -- number of clusters to identify
+    Parameters
+    ----------
+    features : dict
+        spike features datastructure
+    n_clusters : int
+        number of clusters to identify
+    args, kwargs :
+        optional arguments that are passed to the clustering algorithm
      
-    :output:
-     * labels
+    Returns
+    -------
+    labels : array
+        array of cluster (unit) label - one for each cell
+
+    Examples
+    --------
+    Create a sample feature dataset and use k-means clustering to find
+    groups of spikes (units)
+
+    >>> import spike_sort
+    >>> import numpy as np
+    >>> np.random.seed(1234) #k_means uses random initialization
+    >>> features = {'data':np.array([[0.,0.], 
+    ...                              [0, 1.],
+    ...                              [0, 0.9],
+    ...                              [0.1,0]])}
+    >>> labels = spike_sort.cluster.cluster('k_means', features, 2)
+    >>> print labels
+    [0 1 1 0]
     """
     try:
         
@@ -111,17 +162,20 @@ def cluster(method, features,  *args, **kwargs):
     return labels
 
 def k_means(features, K):
-    """
-    Perform K means clustering
+    """Perform K means clustering
     
-    :arguments:
-     * data -- data vectors (n,m) where n is the number of datapoints and m is 
-       the number of variables
-     * K -- (required) number of distinct clusters to identify
+    Parameters
+    ----------
+    data : dict
+        data vectors (n,m) where n is the number of datapoints and m is 
+        the number of variables
+    K : int
+        number of distinct clusters to identify
      
-    :output:
-     * partition -- vector of cluster labels (ints) for each datapoint from 
-       `data`
+    Returns
+    -------
+    partition : array
+        vector of cluster labels (ints) for each datapoint from `data`
     """
     
     n_dim = features.shape[1]

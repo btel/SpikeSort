@@ -11,7 +11,17 @@ def deprecation(message):
 def snr_spike(spike_waves, scale=5.):
     """Estimate signal-to-noise ratio (SNR) as a ratio of
     peak-to-peak amplitude of an average spike to the std. deviation
-    of residuals"""
+    of residuals
+    
+    Parameters
+    ----------
+    spike_waves : dict
+    
+    Returns
+    -------
+    snr : float
+        signal to noise ratio
+    """
     
     sp_data = spike_waves['data']
     avg_spike = sp_data.mean(1)
@@ -27,10 +37,21 @@ def snr_spike(spike_waves, scale=5.):
     return snr
 
 def snr_clust(spike_waves, noise_waves):
-    """Calculate signal-to-noise ratio by comparing average P2P
-    amplitude of spike cluster to noise cluster.
+    """Calculate signal-to-noise ratio.
     
-    See also: extract_noise_cluster"""
+    Comparing average P2P amplitude of spike cluster to noise cluster
+    (randomly selected signal segments)
+    
+    Parameters
+    ----------
+    spike_waves : dict
+    noise_waves : dict
+    
+    Returns
+    -------
+    snr : float
+        signal-to-noise ratio
+    """
 
     def _calc_p2p(data):
         p2p = data.max(0)-data.min(0)
@@ -68,6 +89,7 @@ def rand_sample_spt(spt, max_spikes):
 
 def detect_noise(sp, spt, sp_win, type="positive", max_spikes=None,
         resample=1):
+    """Find noisy spikes"""
 
     spike_waves = extract.extract_spikes(sp, spt, sp_win)
     
@@ -82,7 +104,6 @@ def detect_noise(sp, spt, sp_win, type="positive", max_spikes=None,
         threshold = calc_noise_threshold(spike_waves, -1)
         spt_noise = extract.detect_spikes(sp, threshold, 'falling')
         spt_noise = rand_sample_spt(spt_noise, max_spikes)
-        print spt_noise['data'].shape
         spt_noise = extract.remove_spikes(spt_noise, spt, sp_win)
         spt_noise = extract.align_spikes(sp, spt_noise, sp_win, 'min',
                 resample=resample)
@@ -91,32 +112,33 @@ def detect_noise(sp, spt, sp_win, type="positive", max_spikes=None,
     return spt_noise
 
 def calc_noise_threshold(spike_waves, sign=1, frac_spikes=0.02, frac_max=0.5):
-    """ Find threshold to extract noise cluster according to algorithm described in
-    Joshua et al. (2007)
+    """ Find threshold to extract noise cluster.
+    
+    According to algorithm described in Joshua et al. (2007)
 
-    Arguments:
+    Parameters
+    ----------
+    spike_waves : dict
+        waveshapes of spikes from the identified single unit (extracted
+        with extract.extrac_spikes)
 
-    * spike_waves : dictionary
-      waveshapes of spikes from the identified single unit (extracted
-      with extract.extrac_spikes)
+    sign : int
+        sign should be negative for negative-going spikes and positive for
+        postitive-going spikes. Note that only sign of this number is taken into
+        account.
 
-    * sign : int
-      sign should be negative for negative-going spikes and positive for
-      postitive-going spikes. Note that only sign of this number is taken into
-      account.
+    frac_spikes : float, optional
+        fraction of largest (smallest) spikes to calculate the threshold
+        from (default 0.02)
 
-    * frac_spikes : float, default 0.02
-      fraction of largest (smallest) spikes to calculate the threshold
-      from
-
-    * frac_max : float
-      fraction of the average peak amplitude to use as a treshold
+    frac_max : float
+        fraction of the average peak amplitude to use as a treshold
 
 
-    Returns: float
-
-      threshold to obtain a noise cluster 
-
+    Returns
+    -------
+    threshold : float
+        threshold to obtain a noise cluster 
     """
 
     gain = np.sign(sign)
@@ -131,6 +153,7 @@ def calc_noise_threshold(spike_waves, sign=1, frac_spikes=0.02, frac_max=0.5):
     return threshold
 
 def isolation_score(sp, spt, sp_win, spike_type='positive', lam=10., max_spikes=None):
+    "calculate spike isolation score from raw data and spike times"
     
     spike_waves = extract.extract_spikes(sp, spt, sp_win)
     spt_noise = detect_noise(sp, spt, sp_win, spike_type)
@@ -145,19 +168,21 @@ def _iso_score_dist(dist, lam, n_spikes):
 
     """Calculate isolation score from a distance matrix
 
-    Arguments:
-    * dist : numpy array
-      NxM matrix, where N is number of spikes and M is number of all
-      events (spikes + noise)
+    Parameters
+    ----------
+    dist : array
+        NxM matrix, where N is number of spikes and M is number of all
+        events (spikes + noise)
 
-    * lam : float 
-      lambda parameter
+    lam : float 
+        lambda parameter
 
-    * n_spikes : int
-      number of spikes (N)
+    n_spikes : int
+        number of spikes (N)
 
-    Returns:
-    * isolation score
+    Returns
+    -------
+    isolation_score : float
     """
 
 
@@ -182,27 +207,23 @@ def calc_isolation_score(spike_waves, noise_waves, spike_type='positive',
         lam=10., max_spikes=None):
     """Calculate isolation index according to Joshua et al. (2007)
     
-    Arguments:
-    
-    * spike_waves : dict
+    Parameters
+    ----------
+    spike_waves : dict
+    noise_waves : dict
+    sp_win : list or tuple
+        window used for spike extraction
+    spike_type : {'positive', 'negative'}
+        indicates if the spikes occuring at time points given by spt are
+        positive or negative going
+    lambda : float
+        determines the "softness" of clusters 
       
-    * noise_waves : dict
-    
-    * sp_win : list or tuple
-      window used for spike extraction
-      
-    * spike_type : positive or negative
-      indicates if the spikes occuring at time points given by spt are
-      positive or negative going
-
-    * lambda : float, (0, Inf)
-      determines the "softness" of clusters; 
-      
-    Returns:
-        
-      isolation_score : float
-      a value from the range [0,1] indicating the quality of sorting
-      (1=ideal isolation of spikes)
+    Returns
+    -------
+    isolation_score : float
+        a value from the range [0,1] indicating the quality of sorting
+        (1=ideal isolation of spikes)
     """
 
     #Memory issue: sample spikes if too many
