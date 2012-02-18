@@ -48,9 +48,8 @@ source_suffix = '.rst'
 # The master toctree document.
 master_doc = 'index'
 
-#automatically generate stub files
-import glob
-autosummary_generate = glob.glob('modules/extract.rst')
+#automatically generate autosummary stub files
+#autosummary_generate = True 
 
 # General information about the project.
 project = u'SpikeSort'

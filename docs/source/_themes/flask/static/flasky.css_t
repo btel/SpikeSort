@@ -240,14 +240,17 @@ div.note {
 }
  
 div.seealso {
-    background-color: #ffc;
-    border: 1px solid #ff6;
+    background-color: rgb(240,240,240);
 }
- 
+
+td.field-body strong {
+    font-weight: normal;
+    font-style: italic;
+}
 div.topic {
     background-color: #eee;
 }
- 
+
 p.admonition-title {
     display: inline;
 }
@@ -312,6 +315,7 @@ table.footnote + table.footnote {
 
 table.field-list th {
     padding: 0 0.8em 0 0;
+    width: 120px;
 }
 
 table.field-list td {
@@ -335,6 +339,14 @@ dl {
 dl dd {
     margin-left: 30px;
 }
+
+dl.method, dl.attribute {
+    border-top: 1px solid rgb(170,170,170);
+    }
+
+dl.class, dl.function {
+    border-top: 2px solid rgb(136,136,136);
+    }
 
 blockquote {
     margin: 0 0 0 30px;

@@ -17,7 +17,7 @@ Using low-level interface
 
 .. testcleanup::
 
-   os.removedirs(temp_path)
+   shutil.rmtree(temp_path)
 
 
 In this tutorial we will go deeper into the lower-level interface of
