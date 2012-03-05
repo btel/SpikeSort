@@ -78,9 +78,9 @@ The data is store in a dictionary with following keys:
       one-dimensional array-like object with event times (in
       milliseconds) 
 
-  :is_masked: *array*, optional
+  :is_valid: *array*, optional
 
-      boolean area of the same size as `data` -- if an element is True
+      boolean area of the same size as `data` -- if an element is False
       the event of the same index is masked (or invalid)
 
 .. note::
@@ -148,9 +148,9 @@ any mapping data structure (usually a dictionary) with following keys:
    Number of independent channels with spike
    waveshapes (see also :ref:`raw_recording`).
   
-:is_masked: *array*, optional
+:is_valid: *array*, optional
 
-   boolean area of the size of second dimension of `data` (N_spikes) -- if an element is True
+   boolean area of the size of second dimension of `data` (N_spikes) -- if an element is False
    the spike with the same index is masked (or invalid)
 
 
@@ -177,7 +177,7 @@ Now let us investigate the returned spike waveforms structure:
 * keys:
 
    >>> print waves_dict.keys()
-   ['is_masked', 'FS', 'data', 'time']
+   ['is_valid', 'FS', 'data', 'time']
 
 * data array shape:
 
@@ -195,11 +195,11 @@ Now let us investigate the returned spike waveforms structure:
 
 * and potential invalid (truncated spikes):
 
-   >>> print(waves_dict['is_masked'])     # last spike is invalid (truncated)
-   [ False  False True]
+   >>> print(waves_dict['is_valid'])     # last spike is invalid (truncated)
+   [ True True False]
 
-Note that the :py:attr:`is_masked` element of truncated spike is
-:py:data:`True`.
+Note that the :py:attr:`is_valid` element of truncated spike is
+:py:data:`False`.
 
 .. _spike_features:
 
@@ -221,9 +221,9 @@ The spike features dictionary consits of following keys:
 
     list of length N_features containing feature labels  
 
-:is_masked: *array*, optional
+:is_valid: *array*, optional
 
-   boolean area of of length N_spikes; if an element is True
+   boolean area of of length N_spikes; if an element is False
    the spike with the same index is masked (or invalid, see also
    :ref:`spike_wave`)
 
@@ -238,7 +238,7 @@ extracted in :ref:`spike_wave`:
    (4, 3, 1)
    >>> feature_dict = fetP2P(waves_dict)
    >>> print(feature_dict.keys())
-   ['is_masked', 'data', 'names']
+   ['is_valid', 'data', 'names']
    >>> print(feature_dict['data'].shape)
    (3, 1)
 
@@ -259,8 +259,8 @@ is:
 
 The mask array is inherited from :py:data:`waves_dict`:
 
-   >>> print(feature_dict['is_masked'])
-   [ False  False True]
+   >>> print(feature_dict['is_valid'])
+   [ True True False]
 
 .. _spike_labels:
 
