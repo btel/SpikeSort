@@ -9,6 +9,10 @@ clustering by means of manual cluster-cutting.
 import numpy as np
 import os, sys
 
+import matplotlib
+matplotlib.use("TkAgg")
+matplotlib.interactive(True)
+
 import spike_sort as sort
 from spike_sort.io.filters import PyTablesFilter, BakerlabFilter
 import spike_sort.ui.manual_sort
@@ -35,12 +39,15 @@ if __name__ == "__main__":
             sort.features.fetPCs(sp_waves)),
             norm=True
     )
-
+    
     clust_idx = sort.ui.manual_sort.manual_sort(features,
                                          ['Ch0:P2P','Ch3:P2P'])
-
+    
     clust, rest = sort.cluster.split_cells(spt, clust_idx, [1,0])
+    
+    sort.ui.plotting.figure()
     sort.ui.plotting.plot_spikes(sp_waves, clust_idx,n_spikes=200)
-    sort.ui.plotting.show()
-
+    
+    raw_input('Press any key to exit...')
+    
     h5filter.close()
