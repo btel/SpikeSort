@@ -150,7 +150,7 @@ def cluster(method, features,  *args, **kwargs):
                     )
     
     data = features['data']
-    mask = features.get('is_masked')
+    mask = features.get('is_valid')
     if mask is not None:
         valid_data = data[mask,:]
         cl = cluster_func(valid_data, *args, **kwargs)

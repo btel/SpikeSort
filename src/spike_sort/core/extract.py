@@ -306,9 +306,9 @@ def extract_spikes(spike_data, spt_dict, sp_win, resample=1,
     wavedict = {"data":spWave, "time": time, "FS": FS}
         
     if len(idx) != len(inner_idx):
-        is_masked = np.zeros(len(spt), dtype=np.bool)
-        is_masked[inner_idx] = True
-        wavedict['is_masked'] = is_masked
+        is_valid = np.zeros(len(spt), dtype=np.bool)
+        is_valid[inner_idx] = True
+        wavedict['is_valid'] = is_valid
     
     if resample<>1:
         warn("resample argument is deprecated."
@@ -377,8 +377,8 @@ def align_spikes(spike_data, spt_dict, sp_win, type="max", resample=1,
                                        resample=resample, contacts=contact)
         
         sp_waves = sp_waves_dict['data'][:,spt_inbound,0]
-        #if sp_waves_dict.has_key('is_masked'):
-        #    sp_waves = sp_waves[:, sp_waves_dict['is_masked']]
+        #if sp_waves_dict.has_key('is_valid'):
+        #    sp_waves = sp_waves[:, sp_waves_dict['is_valid']]
         time = sp_waves_dict['time']
     
         if type=="max":

@@ -68,7 +68,7 @@ def combine(args, norm=True):
     names = [d['names'] for d in args]
     
     #get mask, if it exist
-    mask = [d['is_masked'] for d in args if 'is_masked' in d]
+    mask = [d['is_valid'] for d in args if 'is_valid' in d]
     
     try:
         if mask:
@@ -80,7 +80,7 @@ def combine(args, norm=True):
     
     combined_features = {"data": data,
                          "names":np.concatenate(names)}
-    if list(mask): combined_features["is_masked"] = mask
+    if list(mask): combined_features["is_valid"] = mask
     
     if norm:
         normalize(combined_features, copy=False)
@@ -94,8 +94,8 @@ def add_mask(feature_function):
     
     def _decorated(spike_data, *args, **kwargs):
         feature_data = feature_function(spike_data, *args, **kwargs)
-        if 'is_masked' in spike_data:
-            feature_data['is_masked'] = spike_data['is_masked']
+        if 'is_valid' in spike_data:
+            feature_data['is_valid'] = spike_data['is_valid']
         return feature_data
     _decorated.__doc__ = feature_function.__doc__
     return _decorated
