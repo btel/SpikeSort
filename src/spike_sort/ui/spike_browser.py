@@ -139,10 +139,12 @@ class SpikeBrowserUI(object):
                     self.color_func = label_color(np.unique(labels))
                 else:
                     self.color_func = label_color(all_labels)
-                self.ax_next.set_visible(True)
-                self.ax_prev.set_visible(True)
             else:
                 self.labels = None
+            
+            self.ax_next.set_visible(True)
+            self.ax_prev.set_visible(True)
+                
         else:
             self.spt = None
             self.ax_next.set_visible(False)
