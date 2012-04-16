@@ -51,6 +51,30 @@ def select(features_dict, features_ids):
 
     return selected
 
+def select_spikes(features, idx):
+    """Truncate features array to selected spikes. This method should be
+    used to properly truncate the "features" structure
+    
+    Parameters
+    ----------
+    features : features structure
+        features structure to truncate
+    idx : bool list or int list
+        indices of selected spikes
+        
+    Returns
+    -------
+    new_feats : features structure
+        new features structure containing only data for selected spike
+        indices
+    """
+    
+    new_feats = features.copy()
+    new_feats['data'] = features['data'][idx, :]
+    if features.has_key('is_valid'):
+        new_feats['is_valid'] = features['is_valid'][idx]
+    return new_feats
+
 def combine(args, norm=True):
     """Combine features into a single structure
     
