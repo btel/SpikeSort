@@ -8,7 +8,7 @@ dataset = "/SubjectA/session01/el1"
 #spike detection/extraction properties
 contact = 3
 type = "max"
-thresh = 70
+thresh = "auto"
 filter_freq= (800., 100.)
 
 sp_win = [-0.6, 0.8]
