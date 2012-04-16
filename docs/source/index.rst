@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to SortSpikes's documentation!
+Welcome to SpikesSort's documentation!
 ======================================
 
 Contents:
@@ -14,11 +14,12 @@ Contents:
    intro
    tutorials/index
    datastructures
+   datafiles
 
 Modules:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    
    modules/extract
    modules/features

@@ -127,7 +127,7 @@ class TestExtract:
         sp_waves = ss.extract.extract_spikes(self.spk_data, spt_dict, sp_win)
         correct_mask = np.ones(self.n_spikes+1, np.bool)
         correct_mask[-1] = False
-        ok_((sp_waves['is_masked']==correct_mask).all())
+        ok_((sp_waves['is_valid']==correct_mask).all())
         #ok_(np.abs(np.sum(sp_waves['data'][:,:,0].mean(1)-ref_sp))<1E-6)
         
     def test_extract_truncated_spike_end(self):
@@ -250,26 +250,26 @@ class TestFeatures:
         
     def test_add_mask_decorator(self):
         spikes_dict = {'data':np.zeros((10,2)), 
-                       'is_masked':np.zeros(2, )}
+                       'is_valid':np.zeros(2, )}
         
         fetIdentity = lambda x:{'data':x['data'], 'names':'Identity'}
         deco_fet = ss.features.add_mask(fetIdentity)
         features = deco_fet(spikes_dict)
         
-        ok_((features['is_masked'] == spikes_dict['is_masked']).all())
+        ok_((features['is_valid'] == spikes_dict['is_valid']).all())
     
     def test_combine_features_without_mask(self):
         feature1 = {'data':np.random.uniform(size=(5, 1)), 'names': ['feature1']}
         feature2 = {'data':np.random.uniform(size=(5, 1)), 'names': ['feature2']}
         combined = ss.features.combine((feature1, feature2))
-        ok_('is_masked' not in combined) 
+        ok_('is_valid' not in combined) 
         
     def test_combine_features_with_one_mask(self):
         feature1 = {'data':np.random.uniform(size=(5, 1)), 'names': ['feature1']}
         feature2 = {'data':np.random.uniform(size=(5, 1)), 'names': ['feature2'],
-                    'is_masked':np.ones(5,dtype=np.bool)}
+                    'is_valid':np.ones(5,dtype=np.bool)}
         combined = ss.features.combine((feature1, feature2))
-        ok_((combined['is_masked']==feature2['is_masked']).all()) 
+        ok_((combined['is_valid']==feature2['is_valid']).all()) 
         
     def test_combine_features_with_different_masks(self):
         mask1 = np.ones(5, dtype=np.bool)
@@ -277,11 +277,11 @@ class TestFeatures:
         mask2 = mask1.copy()
         mask2[:2] = False
         feature1 = {'data':np.random.uniform(size=(5, 1)), 'names': ['feature1'],
-                    'is_masked':mask1}
+                    'is_valid':mask1}
         feature2 = {'data':np.random.uniform(size=(5, 1)), 'names': ['feature2'],
-                    'is_masked':mask2}
+                    'is_valid':mask2}
         combined = ss.features.combine((feature1, feature2))
-        ok_((combined['is_masked']==(mask1 & mask2)).all())   
+        ok_((combined['is_valid']==(mask1 & mask2)).all())   
         
 class TestCluster:
     """test clustering algorithms"""

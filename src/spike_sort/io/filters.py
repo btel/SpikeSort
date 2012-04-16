@@ -7,9 +7,6 @@ methods:
  * read_sp -- read raw spike waveforms 
  * write_sp -- write raw spike waveforms
 
-Created on Feb 2, 2011
-
-@author: bartosz
 '''
 import os
 import numpy as np
@@ -22,8 +19,47 @@ import os.path
 
 
 class BakerlabFilter:
-    
+    """Filter for custom binary data structure.
+
+    The binary data consists of independent files for each contact in
+    each electrode written as 16-bit ints.
+
+    The paths to the datafiles are defined in :file:`.inf` file that is
+    JSON-compatible and contains at least the following attributes:
+
+      fspike : str 
+          path to raw recordings relative to `dirname`
+      cell : str
+          path to spike times (with resolution 20 us) relative to
+          `dirname`
+      n_contacts : int
+          number of contacts per electrode
+      dirname : str
+          path to the data
+      FS : int 
+          spike sampling frequency
+
+    Each of the paths can include any of the following Python formatting 
+    placeholders:
+      
+      * `{subject}` -- subeject name
+      * `{cell_id}` -- cell id
+      * `{ses_id}` -- session id
+      * `{el_id}` -- electrode id
+
+    These will be substituted by data extracted from `datapath`
+    paramaeters of the reading and writing methods.
+
+    Parameters
+    ----------
+
+    conf_file : str
+        path to the configuration file
+
+    """
+
     def __init__(self, conf_file):
+        """ constructor"""
         self._regexp="^/(?P<subject>[a-zA-z]+)/s(?P<ses_id>.+)/el(?P<el_id>[0-9]+)/?(?P<type>[a-zA-Z]+)?(?P<cell_id>[0-9]+)?$"
         self.conf_file = conf_file
         self._tempfiles=[]
@@ -35,9 +71,14 @@ class BakerlabFilter:
     def read_sp(self, dataset, memmap=None):
         """Reads raw spike waveform from file in bakerlab format
         
-        :arguments:
-         - dataset -- dataset path
-         - memmap -- use memory mapped arrays to save some memory
+        Parameters
+        ----------
+        dataset : str
+            dataset path (in format
+            /{subject}/session{ses_id}/el{el_id})
+        memmap : {'numpy', 'tables', None}, optional
+            if True use memory mapped arrays to save some memory
+            (defaults to no memmory-mapping)
         """
        
         conf_dict = self.conf_dict
@@ -90,9 +131,16 @@ class BakerlabFilter:
     def write_sp(self, sp_dict, dataset):
         """Write raw spike waveform to a file in bakerlab format
         
-        :arguments:
-         - sp_dict -- spike waveform dict
-         - dataset -- dataset path
+        Parameters
+        ----------
+        sp_dict : dict
+            spike waveform dict
+        dataset : str
+            dataset path
+
+        See Also
+        --------
+        read_sp 
         """
         sp = sp_dict['data']
         conf_dict = self.conf_dict
@@ -118,8 +166,11 @@ class BakerlabFilter:
     def read_spt(self,  dataset):
         """Returns spike times in miliseconds:
         
-        :arguments:
-         * dataset : dataset path
+        Parameters
+        ----------
+        dataset : str
+            dataset path in format
+            /{subject}/session{ses_id}/el{el_id}/cell{cell_id}
         """
         conf_dict = self.conf_dict
         rec = self._match_dataset(dataset)
@@ -133,10 +184,16 @@ class BakerlabFilter:
         return {"data": spt/200.}
     
     def write_spt(self, spt_dict, dataset, overwrite=False):
-        """Returns spike times in miliseconds:
+        """Returns spike times in miliseconds.
         
-        :Arguments:
-         * dataset : dataset name
+        Parameters
+        ----------
+        dataset : str
+            dataset path
+
+        See Also
+        --------
+        read_spt
         """
         
         conf_dict = self.conf_dict
@@ -169,6 +226,8 @@ class BakerlabFilter:
     
 class PyTablesFilter:
     """
+    Read/Write HDF5
+    
     HDF5 is a hierarchical datafile -- data is organised in a tree. The
     standard layout is::
        
@@ -183,8 +242,6 @@ class PyTablesFilter:
     where curly brackets `{}` denote a group.
     
     This layout may be adjusted by changing paths
-    
-    TODO: implement custom layouts
     """
     
     def __init__(self, fname, mode='a'):
@@ -220,10 +277,12 @@ class PyTablesFilter:
         _open_files=[]
     
     def read_sp(self, dataset):
-        """Read continous waveforms (EEG, LFG, spike waveform.
+        """Read continous waveforms (EEG, LFG, spike waveform)
         
-        :arguments:
-            * dataset -- (string) path pointing to cell node
+        Parameters
+        ----------
+        dataset : str
+            path pointing to cell node
         """
         
         h5f = self.h5file
@@ -246,8 +305,10 @@ class PyTablesFilter:
     def read_spt(self,  dataset):
         """Read event times (such as spike or stimulus times).
        
-        :arguments:
-            * dataset -- (string) with path pointing to cell node
+        Parameters
+        ----------
+        dataset : str
+            path pointing to cell node
         """
     
         h5f = self.h5file
@@ -266,7 +327,8 @@ class PyTablesFilter:
         return ret_dict 
     
     def write_spt(self, spt_dict, dataset,overwrite=False):
-        
+        """Write spike times"""
+
         h5f = self.h5file
         
         spt = spt_dict['data']
@@ -290,13 +352,8 @@ class PyTablesFilter:
         for k, v in attrs.items():
             arr_node.setAttr(k, v)
     
-        #arr_node._v_attrs.__dict__.update(attrs)
-        
-        #arr_node.flush()
-        #h5f.close()
-        
     def write_sp(self, sp_dict, dataset,overwrite=False):
-        
+        """Write signal""" 
         h5f = self.h5file
         
         sp = sp_dict['data']
@@ -320,17 +377,6 @@ class PyTablesFilter:
         arr_node[:] = sp
         
         arr_node.attrs['sampfreq']=sp_dict['FS']
-        #attrs = sp_dict.copy()
-        #del attrs['data']
-        #del attrs['FS']
-    
-        #for k, v in attrs.items():
-        #    arr_node.setAttr(k, v)
-    
-        #arr_node._v_attrs.__dict__.update(attrs)
-        
-        #arr_node.flush()
-        #h5f.close()
     def close(self):
         if self.h5file:
             self.h5file.close()

@@ -1,10 +1,23 @@
 Spike sorting library implemented in Python/NumPy/PyTables
 ----------------------------------------------------------
 
+Project website: spikesort.org
+
 Requirements:
 
 * Python >= 2.6
 * PyTables
 * NumPy
+* matplotlib
+
+Optional:
+
+* scikits.learn -- clustering algorithms
+* neurotools  -- spike train analysis
+
+Test dependencies:
+
+* all the above 
+* hdf5-tools
 
 To see the library in actions see examples folder.

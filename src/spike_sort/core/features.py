@@ -5,7 +5,7 @@ Provides functions to calculate spike waveforms features.
 
 Functions starting with `fet` implement various features calculated
 from the spike waveshapes. They have usually one required argument
-:ref:`spikewave` structure (but there are exceptions!).  
+:ref:`spike_wave` structure (but there are exceptions!).  
 
 Each of the function returns a (mapping) object with following keys:
 
@@ -51,22 +51,48 @@ def select(features_dict, features_ids):
 
     return selected
 
+def select_spikes(features, idx):
+    """Truncate features array to selected spikes. This method should be
+    used to properly truncate the "features" structure
+    
+    Parameters
+    ----------
+    features : features structure
+        features structure to truncate
+    idx : bool list or int list
+        indices of selected spikes
+        
+    Returns
+    -------
+    new_feats : features structure
+        new features structure containing only data for selected spike
+        indices
+    """
+    
+    new_feats = features.copy()
+    new_feats['data'] = features['data'][idx, :]
+    if features.has_key('is_valid'):
+        new_feats['is_valid'] = features['is_valid'][idx]
+    return new_feats
+
 def combine(args, norm=True):
     """Combine features into a single structure
     
-    :arguments:
-        * args -- a tuple of features
+    Parameters
+    ----------
+    args : tuple or list of dict
+        a tuple of feature data structures
     
-    :output:
-        * combined_fetures -- dictionary with two keys `data` -- feature
-          array of shape `(n_spikes, n_features)` and `names` -- feature labels
+    Returns
+    -------
+    combined_fetures : dict
     """
 
     features = [d['data'] for d in args]
     names = [d['names'] for d in args]
     
     #get mask, if it exist
-    mask = [d['is_masked'] for d in args if 'is_masked' in d]
+    mask = [d['is_valid'] for d in args if 'is_valid' in d]
     
     try:
         if mask:
@@ -78,7 +104,7 @@ def combine(args, norm=True):
     
     combined_features = {"data": data,
                          "names":np.concatenate(names)}
-    if list(mask): combined_features["is_masked"] = mask
+    if list(mask): combined_features["is_valid"] = mask
     
     if norm:
         normalize(combined_features, copy=False)
@@ -86,40 +112,22 @@ def combine(args, norm=True):
     
     return combined_features
 
-def calculate(spike_data, feature):
-    """Calculate feature from spike data.
-    
-    Parameters
-    ----------
-    spike_data : spikewave structure
-                 spike waveforms to calculate features from
-    
-    feature : string or function
-               name of the feature (without the 'fet' prefix) or the function
-               to calculate the features
-               
-    Returns
-    -------
-    feature_data : features structure
-                   features mapping with at least two keys: names (names of the
-                   features) and data (array of size n_spikes, n_features)
-    """
-    pass
 
 def add_mask(feature_function):
     """Decorator to copy mask from waveshapes to features"""
     
     def _decorated(spike_data, *args, **kwargs):
         feature_data = feature_function(spike_data, *args, **kwargs)
-        if 'is_masked' in spike_data:
-            feature_data['is_masked'] = spike_data['is_masked']
+        if 'is_valid' in spike_data:
+            feature_data['is_valid'] = spike_data['is_valid']
         return feature_data
-            
+    _decorated.__doc__ = feature_function.__doc__
     return _decorated
     
     
 
 def normalize(features, copy=True):
+    """Normalize features"""
     if copy:
         features_norm = features.copy()
     else:
@@ -133,23 +141,25 @@ def normalize(features, copy=True):
 
     return features_norm    
 
-@add_mask
 def PCA(data,ncomps=2):
-    """
-    Perfrom a principle component analysis on `data` and project
-    data on `ncomps` eigenvectors
+    """Perfrom a principle component analysis.
 
-    :arguments:
+    Parameters
+    ----------
      
-     * data -- (n_vars, n_obs) array where `n_vars` is the number of
-       variables (vector dimensions) and `n_obs` the number of
-       observations
+    data : array 
+        (n_vars, n_obs) array where `n_vars` is the number of
+        variables (vector dimensions) and `n_obs` the number of
+        observations
 
-    :output:
-
-     * evals -- sorted eigenvalues
-     * evecs -- sorted eigenvectors
-     * score -- projection of the data on `ncomps` components
+    Returns
+    -------
+    evals : array
+        sorted eigenvalues
+    evecs : array 
+        sorted eigenvectors
+    score : array
+        projection of the data on `ncomps` components
      """
 
     #norm=data/np.std(data,1)[:,np.newaxis]
@@ -180,15 +190,16 @@ def _get_data(spk_dict, contacts):
 def fetPCs(spikes_data,ncomps=2, contacts='all'):
     """Calculate principal components (PCs).
     
-    :arguments:
-        
-     * spikes -- spikewave structures
-     * ncomps -- number of components to retain
+    Parameters
+    ----------
+    spikes : dict
+    ncomps : int, optional
+        number of components to retain
      
-     :output:
-
-     * pcs -- projection scores of size `(n_contacts*ncomps, n_spikes)`
-     * names -- feature labels ("Ch0:PC0', "Ch0:PC1", "Ch1:PC0", etc.)
+    Returns
+    -------
+    features : dict
+    
     """
 
     spikes = _get_data(spikes_data, contacts)
@@ -216,19 +227,16 @@ def fetPCs(spikes_data,ncomps=2, contacts='all'):
 def fetP2P(spikes_data, contacts='all'):
     """Calculate peak-to-peak amplitudes of spike waveforms.
 
-    :arguments:
-     
-     * spikes -- spikewave structure with spike waveshapes (see
-       documentation for detailed specification)
+    Parameters
+    ----------
+    spikes : dict
 
-    :output:
+    Returns
+    -------
+    features : dict
 
-     * p2p (int) -- 2D array of peak-to-peak amplitudes in subsequent
-       channels (contacts)
-     
-     * name -- feature labels (ex. Ch0:P2P, Ch1:P2P)
-
-    **Example**
+    Examples
+    --------
 
      We will generate a spikewave structure containing only a single
      spike on a single channel
@@ -256,8 +264,7 @@ def fetP2P(spikes_data, contacts='all'):
 
 @add_mask
 def fetSpIdx(spikes_data):
-    """
-    Spike sequential index (0,1,2, ...)
+    """Spike sequential index (0,1,2, ...)
     """
 
     spikes = _get_data(spikes_data, [0])
@@ -268,13 +275,7 @@ def fetSpIdx(spikes_data):
 
 @add_mask
 def fetSpTime(spt_dict):
-    """
-    Spike occurrence time in milliseconds.
-
-    :arguments:
-        * spt_dict -- dictionary with `data` key containing spike times
-    :output:
-        * feature dictionary
+    """Spike occurrence time in milliseconds.
     """
 
     spt = spt_dict['data']
@@ -283,19 +284,23 @@ def fetSpTime(spt_dict):
 
 @add_mask
 def fetSpProjection(spikes_data, labels, cell_id=1):
-    """
-    Projection coefficient of spikes on an averaged waveform
+    """Projection coefficient of spikes on an averaged waveform
     
-    :arguments:
-        * spikes_data -- waveform data
-        * labels -- array of length equal to number of spikes that contains 
-          cluster labels
-        * cell_id -- label of cell on which all spikes should be projected.
-        
-    :note:
-        *labels* can be also a boolean array in which case only spikes for 
-        which label is True value will be averaged to determine projection
-        coefficient
+    Parameters
+    ----------
+    spikes_data : dict
+        waveform data
+    labels : array
+        array of length equal to number of spikes that contains 
+        cluster labels
+    cell_id : int
+        label of cell on which all spikes should be projected.
+    
+    Notes
+    -----
+    `labels` can be also a boolean array in which case only spikes for 
+    which label is True value will be averaged to determine projection
+    coefficient
     """ 
     
     spikes = spikes_data["data"]

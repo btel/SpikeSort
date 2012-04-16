@@ -1,3 +1,5 @@
+.. _lowlevel_tutorial:
+
 Using low-level interface
 ==========================
 
@@ -5,25 +7,38 @@ Using low-level interface
    
    import numpy
    numpy.random.seed(1221)
+   import os, shutil, tempfile
 
-1. **Read data**.
+   temp_path =  tempfile.mkdtemp()
+   data_path = os.path.join(temp_path, 'data')
+   os.mkdir(data_path)
+   shutil.copyfile('../data/tutorial.h5', os.path.join(data_path, 'tutorial.h5'))
+   os.chdir(temp_path)
 
-   Before you can start spike sorting you have to load data with raw extracellular
-   recordings. Such data can be obtained from microelectrodes, tetrodes or shank
-   electrodes. SpikeSort currently supports data saved in Bakerlab and HDF5 format
-   but new formats can be easily added.
-   
-   To start with, you can download a sample `data file`_. 
+.. testcleanup::
 
-   This hierachical file is organised as following::
+   shutil.rmtree(temp_path)
+
+
+In this tutorial we will go deeper into the lower-level interface of
+SpikeSort: :py:mod:`spike_sort.core`. This interface is a bit more
+complex than the SpikeBeans (see :ref:`beans_tutorial`), but it offers
+more flexibility and allows you to embbedd SpikeSort in your own
+programs.
+
+To start this tutorial you will need:
+
+* working installation of SpikeSort 
+
+* the sample :ref:`tutorial_data`
+
+
+1. Read data
+------------
+
    
-      /subject/session/electrodeid
-      
-   For example, data from electrode `el1` recorded in session `session01` of 
-   subject `SubjectA` can be found under `/SubjectA/session01/el1`
-   
-   I will assume that you downloaded this file and saved it to :file:`data` 
-   directory.
+   We will assume that you downloaded the sample data file :file:`tutorial.h5` and saved it to the :file:`data` 
+   directory. 
    
    You can load this file using one of I/O fiters from 
    :py:mod:`spike_sort.io.filter` module:
@@ -32,7 +47,7 @@ Using low-level interface
    
       >>> from spike_sort.io.filters import PyTablesFilter
       >>> dataset = '/SubjectA/session01/el1'
-      >>> io_filter = PyTablesFilter('../data/tutorial.h5')
+      >>> io_filter = PyTablesFilter('data/tutorial.h5')
       >>> raw = io_filter.read_sp(dataset)
       
    :py:data:`raw` is a dictionary which contains the raw data (in this case it is
@@ -46,13 +61,21 @@ Using low-level interface
       
    The size of the data is 23512500 samples in 4 independent channels (`contacts`
    in the tetrode).
-   
 
-#. **Detect spikes**.
+   .. note::
+      
+      HDF5 are organised hierarchically and may contain multiple
+      datasets. You can access the datasets via simple paths - in this
+      case `/SubjectA/session01/el1` which means dataset of SubjectA
+      recorded in session01 from el1
+
+2. Detect spikes
+----------------
+
 
    The first step of spike sorting is spike detection. It is usually done by 
    thresholding the raw recordings. Let us use an automatic threshold on 
-   contact 3 (remember that indexing always starts with 0!):
+   4th contact i.e. index 3 (channel indexing always starts with 0!):
    
    .. doctest::
    
@@ -76,8 +99,8 @@ Using low-level interface
       >>> spt = extract.align_spikes(raw, spt, sp_win, type="max", 
       ...                            resample=10)
       
-   `resample` option is optional: it results in upsampling (10 times) the original 
-   waveforms to obtain better resolution of event times.
+   ``resample`` is optional - it enables upsampling (in this case 10-fold) 
+   of the original  waveforms to obtain better resolution of event times.
    
    After spike detection and alignment we can finally extract the spike waveforms:
    
@@ -96,13 +119,12 @@ Using low-level interface
    .. doctest::
    
       >>> print sp_waves['data'].shape
-      (25, 15541, 4)
+      (25, 15537, 4)
       
    In practice, you do not to take care of such details. However, it is always
    a good idea to take a look at the obtained waveforms. 
    :py:mod:`spike_sort.ui.plotting` module contains various functions which will
-   help you to visualize the data. To plot waveshapes you can use: 
-   :py:func:``plot_spikes``.
+   help you to visualize the data. To plot waveshapes you can use :py:func:`plot_spikes` function from this module:
    
    .. doctest::
    
@@ -113,13 +135,14 @@ Using low-level interface
    
    It is apparent from the plot that the spike waveforms of a few different cells
    and also some artifacts were detected. In order to separate these activities, 
-   in the next step we will perform *spike sorting*.
+   in the next step we will perform *spike clustering*.
 
-#. **Calculate features**.
+3. Calculate features
+---------------------
 
-   Before we can sort spikes, we should calculate some characteristic features 
+   Before we can cluster spikes, we should calculate some characteristic features 
    that may be used to differentiate between the waveshapes. Module 
-   :py:mod:`spike_sort.features` defines several of such features, for example
+   :py:mod:`~spike_sort.core.features` defines several of such features, for example
    peak-to-peak amplitude (:py:func:`fetP2P`) and projections on principal 
    components (:py:func:`fetPCs`). Now, we will calculate peak-to-peak amplitudes
    and PC projections on each of the contact, and then combine them into a single
@@ -135,8 +158,8 @@ Using low-level interface
       ...      )
       ... )
    
-   To help the user identify the features, all features are assigned with abbreviated
-   labels:
+   To help the user identify the features,  abbreviated
+   labels are assigned to all features:
    
    .. doctest::
    
@@ -156,7 +179,8 @@ Using low-level interface
       
    .. plot:: source/pyplots/tutorial_features.py
 
-#. **Cluster spikes**.
+4. Cluster spikes
+-----------------
 
    Finally, based on the calculated features we can perform spike clustering. This
    step is a little bit more complex and the best settings have to be identified
@@ -165,13 +189,12 @@ Using low-level interface
    There are several automatic, semi-automatic and manual methods for clustering.
    They performance and accuracy depends to large degree on a particular dataset
    and recording setup. In SpikeSort you can choose from several available methods,
-   whose names are given as the first argument of :py:func:`spike_sort.cluster.cluster`
+   whose names are given as the first argument of :py:func:`~spike_sort.core.cluster.cluster`
    method.
    
-   We will start with an automatic clustering :py:func:`gmm`, which requires
-   only the feature object :py:data:`sp_feats` and number of clusters to identify.
-   It attempts to find a mixture of gaussian functions which best approximates the
-   distribution of spike feature datapoints (gaussian mixture model).
+   We will start with an automatic clustering :py:func:`~spike_sort.core.cluster.gmm` , which requires only the feature object :py:data:`sp_feats` and number of clusters to identify.
+   It attempts to find a mixture of gaussian distributions which approximates best the
+   distribution of spike features (gaussian mixture model).
    Since we do not know, how many cells were picked up by the electrode we guess
    an initial number of clusters, which we can modify later on:
    
@@ -184,7 +207,7 @@ Using low-level interface
    the feature array :py:data:`sp_feats`.
    
    You can use the plotting module to draw the 
-   feature vectors with color reflecting group to which each spike was assigned:
+   feature vectors with color reflecting groups to which each spike was assigned:
    
    .. doctest::
    
@@ -210,13 +233,14 @@ Using low-level interface
       ...                                show_spikes=True)
       
    This function will open a window in which you can draw clusters of arbitrary
-   shapes, but beware: you can draw only on two dimensional plane, so that you 
-   are limited to only two features!
+   shapes, but beware: you can draw only on two dimensional plane so that you 
+   are limited to only two features (``Ch0:P2P`` and ``Ch3:P2P`` in this case)!
 
-#. **Export data**.
+5. Export data
+--------------
 
    Once you are done with spike sorting, you can export the results to a file.
-   To this end you can use the same :py:mod:`spike_sort.io` module we used 
+   To this end you can use the same :py:mod:`~spike_sort.io.filters` module we used 
    for reading. Here, we will save the spike times of a selected cell
    back to the file we read the data from. 
    
@@ -234,8 +258,9 @@ Using low-level interface
    .. doctest::
 
       >>> print spt_clust[0]
-      {'data': array([  2.11884000e+02,   2.37192000e+02,   3.45244000e+02, ...,
-               9.36228740e+05,   9.36269656e+05,   9.36527580e+05])}
+      {'data': array([  5.68152000e+02,   1.56978000e+03,   2.23985200e+03,
+               ...
+               9.24276876e+05,   9.33539168e+05])}
  
       
    Then we may export them to the datafile:
@@ -250,12 +275,12 @@ Using low-level interface
    the discriminated cell ``/SubjectA/session01/el1/cell{1-4}``, 
    which you can use for further analysis.
   
-   Don not forget to close the I/O filter at the end of your analysis:
+   Do not forget to close the I/O filter at the end of your analysis:
 
-   ..doctest::
+   .. doctest::
 
-      >>> io_filter.close()
+     >>> io_filter.close()
    
    Good luck!!!
    
-.. _data file: http://itb.biologie.hu-berlin.de/~bartosz/spikesort/_downloads/tutorial.h5 
+

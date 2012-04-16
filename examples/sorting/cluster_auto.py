@@ -3,11 +3,7 @@
 
 """
 Based on raw recordings detect spikes, calculate features and do automatic 
-clustering with k-means.
-
-TODO:
-After clustering the spike times are exported back to HDF5 (cell_kmeansX, where 
-X is cluster index)
+clustering with gaussian mixture models.
 """
 
 import numpy as np
@@ -18,9 +14,7 @@ from spike_sort.io.filters import PyTablesFilter, BakerlabFilter
 import spike_sort.ui.manual_sort
 import tables
 
-import time
-
-DATAPATH = "../data" 
+DATAPATH = os.environ['DATAPATH'] 
 
 if __name__ == "__main__":
 
@@ -30,7 +24,6 @@ if __name__ == "__main__":
     dataset = "/SubjectA/session01/el1"
     sp_win = [-0.2, 0.8]
     
-    start = time.time()
     sp = h5filter.read_sp(dataset)
     spt = sort.extract.detect_spikes(sp,  contact=3,
                                      thresh='auto')
@@ -41,7 +34,7 @@ if __name__ == "__main__":
             (
             sort.features.fetP2P(sp_waves),
             sort.features.fetPCs(sp_waves)),
-            normalize=True
+            norm=True
     )
 
 
@@ -54,10 +47,3 @@ if __name__ == "__main__":
     
     spike_sort.ui.plotting.show()
     h5filter.close()
-
-    #TODO: export
-    #sort.io.hdf5.write_spt(clust, h5f, cell_node+"_clust",
-    #                           overwrite=True)
-    #sort.io.hdf5.write_spt(rest, h5f, cell_node+"_rest",
-    #                           overwrite=True)
-

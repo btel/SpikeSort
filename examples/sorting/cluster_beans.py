@@ -8,10 +8,9 @@ dataset = "/SubjectA/session01/el1"
 #spike detection/extraction properties
 contact = 3
 type = "max"
-thresh = 70
+thresh = "auto"
 filter_freq= (800., 100.)
 
-#conf_file = "../data/gollum.inf"
 sp_win = [-0.6, 0.8]
 
 #############################################
@@ -51,3 +50,8 @@ export = components.ExportCells()
 
 base.features["FeatureSource"].add_feature("P2P")
 base.features["FeatureSource"].add_feature("PCs", ncomps=2)
+
+#############################################################
+# Run the analysis (this can take a while)
+
+browser.update()

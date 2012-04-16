@@ -180,25 +180,6 @@ class SpikeDetector(base.Component):
         return self.sp_times
     
     events = property(read_events)
-    
-    def delete_spikes(self, band):
-        band=np.array(band)
-        
-        if (np.argsort(band)==np.arange(len(band))).all() and\
-           (band<=1.0).all() and\
-           len(band) % 2 == 0:
-            
-            nsp = self.sp_times['data']
-            t_max=np.max(nsp)
-            
-            for t_start, t_end in zip(band[::2], band[1::2]):
-                nsp=nsp[(nsp<t_start*t_max) + (nsp>=t_end*t_max)]
-            
-            self.sp_times['data'] = nsp
-            self.notify_observers()
-            
-        else:
-            raise Exception("The 'bands' array must be of even length, with values sorted from 0 to 1")
         
 class SpikeExtractor(base.Component):
     waveform_src = base.RequiredFeature("SignalSource", 
@@ -286,8 +267,7 @@ class ClusterAnalyzer(base.Component):
                 raise ValueError("Feature {0} does not exist" % l)
             
         if idx is not None:
-            new_features  = feature_data.copy()
-            new_features['data'] = new_features['data'][idx,:]
+            new_features = sort.features.select_spikes(feature_data, idx)
             clust_idx = sort.cluster.cluster(method, new_features, *args, 
                                          **kwargs)
             all_labels = set(range(1, 100))
@@ -338,6 +318,18 @@ class ClusterAnalyzer(base.Component):
             cell_id = np.unique(self.labels)
         for cell_id in cell_ids:
             self.cluster_labels[self.cluster_labels==cell_id] = self.trash_label
+        self.notify_observers()
+        
+    def delete_spikes(self, idx_list):
+        """moves specified spikes to trash
+        
+        Parameters
+        ----------
+        idx_list : list
+            list of spike indices to remove
+            
+        """
+        self.cluster_labels[idx_list] = self.trash_label
         self.notify_observers()
     
     def merge_cells(self, *cell_ids):
@@ -650,22 +642,20 @@ class Dashboard(MplPlotComponent):
         labels = self.labels_src.labels
         spike_idx = self.marker_src.events
         
-        try:
-            spt = sort.cluster.split_cells(spike_idx, labels)[self.cell]
-        except:
+        spt_all =  sort.cluster.split_cells(spike_idx, labels)
+        
+        if self.cell not in spt_all.keys():
             old_cell=self.cell
             for c in range(max(self.labels_src.labels) + 1)[::-1]:
-                try: 
-                    spt = sort.cluster.split_cells(spike_idx, labels)[c]
+                if spt_all.has_key(c):
                     self.cell=c
+                    print "Dashboard: cell %s doesn't exist, plotting cell %s" % \
+                          (old_cell, self.cell)
                     break
-                except: pass
-            print "Dashboard: cell %s doesn't exist any more, plotting cell %s" % (old_cell, self.cell)
         
-        dataset = {'spt':spt['data'], 'stim': stim['data'], 'ev':[]}
+        dataset = {'spt':spt_all[self.cell]['data'], 'stim': stim['data'], 'ev':[]}
         dashboard.plot_dataset(dataset, self.fig)
         
     def show(self, cell):
         self.cell = cell
-        if not self.fig:
-            self._draw()
+        self._draw()

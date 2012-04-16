@@ -165,7 +165,7 @@ def test_bakerlab_event_read():
     spt_read = src.events[cell]
     
     os.unlink(spt_fname)
-    ok_((np.abs(spt_read['data']-spt_data)<=1/200.).all())
+    ok_((np.ceil(np.abs(spt_read['data']-spt_data)/200.)<=1).all())
     
 @with_setup(setup_io, teardown_io)
 def test_bakerlab_event_write():
@@ -294,7 +294,7 @@ def test_truncated_spikes_from_end():
 
     correct_mask = np.ones(n_spikes-2).astype(np.bool)
     correct_mask[-1] = False
-    ok_((sp_waves['is_masked'] == correct_mask).all())    
+    ok_((sp_waves['is_valid'] == correct_mask).all())    
    
 @with_setup(setup, teardown)
 def test_truncated_spikes_from_begin():
@@ -308,7 +308,7 @@ def test_truncated_spikes_from_begin():
     
     correct_mask = np.ones(n_spikes-1).astype(np.bool)
     correct_mask[0] = False
-    ok_((sp_waves['is_masked'] == correct_mask).all())
+    ok_((sp_waves['is_valid'] == correct_mask).all())
 
 @with_setup(setup, teardown)    
 def test_null_labels_returned_for_truncated_spikes():
@@ -333,8 +333,8 @@ def test_propagate_truncate_to_features():
     
     spike_src = DummySpikeSource()
     sp_waves = spike_src._sp_waves
-    is_masked = np.ones(sp_waves['data'].shape[1]).astype(bool)
-    spike_src._sp_waves['is_masked'] = is_masked
+    is_valid = np.ones(sp_waves['data'].shape[1]).astype(bool)
+    spike_src._sp_waves['is_valid'] = is_valid
 
     base.features.Provide("SpikeSource",  spike_src)
     
@@ -343,7 +343,7 @@ def test_propagate_truncate_to_features():
     
     features = feat_comp.features
     
-    ok_((features['is_masked']==is_masked).all())  
+    ok_((features['is_valid']==is_valid).all())  
     
 
 @with_setup(setup, teardown)

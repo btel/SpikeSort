@@ -4,14 +4,12 @@ from numpy import arange, sin, pi, float, size
 
 import matplotlib
 
-from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from matplotlib.figure import Figure
 from matplotlib.collections import LineCollection
 from matplotlib.widgets import Button
 
-import wx
 import Tkinter as Tk
 
 from spike_sort.ui import label_color
@@ -58,37 +56,6 @@ class PlotWithScrollBarTk(object):
         self.page_sz = page_size 
         self.max = max
     
-class PlotWithScrollBarWx(wx.Frame):
-    def __init__(self, parent, id):
-        wx.Frame.__init__(self,parent, id, 'scrollable plot',
-                          style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER,
-                           size=(1200, 400))
-    
-    def get_canvas(self, fig):
-        self.panel = wx.Panel(self, -1)
-        self.canvas = FigureCanvasWxAgg(self.panel, -1, fig)
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(self.canvas, -1, wx.EXPAND)
-        self.panel.SetSizer(sizer)
-        self.panel.Fit()
-        self.canvas.Bind(wx.EVT_SCROLLWIN, self._callback)
-        
-        return self.canvas
-
-    def _callback(self, event):
-        pos = event.GetPosition()
-        self.handler(pos)
-        
-    def set_scroll_handler(self, handler):
-        self.handler = handler
-    
-    def set_scroll_pos(self, pos):
-        self.canvas.SetScrollPos(wx.HORIZONTAL, pos)
-        
-    def set_scroll_max(self, max, page_size):
-        self.canvas.SetScrollbar(wx.HORIZONTAL, 0, 5, max)  
-        
-        
 
 class SpikeBrowserUI(object):
     def __init__(self, window):
@@ -172,10 +139,12 @@ class SpikeBrowserUI(object):
                     self.color_func = label_color(np.unique(labels))
                 else:
                     self.color_func = label_color(all_labels)
-                self.ax_next.set_visible(True)
-                self.ax_prev.set_visible(True)
             else:
                 self.labels = None
+            
+            self.ax_next.set_visible(True)
+            self.ax_prev.set_visible(True)
+                
         else:
             self.spt = None
             self.ax_next.set_visible(False)
@@ -294,26 +263,6 @@ class SpikeBrowserUI(object):
         self.draw_plot()
 
 
-def browse_data(data, spk_idx=None, labels=None, win=100):
-    # Generate some data to plot:
-    class SpikeBrowserApp(wx.App):
-
-        def OnInit(self):
-            self.frame = PlotWithScrollBarWx(parent=None,id=-1) 
-            self.browser = SpikeBrowserUI(self.frame)
-            self.frame.Show(True)
-            self.SetTopWindow(self.frame)
-            return True
-    
-        def init_data(self, data, spk_idx, winsz):
-            self.browser.winsz = winsz
-            self.browser.set_data(data)
-            self.browser.set_spiketimes(spk_idx, labels)
-
-    app = SpikeBrowserApp()
-    app.init_data(data, spk_idx, win)
-    app.MainLoop()
-
 def browse_data_tk(data, spk_idx=None, labels=None, win=100):
     
     frame = PlotWithScrollBarTk() 
@@ -322,3 +271,6 @@ def browse_data_tk(data, spk_idx=None, labels=None, win=100):
     browser.set_data(data)
     browser.set_spiketimes(spk_idx, labels)
     Tk.mainloop()
+
+
+browse_data = browse_data_tk
