@@ -267,8 +267,7 @@ class ClusterAnalyzer(base.Component):
                 raise ValueError("Feature {0} does not exist" % l)
             
         if idx is not None:
-            new_features  = feature_data.copy()
-            new_features['data'] = new_features['data'][idx,:]
+            new_features = sort.features.select_spikes(feature_data, idx)
             clust_idx = sort.cluster.cluster(method, new_features, *args, 
                                          **kwargs)
             all_labels = set(range(1, 100))
