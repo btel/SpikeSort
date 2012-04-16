@@ -165,7 +165,7 @@ def test_bakerlab_event_read():
     spt_read = src.events[cell]
     
     os.unlink(spt_fname)
-    ok_((np.abs(spt_read['data']-spt_data)<=1/200.).all())
+    ok_((np.ceil(np.abs(spt_read['data']-spt_data)/200.)<=1).all())
     
 @with_setup(setup_io, teardown_io)
 def test_bakerlab_event_write():
