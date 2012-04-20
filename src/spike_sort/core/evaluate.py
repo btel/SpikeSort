@@ -22,18 +22,12 @@ def snr_spike(spike_waves, scale=5.):
     snr : float
         signal to noise ratio
     """
-    
     sp_data = spike_waves['data']
-    avg_spike = sp_data.mean(1)
-
-    peak_to_peak = avg_spike.max()-avg_spike.min()
-
-    residuals = sp_data-avg_spike[:, np.newaxis]
-
+    avg_spike = sp_data.mean(axis=1)
+    peak_to_peak = np.ptp(avg_spike, axis=None)
+    residuals = sp_data - avg_spike[:, np.newaxis]
     noise_std = np.sqrt(residuals.var())
-
-    snr = peak_to_peak/(noise_std*scale)
-
+    snr = peak_to_peak / (noise_std * scale)
     return snr
 
 def snr_clust(spike_waves, noise_waves):
@@ -52,10 +46,7 @@ def snr_clust(spike_waves, noise_waves):
     snr : float
         signal-to-noise ratio
     """
-
-    def _calc_p2p(data):
-        p2p = data.max(0)-data.min(0)
-        return p2p.mean()
+    _calc_p2p = lambda data: np.ptp(data, axis=0).mean()
 
     sp_data = spike_waves['data']
     avg_p2p_spk = _calc_p2p(sp_data)
@@ -63,7 +54,7 @@ def snr_clust(spike_waves, noise_waves):
     noise_data = noise_waves['data']
     avg_p2p_ns = _calc_p2p(noise_data)
 
-    snr = avg_p2p_spk/avg_p2p_ns
+    snr = avg_p2p_spk / avg_p2p_ns
 
     return snr
 

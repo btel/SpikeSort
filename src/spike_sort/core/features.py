@@ -251,16 +251,13 @@ def fetP2P(spikes_data, contacts='all'):
      [[ 1.99999683]]
 
     """
-
-    spikes = _get_data(spikes_data, contacts)
-            
-    p2p=spikes.max(axis=0)-spikes.min(axis=0)
-    if p2p.ndim<2:
-        p2p=p2p[:,np.newaxis]
+    spikes = _get_data(spikes_data, contacts)  
+    p2p = np.ptp(spikes, axis=0)
+    if p2p.ndim < 2:
+        p2p = p2p[:, np.newaxis]
 
     names = ["Ch%d:P2P" % i for i in range(p2p.shape[1])]
-
-    return {'data':p2p, 'names':names}
+    return {'data': p2p, 'names': names}
 
 @add_mask
 def fetSpIdx(spikes_data):
