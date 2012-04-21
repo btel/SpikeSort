@@ -7,13 +7,17 @@ import numpy as np
 def default_scikits(method):
     def foo(*args):
         raise NotImplementedError(
-                    "scikits.learn must be installed to use %s" % method
-                    )
+                    "scikits.learn must be installed to use %s" % method)
     return foo
 
 try:
-    from scikits.learn import cluster as skcluster
-    from scikits.learn import mixture
+    try:
+        import scikits.learn as sklearn
+    except ImportError:
+        pass
+
+    from sklearn import cluster as skcluster
+    from sklearn import mixture
 
     def k_means_plus(*args, **kwargs):
         """k means with smart initialization.
@@ -25,6 +29,7 @@ try:
         See Also
         --------
         kmeans
+
         """
         return skcluster.k_means(*args, **kwargs)[1]
 
@@ -46,6 +51,7 @@ try:
         Notes
         -----
         This function requires scikits-learn
+
         """
         try:
             clf = mixture.GMM(n_states=k, cvtype='full')
@@ -55,11 +61,9 @@ try:
         cl = clf.predict(data)
         return cl
 
-
 except ImportError:
     k_means_plus = default_scikits("k_means_plus")
     gmm = default_scikits("gmm")
-
 
 from spike_sort.ui import manual_sort
 
