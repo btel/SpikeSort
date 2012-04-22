@@ -299,9 +299,11 @@ def extract_spikes(spike_data, spt_dict, sp_win, resample=1,
     minmax = lambda x: np.max([np.min([n_pts, x]), 0])
     spWave = np.zeros((len(time), len(spt), len(contacts)),
                       dtype=np.float32)
+
     for i in inner_idx:
         sp = indices[i]
-        spWave[:, i, :] = sp_data[contacts, sp + win[0]:sp + win[1]].T
+        spWave[:, i, :] = np.atleast_2d(sp_data[contacts,
+                                                sp + win[0]:sp + win[1]]).T
 
     for i in outer_idx:
         sp = indices[i]
