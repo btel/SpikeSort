@@ -1,57 +1,70 @@
 import os
 
 ######################################################################
-## 
+##
 ## Feature Broker
-##  
+##
 ######################################################################
 
-class FeatureBroker:
+
+class FeatureBroker(object):
     def __init__(self, allowReplace=False):
         self.providers = {}
         self.allowReplace = allowReplace
+
     def Provide(self, feature, provider, *args, **kwargs):
         if not self.allowReplace:
-            assert not self.providers.has_key(feature), "Duplicate feature: %r" % feature
+            assert feature not in self.providers, "Duplicate feature: %r" % feature
+            
         if callable(provider):
-            def call(): return provider(*args, **kwargs)
+            def call():
+                return provider(*args, **kwargs)
         else:
-            def call(): return provider
+            def call():
+                return provider
         self.providers[feature] = call
+
     def __getitem__(self, feature):
         try:
             provider = self.providers[feature]
         except KeyError:
-            raise AttributeError, "Unknown feature named %r" % feature
+            raise AttributeError("Unknown feature named %r" % feature)
         return provider()
 
 
 features = FeatureBroker()
 
 ######################################################################
-## 
+##
 ## Representation of Required Features and Feature Assertions
-## 
+##
 ######################################################################
 
 #
 # Some basic assertions to test the suitability of injected features
 #
 
-def NoAssertion(): 
-    def test(obj): return True
+
+def NoAssertion():
+    def test(obj):
+        return True
     return test
 
+
 def IsInstanceOf(*classes):
-    def test(obj): return isinstance(obj, classes)
+    def test(obj):
+        return isinstance(obj, classes)
     return test
+
 
 def HasAttributes(*attributes):
     def test(obj):
         for each in attributes:
-            if not hasattr(obj, each): return False
+            if not hasattr(obj, each):
+                return False
         return True
     return test
+
 
 def HasMethods(*methods):
     def test(obj):
@@ -60,13 +73,15 @@ def HasMethods(*methods):
                 attr = getattr(obj, each)
             except AttributeError:
                 return False
-            if not callable(attr): return False
+            if not callable(attr):
+                return False
         return True
     return test
 
 #
 # An attribute descriptor to "declare" required features
 #
+
 
 class DataAttribute(object):
     """A data descriptor that sets and returns values
@@ -90,13 +105,17 @@ class RequiredFeature(object):
     def __init__(self, feature, assertion=NoAssertion()):
         self.feature = feature
         self.assertion = assertion
-        self.result=None
+        self.result = None
+
     def __get__(self, obj, T):
         self.result = self.Request(obj)
-        return self.result # <-- will request the feature upon first call
+        return self.result  # <-- will request the feature upon first
+# call
+
     def __getattr__(self, name):
         assert name == 'result', "Unexpected attribute request other then 'result'"
         return self.result
+
     def Request(self, callee):
         obj = features[self.feature]
         try:
@@ -105,45 +124,50 @@ class RequiredFeature(object):
             obj.register_handler(callee)
         except AttributeError:
             pass
-            
+
         assert self.assertion(obj), \
                  "The value %r of %r does not match the specified criteria" \
                  % (obj, self.feature)
         return obj
 
+
 class Component(object):
     "Symbolic base class for components"
     def __init__(self):
         self.observers = []
-    
-    @staticmethod    
+
+    @staticmethod
     def _rm_duplicate_deps(deps):
         for i, d in enumerate(deps):
-            if d in deps[i+1:]: del deps[i]
+            if d in deps[i + 1:]:
+                del deps[i]
         return deps
-    
+
     def get_dependencies(self):
         deps = [o.get_dependencies() for o in self.observers]
         deps = sum(deps, self.observers)
         deps = Component._rm_duplicate_deps(deps)
         return deps
-    
+
     def register_handler(self, handler):
         if handler not in self.observers:
             self.observers.append(handler)
+
     def unregister_handler(self, handler):
         if handler in self.observers:
             self.observers.remove(handler)
+
     def notify_observers(self):
         for dep in self.get_dependencies():
-            dep._update() 
-                       
+            dep._update()
+
     def _update(self):
         pass
-    
+
     def update(self):
         self._update()
         self.notify_observers()
+
 
 class dictproperty(object):
     """implements collection properties with dictionary-like access.
@@ -152,7 +176,6 @@ class dictproperty(object):
     """
 
     class _proxy(object):
-
         def __init__(self, obj, fget, fset, fdel):
             self._obj = obj
             self._fget = fget
@@ -161,17 +184,17 @@ class dictproperty(object):
 
         def __getitem__(self, key):
             if self._fget is None:
-                raise TypeError, "can't read item"
+                raise TypeError("can't read item")
             return self._fget(self._obj, key)
 
         def __setitem__(self, key, value):
             if self._fset is None:
-                raise TypeError, "can't set item"
+                raise TypeError("can't set item")
             self._fset(self._obj, key, value)
 
         def __delitem__(self, key):
             if self._fdel is None:
-                raise TypeError, "can't delete item"
+                raise TypeError("can't delete item")
             self._fdel(self._obj, key)
 
     def __init__(self, fget=None, fset=None, fdel=None, doc=None):
@@ -188,9 +211,9 @@ class dictproperty(object):
 
 
 ######################################################################
-## 
+##
 ## DEMO
-## 
+##
 ######################################################################
 
 # ---------------------------------------------------------------------------------
@@ -200,4 +223,3 @@ class dictproperty(object):
 # - AppTitle denotes a string that represents the current application name
 # - CurrentUser denotes a string that represents the current user name
 #
-

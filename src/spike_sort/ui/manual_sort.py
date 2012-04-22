@@ -1,19 +1,18 @@
+import time
+
 from matplotlib.widgets import Lasso
 from matplotlib.nxutils import points_inside_poly
 from matplotlib.colors import colorConverter
-from matplotlib.collections import RegularPolyCollection, LineCollection
+from matplotlib.collections import RegularPolyCollection  # , LineCollection
 
 from matplotlib.pyplot import figure
 from numpy import nonzero
 
 import numpy as np
-import matplotlib.pyplot as plt
-from spike_sort.ui import plotting
 
-import time
 
-class LassoManager:
-    def __init__(self, ax, data,labels=None, color_on='r', color_off='k'):
+class LassoManager(object):
+    def __init__(self, ax, data, labels=None, color_on='r', color_off='k'):
         self.axes = ax
         self.canvas = ax.figure.canvas
         self.data = data
@@ -29,12 +28,12 @@ class LassoManager:
             fig.dpi, 6, sizes=(1,),
             facecolors=facecolors,
             edgecolors=facecolors,
-            offsets = self.data,
-            transOffset = ax.transData)
+            offsets=self.data,
+            transOffset=ax.transData)
 
         ax.add_collection(self.collection, autolim=True)
         ax.autoscale_view()
-        
+
         if labels is not None:
             ax.set_xlabel(labels[0])
             ax.set_ylabel(labels[1])
@@ -44,15 +43,15 @@ class LassoManager:
 
     def register(self, callback_func):
         self.call_list.append(callback_func)
-        
+
     def callback(self, verts):
         facecolors = self.collection.get_facecolors()
         edgecolors = self.collection.get_edgecolors()
         ind = nonzero(points_inside_poly(self.data, verts))[0]
         for i in range(self.Nxy):
             if i in ind:
-                facecolors[i] = self.color_on 
-                edgecolors[i] = self.color_on 
+                facecolors[i] = self.color_on
+                edgecolors[i] = self.color_on
             else:
                 facecolors[i] = self.color_off
                 edgecolors[i] = self.color_off
@@ -64,37 +63,41 @@ class LassoManager:
 
         for func in self.call_list:
             func(ind)
-            
+
     def onpress(self, event):
-        if self.canvas.widgetlock.locked(): return
-        if event.inaxes is None: return
+        if self.canvas.widgetlock.locked():
+            return
+        if event.inaxes is None:
+            return
         self.lasso = Lasso(event.inaxes, (event.xdata, event.ydata), self.callback)
         # acquire a lock on the widget drawing
         self.canvas.widgetlock(self.lasso)
 
-def manual_sort(features_dict,feat_idx):
-    
+
+def manual_sort(features_dict, feat_idx):
+
     features = features_dict['data']
     names = features_dict['names']
     if type(feat_idx[0]) is int:
         ii = np.array(feat_idx)
     else:
-        ii = np.array([np.nonzero(names==f)[0][0] for f in feat_idx])
+        ii = np.array([np.nonzero(names == f)[0][0] for f in feat_idx])
+    return _cluster(features[:, ii], names[:, ii])
 
-    return _cluster(features[:,ii], names[:,ii])
-    
+
 def _cluster(data, names=None):
-    fig_cluster = figure(figsize=(6,6))
-    ax_cluster = fig_cluster.add_subplot(111, xlim=(-0.1,1.1), ylim=(-0.1,1.1),
-            autoscale_on=True)
+    fig_cluster = figure(figsize=(6, 6))
+    ax_cluster = fig_cluster.add_subplot(111,
+                                         xlim=(-0.1, 1.1),
+                                         ylim=(-0.1, 1.1),
+                                         autoscale_on=True)
     lman = LassoManager(ax_cluster, data, names)
-    
+
     while lman.ind is None:
         time.sleep(.01)
         fig_cluster.canvas.flush_events()
 
     n_spikes = data.shape[0]
     clust_idx = np.zeros(n_spikes, dtype='int16')
-    clust_idx[lman.ind]=1
+    clust_idx[lman.ind] = 1
     return clust_idx
-    
