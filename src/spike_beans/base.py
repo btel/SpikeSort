@@ -13,7 +13,7 @@ class FeatureBroker(object):
     def Provide(self, feature, provider, *args, **kwargs):
         if not self.allowReplace:
             assert feature not in self.providers, "Duplicate feature: %r" % feature
-            
+
         if callable(provider):
             def call():
                 return provider(*args, **kwargs)
