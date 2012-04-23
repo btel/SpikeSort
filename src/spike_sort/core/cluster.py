@@ -12,12 +12,13 @@ def default_scikits(method):
 
 try:
     try:
-        import scikits.learn as sklearn
+        from sklearn import cluster as skcluster
+        from sklearn import mixture
+        
     except ImportError:
-        pass
-
-    from sklearn import cluster as skcluster
-    from sklearn import mixture
+        from scikits.learn import cluster as skcluster
+        from scikits.learn import mixture
+        import warnings; warnings.warn("you scikits.learn package may be outdated")
 
     def k_means_plus(*args, **kwargs):
         """k means with smart initialization.
