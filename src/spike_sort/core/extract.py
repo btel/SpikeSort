@@ -231,16 +231,10 @@ def detect_spikes(spike_data, thresh='auto', edge="rising",
     
     op1, op2 = operator.lt, operator.gt
 
-    if edge in edges[1]:
+    if edge in edges[2:]:
         op1, op2 = op2, op1
 
-    i, = np.where(op1(sp_data[:-1], thresh) & op2(sp_data[1:], thresh))
-    # if edge == "rising" or edge == "max":
-        # i, = np.where((sp_data[:-1] < thresh) & (sp_data[1:] > thresh))
-    # elif edge == "falling" or edge == "min":
-        # i, = np.where((sp_data[:-1] > thresh) & (sp_data[1:] < thresh))
-    # else:
-        
+    i, = np.where(op1(sp_data[:-1], thresh) & op2(sp_data[1:], thresh))      
 
     spt = i * 1000.0 / FS
     spt_dict = {'data': spt, 'thresh': thresh, 'contact': contact}
