@@ -213,8 +213,7 @@ def detect_spikes(spike_data, thresh='auto', edge="rising",
 
     FS = spike_data['FS']
 
-    if type(thresh) is str or type(thresh) is unicode:
-
+    if isinstance(thresh, basestring):
         if thresh == 'auto':
             thresh_frac = 8
         else:
