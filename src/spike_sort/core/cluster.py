@@ -7,18 +7,16 @@ from spike_sort.ui import manual_sort
 
 #optional scikits.learn imports
 try:
-    #import scikits.learn <= 0.11
-    from scikits.learn import cluster as skcluster
-    from scikits.learn import mixture
-except ImportError:
-    pass
-
-try:
-    #import scikits.learn >= 0.12
+    #import scikits.learn >= 0.9
     from sklearn import cluster as skcluster
     from sklearn import mixture
 except ImportError:
-    pass
+    try:
+        #import scikits.learn < 0.9
+        from scikits.learn import cluster as skcluster
+        from scikits.learn import mixture
+    except ImportError:
+        pass
 
 def k_means_plus(*args, **kwargs):
     """k means with smart initialization.
