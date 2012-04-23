@@ -24,3 +24,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies, 
 either expressed or implied, of the FreeBSD Project.
+
+Third-party code
+----------------
+
+Initial version of the third-party code in `spike_beans.base` library was 
+created by Zoran Isailovski and Ed Swierk and publised under permissive PSF 
+license.  For details see notes in the module.
