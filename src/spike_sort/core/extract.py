@@ -3,6 +3,7 @@
 
 import tempfile
 from warnings import warn
+import operator
 
 import numpy as np
 from scipy import interpolate, signal
@@ -224,12 +225,22 @@ def detect_spikes(spike_data, thresh='auto', edge="rising",
         if edge == 'falling' or edge == "min":
             thresh = -thresh
 
-    if edge == "rising" or edge == "max":
-        i, = np.where((sp_data[:-1] < thresh) & (sp_data[1:] > thresh))
-    elif edge == "falling" or edge == "min":
-        i, = np.where((sp_data[:-1] > thresh) & (sp_data[1:] < thresh))
-    else:
+    edges = ('rising', 'max', 'falling', 'min')
+    if edge not in edges:
         raise TypeError("'edge' parameter must be 'rising' or 'falling'")
+    
+    op1, op2 = operator.lt, operator.gt
+
+    if edge in edges[1]:
+        op1, op2 = op2, op1
+
+    i, = np.where(op1(sp_data[:-1], thresh) & op2(sp_data[1:], thresh))
+    # if edge == "rising" or edge == "max":
+        # i, = np.where((sp_data[:-1] < thresh) & (sp_data[1:] > thresh))
+    # elif edge == "falling" or edge == "min":
+        # i, = np.where((sp_data[:-1] > thresh) & (sp_data[1:] < thresh))
+    # else:
+        
 
     spt = i * 1000.0 / FS
     spt_dict = {'data': spt, 'thresh': thresh, 'contact': contact}
