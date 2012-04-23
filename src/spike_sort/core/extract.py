@@ -256,8 +256,8 @@ def filter_spt(spike_data, spt_dict, sp_win):
     return idx
 
 
-def extract_spikes(spike_data, spt_dict, sp_win, resample=1,
-                   contacts='all'):
+def extract_spikes(spike_data, spt_dict, sp_win,
+                   resample=1, contacts='all'):
     """Extract spikes from recording.
 
     Parameters
@@ -281,7 +281,7 @@ def extract_spikes(spike_data, spt_dict, sp_win, resample=1,
 
     if contacts == "all":
         contacts = np.arange(n_contacts)
-    elif type(contacts) is int:
+    elif isinstance(contacts, int):
         contacts = np.array([contacts])
     else:
         contacts = np.asarray(contacts)
