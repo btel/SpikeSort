@@ -62,9 +62,14 @@ def gmm(data, k):
     """
 
     try:
-        clf = mixture.GMM(n_states=k, cvtype='full')
+        #scikits.learn 0.8
+        clf = mixture.GMM(n_states=k, cvtype='full') 
     except TypeError:
-        clf = mixture.GMM(n_components=k, cvtype='full')
+        try:
+            clf = mixture.GMM(n_components=k, cvtype='full')
+        except TypeError:
+            #scikits.learn 0.11
+            clf = mixture.GMM(n_components=k, covariance_type='full') 
     except NameError:
         raise NotImplementedError(
                 "scikits.learn must be installed to use gmm")
