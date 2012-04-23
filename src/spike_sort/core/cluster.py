@@ -3,70 +3,78 @@
 
 import numpy as np
 
+from spike_sort.ui import manual_sort
 
-def default_scikits(method):
-    def foo(*args):
-        raise NotImplementedError(
-                    "scikits.learn must be installed to use %s" % method)
-    return foo
+#optional scikits.learn imports
+try:
+    #import scikits.learn <= 0.11
+    from scikits.learn import cluster as skcluster
+    from scikits.learn import mixture
+except ImportError:
+    pass
 
 try:
-    try:
-        from sklearn import cluster as skcluster
-        from sklearn import mixture
-        
-    except ImportError:
-        from scikits.learn import cluster as skcluster
-        from scikits.learn import mixture
-        import warnings; warnings.warn("you scikits.learn package may be outdated")
-
-    def k_means_plus(*args, **kwargs):
-        """k means with smart initialization.
-
-        Notes
-        -----
-        This function requires scikits-learn
-
-        See Also
-        --------
-        kmeans
-
-        """
-        return skcluster.k_means(*args, **kwargs)[1]
-
-    def gmm(data, k):
-        """Cluster based on gaussian mixture models
-
-        Parameters
-        ----------
-        data : dict
-            features structure
-        k :  int
-            number of clusters
-
-        Returns
-        -------
-        cl : int array
-            cluster indicies
-
-        Notes
-        -----
-        This function requires scikits-learn
-
-        """
-        try:
-            clf = mixture.GMM(n_states=k, cvtype='full')
-        except TypeError:
-            clf = mixture.GMM(n_components=k, cvtype='full')
-        clf.fit(data)
-        cl = clf.predict(data)
-        return cl
-
+    #import scikits.learn >= 0.12
+    from sklearn import cluster as skcluster
+    from sklearn import mixture
 except ImportError:
-    k_means_plus = default_scikits("k_means_plus")
-    gmm = default_scikits("gmm")
+    pass
 
-from spike_sort.ui import manual_sort
+def k_means_plus(*args, **kwargs):
+    """k means with smart initialization.
+
+    Notes
+    -----
+    This function requires scikits-learn
+
+    See Also
+    --------
+    kmeans
+
+    """
+        
+    try:
+        clusters = skcluster.k_means(*args, **kwargs)[1]
+    except NameError:
+        raise NotImplementedError(
+                    "scikits.learn must be installed to use k_mean_plus")
+    return clusters
+    
+    
+
+def gmm(data, k):
+    """Cluster based on gaussian mixture models
+
+    Parameters
+    ----------
+    data : dict
+        features structure
+    k :  int
+        number of clusters
+
+    Returns
+    -------
+    cl : int array
+        cluster indicies
+
+    Notes
+    -----
+    This function requires scikits-learn
+
+    """
+
+    try:
+        clf = mixture.GMM(n_states=k, cvtype='full')
+    except TypeError:
+        clf = mixture.GMM(n_components=k, cvtype='full')
+    except NameError:
+        raise NotImplementedError(
+                "scikits.learn must be installed to use gmm")
+        
+    clf.fit(data)
+    cl = clf.predict(data)
+    return cl
+
 
 
 def manual(data, *args, **kwargs):
