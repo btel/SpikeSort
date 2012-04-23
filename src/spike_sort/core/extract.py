@@ -214,18 +214,17 @@ def detect_spikes(spike_data, thresh='auto', edge="rising",
 
     FS = spike_data['FS']
 
+    edges = ('rising', 'max', 'falling', 'min')
     if isinstance(thresh, basestring):
         if thresh == 'auto':
-            thresh_frac = 8
+            thresh_frac = 8.0
         else:
             thresh_frac = float(thresh)
 
-        thresh = thresh_frac * np.sqrt(float(np.var(sp_data[:int(10 * FS)])))
-
-        if edge == 'falling' or edge == "min":
+        thresh = thresh_frac * np.sqrt(sp_data[:10 * FS].var(dtype=np.float64))
+        if edge in edges[2:]:
             thresh = -thresh
 
-    edges = ('rising', 'max', 'falling', 'min')
     if edge not in edges:
         raise TypeError("'edge' parameter must be 'rising' or 'falling'")
     
@@ -237,8 +236,7 @@ def detect_spikes(spike_data, thresh='auto', edge="rising",
     i, = np.where(op1(sp_data[:-1], thresh) & op2(sp_data[1:], thresh))      
 
     spt = i * 1000.0 / FS
-    spt_dict = {'data': spt, 'thresh': thresh, 'contact': contact}
-    return spt_dict
+    return {'data': spt, 'thresh': thresh, 'contact': contact}
 
 
 def filter_spt(spike_data, spt_dict, sp_win):
@@ -250,7 +248,7 @@ def filter_spt(spike_data, spt_dict, sp_win):
         n_pts = sp_data.shape[1]
     except IndexError:
         n_pts = len(sp_data)
-    max_time = (n_pts) * 1000.0 / FS
+    max_time = n_pts * 1000.0 / FS
 
     t_min = np.max((-sp_win[0], 0))
     t_max = np.min((max_time, max_time - sp_win[1]))
