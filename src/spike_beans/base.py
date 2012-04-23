@@ -1,9 +1,9 @@
-######################################################################
-##
-## Feature Broker
-##
-######################################################################
+"""
+The intial version of this code was adapted from a recipe by Zoran Isailovski
+(published under PSF License).
 
+http://code.activestate.com/recipes/413268-dependency-injection-the-python-way/
+"""
 
 class FeatureBroker(object):
     def __init__(self, allowReplace=False):
@@ -169,7 +169,8 @@ class Component(object):
 
 class dictproperty(object):
     """implements collection properties with dictionary-like access.
-    Adapted from `Active State Recipe 440514:
+    Copied and modified from a recipe by Ed Swierk 
+    published under PSF license
     <http://code.activestate.com/recipes/440514-dictproperty-properties-for-dictionary-attributes/>`_
     """
 
@@ -205,19 +206,3 @@ class dictproperty(object):
         if obj is None:
             return self
         return self._proxy(obj, self._fget, self._fset, self._fdel)
-
-
-
-######################################################################
-##
-## DEMO
-##
-######################################################################
-
-# ---------------------------------------------------------------------------------
-# Some python module defines a Bar component and states the dependencies
-# We will assume that
-# - Console denotes an object with a method WriteLine(string)
-# - AppTitle denotes a string that represents the current application name
-# - CurrentUser denotes a string that represents the current user name
-#
