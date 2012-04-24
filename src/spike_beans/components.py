@@ -138,10 +138,7 @@ class SpikeDetector(base.Component):
         super(SpikeDetector, self).__init__()
 
     def _get_threshold(self):
-        if self._est_thresh is None:
-            return self._thresh
-        else:
-            return self._est_thresh
+        return self._est_thresh or self._thresh
 
     def _set_threshold(self, value):
         self._thresh = value
@@ -153,14 +150,14 @@ class SpikeDetector(base.Component):
         sp = self.waveform_src.signal
 
         if self.f_filter is None:
-            filter = None
+            filt = None
         else:
-            filter = sort.extract.Filter(*self.f_filter)
-            sp = sort.extract.filter_proxy(sp, filter)
+            filt = sort.extract.Filter(*self.f_filter)
+            sp = sort.extract.filter_proxy(sp, filt)
         spt = sort.extract.detect_spikes(sp,   edge=self.type,
                                                contact=self.contact,
                                                thresh=self._thresh,
-                                               filter=filter)
+                                               filter=filt)
         self._est_thresh = spt['thresh']
         if self.align:
             self.sp_times = sort.extract.align_spikes(sp, spt,
