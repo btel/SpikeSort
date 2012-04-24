@@ -8,6 +8,7 @@ methods:
  * write_sp -- write raw spike waveforms
 
 '''
+
 import os
 import numpy as np
 import json
@@ -57,11 +58,11 @@ class BakerlabFilter(object):
 
     """
     def __init__(self, conf_file):
-        """ constructor"""
+        """constructor"""
         self._regexp = "^/(?P<subject>[a-zA-z]+)/s(?P<ses_id>.+)/el(?P<el_id>[0-9]+)/?(?P<type>[a-zA-Z]+)?(?P<cell_id>[0-9]+)?$"
         self.conf_file = conf_file
         self._tempfiles = []
-        with file(conf_file) as fid:
+        with open(conf_file) as fid:
             self.conf_dict = json.load(fid)
             self.chunksize = 10E6  # number of elements in a chunk
 
@@ -77,7 +78,6 @@ class BakerlabFilter(object):
             if True use memory mapped arrays to save some memory
             (defaults to no memmory-mapping)
         """
-
         conf_dict = self.conf_dict
         m = re.match(self._regexp, dataset)
         rec_dict = m.groupdict()
@@ -90,15 +90,14 @@ class BakerlabFilter(object):
         full_path = os.path.join(dirname, f_spike)
         fname = full_path.format(**rec_dict)
         npts = os.path.getsize(fname) / 2
-        #sp = np.memmap(fname, dtype=np.int16, mode='r+')
+        # sp = np.memmap(fname, dtype=np.int16, mode='r+')
         dtype = 'int16'
         shape = (n_contacts, npts)
 
         if memmap == "numpy":
-            #create temporary memory mapped array
+            # create temporary memory mapped array
             filename = os.path.join(mkdtemp(), 'newfile.dat')
-            fp = np.memmap(filename, dtype=np.int16, mode='w+',
-                           shape=shape)
+            fp = np.memmap(filename, dtype=np.int16, mode='w+', shape=shape)
             self._tempfiles.append(fp)
         elif memmap == "tables":
             atom = tables.Atom.from_dtype(np.dtype(dtype))
@@ -116,11 +115,12 @@ class BakerlabFilter(object):
             rec_dict['contact_id'] = i + 1
             fname = full_path.format(**rec_dict)
             sp = np.memmap(fname, dtype=np.int16, mode='r')
-            #read and copy data by chunks
+            
+            # read and copy data by chunks
             for j in range(n_chunks):
                 stop = np.min((npts, (j + 1) * sz))
                 fp[i, j * sz:stop] = sp[j * sz:stop]
-            #fp[:,i]=sp[:]
+            # fp[:,i]=sp[:]
             del sp
         return {'data': fp, "FS": conf_dict['FS'], "n_contacts": n_contacts}
 
@@ -156,7 +156,7 @@ class BakerlabFilter(object):
     def _match_dataset(self, dataset):
         m = re.match(self._regexp, dataset)
         if not m:
-            StandardError("dataset id could not be parsed")
+            raise StandardError("dataset id could not be parsed")
         return m.groupdict()
 
     def read_spt(self,  dataset):
@@ -284,7 +284,7 @@ class PyTablesFilter(object):
 
         h5f = self.h5file
 
-        electrode = "/".join(dataset.split('/')[:4])
+        electrode = '/'.join(dataset.split('/')[:4])
 
         electrode_node = h5f.getNode(electrode)
 
@@ -325,7 +325,6 @@ class PyTablesFilter(object):
 
     def write_spt(self, spt_dict, dataset, overwrite=False):
         """Write spike times"""
-
         h5f = self.h5file
 
         spt = spt_dict['data']
