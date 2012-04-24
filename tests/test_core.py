@@ -83,6 +83,19 @@ class TestExtract(object):
         spt = ss.extract.align_spikes(self.spk_data, spt_dict, sp_win)
         ok_((np.abs(spt['data'] - maxima_idx) <= 1000.0 / self.FS).all())
 
+    def test_remove_doubles_roundoff(self):
+        # remove_doubles should account for slight variations around
+        # the 'tolerance' which may occur due to some round-off errors
+        # during spike detection/alignment. This won't affect any useful
+        # information, because the tolerance is one sample large in this
+        # test.
+        
+        tol = 1000.0 / self.FS  # [ms], one sample
+        data = [1.0, 1.0 + tol + tol * 0.01] 
+        spt_dict = {"data": np.array(data)}
+        clean_spt_dict = ss.extract.remove_doubles(spt_dict, tol)
+        ok_(len(clean_spt_dict['data']) == 1) # duplicate removed
+
     def test_extract(self):
         zero_crossing = self.period * np.arange(self.n_spikes)
         zero_crossing += 1000.0 / self.FS / 2.0  # move by half a sample to avoid round-off errors
