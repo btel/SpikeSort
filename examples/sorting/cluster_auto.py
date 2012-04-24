@@ -6,18 +6,15 @@ Based on raw recordings detect spikes, calculate features and do automatic
 clustering with gaussian mixture models.
 """
 
-import numpy as np
-import os, sys
+import os
 
 import spike_sort as sort
-from spike_sort.io.filters import PyTablesFilter, BakerlabFilter
+from spike_sort.io.filters import PyTablesFilter
 import spike_sort.ui.manual_sort
-import tables
 
 DATAPATH = os.environ['DATAPATH'] 
 
 if __name__ == "__main__":
-
     h5_fname = os.path.join(DATAPATH, "tutorial.h5")
     h5filter = PyTablesFilter(h5_fname, 'a')
 
@@ -25,15 +22,13 @@ if __name__ == "__main__":
     sp_win = [-0.2, 0.8]
     
     sp = h5filter.read_sp(dataset)
-    spt = sort.extract.detect_spikes(sp,  contact=3,
-                                     thresh='auto')
+    spt = sort.extract.detect_spikes(sp, contact=3, thresh='auto')
     
     spt = sort.extract.align_spikes(sp, spt, sp_win, type="max", resample=10)
     sp_waves = sort.extract.extract_spikes(sp, spt, sp_win)
     features = sort.features.combine(
-            (
-            sort.features.fetP2P(sp_waves),
-            sort.features.fetPCs(sp_waves)),
+            (sort.features.fetP2P(sp_waves),
+             sort.features.fetPCs(sp_waves)),
             norm=True
     )
 
