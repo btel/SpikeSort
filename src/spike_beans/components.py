@@ -154,10 +154,10 @@ class SpikeDetector(base.Component):
         else:
             filt = sort.extract.Filter(*self.f_filter)
             sp = sort.extract.filter_proxy(sp, filt)
-        spt = sort.extract.detect_spikes(sp,   edge=self.type,
-                                               contact=self.contact,
-                                               thresh=self._thresh,
-                                               filter=filt)
+        spt = sort.extract.detect_spikes(sp, edge=self.type,
+                                             contact=self.contact,
+                                             thresh=self._thresh,
+                                             filter=filt)
         self._est_thresh = spt['thresh']
         if self.align:
             self.sp_times = sort.extract.align_spikes(sp, spt,
