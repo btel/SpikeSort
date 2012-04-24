@@ -11,11 +11,9 @@ Each of the function returns a (mapping) object with following keys:
 
  * data -- an array of shape (n_spikes, n_features)
  * names -- a list of length n_features with feature labels
-"""
-
+ """
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 def split_cells(features, idx, which='all'):
     """return the spike features splitted into separate cells"""
