@@ -3,11 +3,8 @@
 
 import numpy as np
 from scipy import stats
-import tables
-import os, sys
 import basic
 
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 from io_tools import read_dataset
 
