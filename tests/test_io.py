@@ -3,7 +3,6 @@ import filecmp
 import json
 import glob
 import tempfile
-import unittest
 
 from nose.tools import ok_, eq_, raises
 import tables
@@ -32,7 +31,7 @@ class TestHDF(object):
         self.sampfreq = 5.0E3
         new_array.attrs['sampfreq'] = self.sampfreq
         new_array[:] = self.data
-        spt_array = self.h5f.createArray(self.el_node, "cell", self.spt,
+        self.h5f.createArray(self.el_node, "cell", self.spt,
                                          title="",
                                          createparents="True")
         self.h5f.close()
