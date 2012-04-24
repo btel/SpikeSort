@@ -1,6 +1,3 @@
-
-from spike_sort import cluster
-
 def export_cells(io_filter, node_templ, spike_times, overwrite=False):
     """Export discriminated spike times of all cells to a file.
     
@@ -17,7 +14,6 @@ def export_cells(io_filter, node_templ, spike_times, overwrite=False):
         dictionary in which keys are the cell IDs and values are spike
         times structures
     """
-
     for cell_id, spt_cell in spike_times.items():
         dataset = node_templ.format(cell_id=cell_id)
         io_filter.write_spt(spt_cell, dataset, overwrite=overwrite)
