@@ -1,5 +1,5 @@
 from spike_beans import base, components
-from nose.tools import ok_,raises
+from nose.tools import ok_
 from nose import with_setup
 import numpy as np
 import json
