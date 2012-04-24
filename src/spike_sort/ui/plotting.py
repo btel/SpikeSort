@@ -3,13 +3,12 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from matplotlib.pyplot import show, figure, close
 from matplotlib.collections import LineCollection
 import spike_sort
 cmap = plt.cm.jet
 
 def label_color(labels):
-    """Map labels to number range [0,1]"""
+    """Map labels to number range [0, 1]"""
     
     num_labels = np.linspace(0,1., len(labels))
     mapper = dict(zip(labels, num_labels))
