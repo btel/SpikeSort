@@ -420,8 +420,11 @@ def remove_doubles(spt_dict, tol):
     new_dict = spt_dict.copy()
     spt = spt_dict['data']
 
+    isi = np.diff(spt)
+    intisi = (isi/tol).astype('int')
+
     if len(spt) > 0:
-        spt = spt[np.concatenate(([True], np.diff(spt) > tol))]
+        spt = spt[np.concatenate(([True], intisi > 1))]
 
     new_dict['data'] = spt
     return new_dict
