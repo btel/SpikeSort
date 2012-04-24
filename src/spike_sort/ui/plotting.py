@@ -4,6 +4,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from matplotlib.collections import LineCollection
+
+# used by other modules which import plotting.py. Do not remove!
+from matplotlib.pyplot import show, figure, close
+
 import spike_sort
 cmap = plt.cm.jet
 
