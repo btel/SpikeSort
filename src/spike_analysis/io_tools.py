@@ -7,8 +7,7 @@ def read_dataset(filter, dataset):
     spt = filter.read_spt(dataset)
     stim_node = "/".join(dataset.split('/')[:-1]+['stim'])
     stim = filter.read_spt(stim_node)
-
-    return {'spt':spt['data'], 'stim': stim['data'], 'ev':[]} 
+    return {'spt': spt['data'], 'stim': stim['data'], 'ev': []} 
 
 def list_cells(filter, dataset):
     """List all cells which fit the pattern given in dataset. Dataset can contain
@@ -18,12 +17,12 @@ def list_cells(filter, dataset):
        
        dataset = "/Subject/sSession01/el*/cell*"
     """
-    regexp =  "^/(?P<subject>[a-zA-z\*]+)/s(?P<ses_id>.+)/el(?P<el_id>[0-9\*]+)/?(?P<type>[a-zA-Z]+)?(?P<cell_id>[0-9\*]+)?$"
+    regexp = "^/(?P<subject>[a-zA-z\*]+)/s(?P<ses_id>.+)/el(?P<el_id>[0-9\*]+)/?(?P<type>[a-zA-Z]+)?(?P<cell_id>[0-9\*]+)?$"
     
     conf = filter.conf_dict
     fpath = (conf['dirname'].format(DATAPATH=os.environ['DATAPATH'])+conf['cell'])
     rec_wildcard = re.match(regexp, dataset).groupdict()
-    fname =fpath.format(**rec_wildcard) 
+    fname = fpath.format(**rec_wildcard) 
 
     files = glob.glob(fname)
 
