@@ -1,8 +1,5 @@
 
 import numpy as np
-from numpy import arange, sin, pi, float, size
-
-import matplotlib
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
