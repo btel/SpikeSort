@@ -281,7 +281,7 @@ class ClusterAnalyzer(base.Component):
 
             self.cluster_labels[idx] = new_clust_idx
         else:
-            clust_idx = sort.cluster.cluster(method, feature_data, *self.args,
+            clust_idx = sort.cluster.cluster(method, feature_data, *args,
                                          **kwargs)
             self.cluster_labels = clust_idx + 1
 
@@ -299,7 +299,7 @@ class ClusterAnalyzer(base.Component):
             self.cluster_labels[self.cluster_labels == l] = i + 1
         self.notify_observers()
 
-    def recluster(self, label, method=None, *args, **kwargs):
+    def recluster(self, label=None, method=None, *args, **kwargs):
         """repeat clustering of a selected cell"""
         if method is None:
             method = self.method
@@ -307,7 +307,11 @@ class ClusterAnalyzer(base.Component):
             args = self.args
         if not kwargs:
             kwargs = self.kwargs
-        self._cluster(self.cluster_labels == label, method, *args, **kwargs)
+        if label is None:
+            idx = None
+        else:
+            idx = self.cluster_labels == label
+        self._cluster(idx, method, *args, **kwargs)
         self.notify_observers()
 
     def delete_cells(self, *cell_ids):
