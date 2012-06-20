@@ -8,7 +8,7 @@ import spike_sort as sort
 
 import base
 from spike_sort.io.filters import BakerlabFilter, PyTablesFilter
-from spike_sort import features
+from spike_sort import features, filters
 from spike_sort.ui import plotting
 from spike_sort.ui import zoomer
 from spike_analysis import dashboard
@@ -16,20 +16,16 @@ import numpy as np
 
 
 class GenericSource(base.Component):
-    def __init__(self, dataset, overwrite=False, f_filter=None):
+    def __init__(self, dataset, overwrite=False):
         self.dataset = dataset
         self._signal = None
         self._events = None
         self.overwrite = overwrite
-        self.f_filter = f_filter
         super(GenericSource, self).__init__()
 
     def read_signal(self):
         if self._signal is None:
             self._signal = self.read_sp(self.dataset)
-            if self.f_filter is not None:
-                filter = sort.extract.Filter(*self.f_filter)
-                self._signal = sort.extract.filter_proxy(self._signal, filter)
         return self._signal
 
     def read_events(self, cell):
@@ -50,16 +46,40 @@ class GenericSource(base.Component):
 
 
 class BakerlabSource(GenericSource, BakerlabFilter):
-    def __init__(self, conf_file, dataset, overwrite=False, f_filter=None):
-        GenericSource.__init__(self, dataset, overwrite, f_filter)
+    def __init__(self, conf_file, dataset, overwrite=False):
+        GenericSource.__init__(self, dataset, overwrite)
         BakerlabFilter.__init__(self, conf_file)
 
 
 class PyTablesSource(GenericSource, PyTablesFilter):
     # TODO: add unit test
-    def __init__(self, h5file, dataset, overwrite=False, f_filter=None):
-        GenericSource.__init__(self, dataset, overwrite, f_filter)
+    def __init__(self, h5file, dataset, overwrite=False):
+        GenericSource.__init__(self, dataset, overwrite)
         PyTablesFilter.__init__(self, h5file)
+
+class FilterStack(base.Component):
+    raw_src = base.RequiredFeature("RawSource",
+                                        base.HasAttributes("signal"))
+
+    def __init__(self):
+        self._filters = []
+        self._signal = None
+        super(FilterStack, self).__init__()
+
+    def add_filter(self, filt, *args, **kwargs):
+        # check if the arg is callable
+        method = hasattr(filt, "__call__") and filt or \
+            filters.__getattribute__("flt" + filt)
+        self._filters.append(lambda signal: method(signal, *args, **kwargs))
+
+    def read_signal(self):
+        if self._signal is None:
+            self._signal = self.raw_src.signal
+            for filt in self._filters:
+                self._signal = filt(self._signal)
+        return self._signal
+
+    signal = property(read_signal)
 
 
 class NoMeanSource(object):
