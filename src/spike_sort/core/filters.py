@@ -137,4 +137,29 @@ def filter_proxy(spikes, filter_obj, chunksize=1E6):
     sp_dict['data'] = carray
     return sp_dict
 
+def fltLinearIIR(signal, fpass, fstop, gpass=1, gstop=10, ftype='butter'): 
+    """An IIR acausal linear filter. Works through
+    spike_sort.core.filters.filter_proxy method
+    
+    Parameters
+    ----------
+    signal : dict
+        input [raw] signal
+    fpass, fstop : float
+        Passband and stopband edge frequencies [Hz]
+        For more details see scipy.signal.iirdesign
+    gpass : float
+        The maximum loss in the passband (dB).
+    gstop : float
+        The minimum attenuation in the stopband (dB).
+    ftype : str, optional
+        The type of IIR filter to design:
 
+            - elliptic    : 'ellip'
+            - Butterworth : 'butter',
+            - Chebyshev I : 'cheby1',
+            - Chebyshev II: 'cheby2',
+            - Bessel :      'bessel'
+    """
+    filt = Filter(fpass, fstop, gpass, gstop, ftype)
+    return filter_proxy(signal, filt)
