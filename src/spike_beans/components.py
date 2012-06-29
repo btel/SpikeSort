@@ -67,10 +67,17 @@ class FilterStack(base.Component):
         super(FilterStack, self).__init__()
 
     def add_filter(self, filt, *args, **kwargs):
-        # check if the arg is callable
-        method = hasattr(filt, "__call__") and filt or \
-            filters.__getattribute__("flt" + filt)
-        self._filters.append(lambda signal: method(signal, *args, **kwargs))
+        # type checking 
+        if hasattr(filt, "__call__"):
+            self._filters.append(lambda signal: filt(signal, *args, **kwargs))
+        elif isinstance(filt, str):
+            try:
+                filter_func = filters.__getattribute__("flt" + filt)
+                self._filters.append(lambda signal: filter_func(signal, *args, **kwargs))
+            except AttributeError:
+                raise AttributeError("No such method found in 'core.filters': %s" % ("flt" + filt))
+        else:
+            raise TypeError("Unsupported argument type: %s. Only string or callable are accepted" % type(filt))
 
     def read_signal(self):
         if self._signal is None:
