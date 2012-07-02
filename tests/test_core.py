@@ -17,20 +17,20 @@ class TestFilter(object):
 
     def test_filter_proxy(self):
         sp_freq = 1000.0 / self.period
-        filter = ss.extract.Filter(sp_freq * 0.5, sp_freq * 0.4, 1, 10, 'ellip')
-        spk_filt = ss.extract.filter_proxy(self.spk_data, filter)
+        filter = ss.filters.Filter(sp_freq * 0.5, sp_freq * 0.4, 1, 10, 'ellip')
+        spk_filt = ss.filters.filter_proxy(self.spk_data, filter)
         ok_(self.spk_data['data'].shape == spk_filt['data'].shape)
 
-    def test_filter_detect(self):
+    def test_LiearIIR_detect(self):
         n_spikes = self.n_spikes
         period = self.period
-        FS = self.FS
-        time = self.time
         threshold = 0.5
-        sp_freq = 1000.0 / self.period
+        sp_freq = 1000.0 / period
+
         self.spk_data['data'] += 2
-        filter = ss.extract.Filter(sp_freq * 0.5, sp_freq * 0.4, 1, 10, 'ellip')
-        spt = ss.extract.detect_spikes(self.spk_data, thresh=threshold, filter=filter)
+        spk_filt = ss.filters.fltLinearIIR(self.spk_data, sp_freq * 0.5, sp_freq * 0.4, 1, 10, 'ellip')
+
+        spt = ss.extract.detect_spikes(spk_filt, thresh=threshold)
         ok_(len(spt['data']) == n_spikes)
 
 class TestExtract(object):
