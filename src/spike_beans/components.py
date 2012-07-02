@@ -654,15 +654,11 @@ class ExportWithMetadata(ExportCells):
                                                          "threshold",
                                                          "type",
                                                          "sp_win"))
-    export_filter = base.RequiredFeature("EventsOutput",
-                                        base.HasAttributes("events",
-                                                           "f_filter"))
 
     def get_metadata(self):
         metadata = {'contact': self.marker_src.contact,
                     'threshold': self.marker_src.threshold,
                     'type': self.marker_src.type,
-                    'filter': self.export_filter.f_filter,
                     'sp_win': self.marker_src.sp_win}
         return metadata
 
