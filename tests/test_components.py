@@ -1,5 +1,5 @@
 from spike_beans import base, components
-from nose.tools import ok_
+from nose.tools import ok_, assert_raises
 from nose import with_setup
 import numpy as np
 import json
@@ -234,6 +234,51 @@ def test_bakerlab_signal_source():
     ok_((np.abs(sp_read['data']-data)<=1/200.).all())
 
 @with_setup(setup, teardown)
+def test_filter_stack_add_filter_method():
+    base.features.Provide("RawSource", DummySignalSource())
+
+    def filter_func(signal):
+        new_signal = signal.copy()
+        new_signal['data'] += 1.
+        return new_signal
+
+    io_filter = components.FilterStack()
+    io_filter.add_filter(filter_func)
+
+    ok_((io_filter.signal['data'] > 0.).all())
+
+@with_setup(setup, teardown)
+def test_filter_stack_add_filter_string():
+    io = DummySignalSource()
+    base.features.Provide("RawSource", io)
+
+    io_filter = components.FilterStack()
+    io_filter.add_filter("LinearIIR", 800., 300.)
+    
+    # only tests that filtering has changed a signal
+    ok_(np.linalg.norm(io.signal['data'] - io_filter.signal['data']) > 0.)
+
+@with_setup(setup, teardown)
+def test_filter_stack_add_filter_attribute_error():
+    io = DummySignalSource()
+    base.features.Provide("RawSource", io)
+
+    io_filter = components.FilterStack()
+    filter_name = "NonExistingFilter"
+
+    assert_raises(AttributeError, io_filter.add_filter, filter_name)
+
+@with_setup(setup, teardown)
+def test_filter_stack_add_filter_type_error():
+    io = DummySignalSource()
+    base.features.Provide("RawSource", io)
+
+    io_filter = components.FilterStack()
+    filter_argument = None
+
+    assert_raises(TypeError, io_filter.add_filter, filter_argument)
+
+@with_setup(setup, teardown)
 def test_spike_extractor():
     base.features.Provide("SignalSource", DummySignalSource())
     base.features.Provide("SpikeMarkerSource", DummySpikeDetector())
@@ -255,8 +300,6 @@ def test_feature_extractor():
     features = feat_comp.features
     
     ok_((features['data']==spike_amp).all())       
-
-
 
 @with_setup(setup, teardown)
 def test_cluster_component():
