@@ -185,7 +185,8 @@ class TestExport(object):
         self.spt_data.sort(0)
         self.cells_dict = dict([(i, {"data": self.spt_data[:, i]})
                            for i in range(n_cells)])
-        fname = os.path.join(tempfile.mkdtemp(), "test.h5")
+        tempdir = tempfile.mkdtemp()
+        fname = os.path.join(tempdir, "test.h5")
         ptfilter = PyTablesFilter(fname)
         tmpl = "/Subject/Session/Electrode/Cell{cell_id}"
         export.export_cells(ptfilter, tmpl, self.cells_dict)
@@ -195,5 +196,8 @@ class TestExport(object):
             test.append((spt_dict['data'] == self.spt_data[:, i]).all())
         test = np.array(test)
         ptfilter.close()
+        
         os.unlink(fname)
+        os.rmdir(tempdir)
+
         ok_(test.all())
