@@ -5,7 +5,7 @@ from nose.tools import ok_, eq_, raises
 from numpy.testing import assert_array_almost_equal as almost_equal
 
 
-class TestExtract(object):
+class TestFilter(object):
     def __init__(self):
         self.n_spikes = 100
 
@@ -21,17 +21,6 @@ class TestExtract(object):
         spk_filt = ss.extract.filter_proxy(self.spk_data, filter)
         ok_(self.spk_data['data'].shape == spk_filt['data'].shape)
 
-    def test_detect(self):
-        n_spikes = self.n_spikes
-        period = self.period
-        FS = self.FS
-        time = self.time
-        spikes = self.spikes
-        threshold = 0.5
-        crossings_real = period / 12.0 + np.arange(n_spikes) * period
-        spt = ss.extract.detect_spikes(self.spk_data, thresh=threshold)
-        ok_((np.abs(spt['data'] - crossings_real) <= 1000.0 / FS).all())
-
     def test_filter_detect(self):
         n_spikes = self.n_spikes
         period = self.period
@@ -44,6 +33,27 @@ class TestExtract(object):
         spt = ss.extract.detect_spikes(self.spk_data, thresh=threshold, filter=filter)
         ok_(len(spt['data']) == n_spikes)
 
+class TestExtract(object):
+    def __init__(self):
+        self.n_spikes = 100
+
+        self.FS = 25E3
+        self.period = 1000.0 / self.FS * 100
+        self.time = np.arange(0, self.period * self.n_spikes, 1000.0 / self.FS)
+        self.spikes = np.sin(2 * np.pi / self.period * self.time)[np.newaxis, :]
+        self.spk_data = {"data": self.spikes, "n_contacts": 1, "FS": self.FS}
+    
+    def test_detect(self):
+        n_spikes = self.n_spikes
+        period = self.period
+        FS = self.FS
+        time = self.time
+        spikes = self.spikes
+        threshold = 0.5
+        crossings_real = period / 12.0 + np.arange(n_spikes) * period
+        spt = ss.extract.detect_spikes(self.spk_data, thresh=threshold)
+        ok_((np.abs(spt['data'] - crossings_real) <= 1000.0 / FS).all())
+    
     def test_align(self):
         #check whether spikes are correctly aligned to maxima
         maxima_idx = self.period * (1 / 4.0 + np.arange(self.n_spikes))
