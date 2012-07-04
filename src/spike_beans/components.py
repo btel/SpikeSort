@@ -89,58 +89,6 @@ class FilterStack(base.Component):
     signal = property(read_signal)
 
 
-class NoMeanSource(object):
-    """
-    A wrapper class to any proper I/O filter component.
-    Subtracts mean from the signal in the specified window
-    """
-    def __init__(self, io_filter, window):
-        # this is to avoid use of overridden __setattr__
-        object.__setattr__(self, '_io_filter', io_filter)
-        object.__setattr__(self, '_window', window)
-
-    def __getattribute__(self, name):
-        io_filter = object.__getattribute__(self, '_io_filter')
-
-        if name == 'signal' and io_filter._signal is None:
-            subtract_mean = object.__getattribute__(self, 'subtract_mean')
-            window = object.__getattribute__(self, '_window')
-            subtract_mean(io_filter, window)
-
-        try:
-            attr = getattr(io_filter, name)
-        except AttributeError:
-            attr = object.__getattribute__(self, name)
-
-        return attr
-
-    def __setattr__(self, name, value):
-        io_filter = object.__getattribute__(self, '_io_filter')
-        setattr(io_filter, name, value)
-
-    def subtract_mean(self, io_filter, window):
-        """
-        subtract mean before returning signal
-        """
-        sp = io_filter.read_signal()
-        stim = io_filter.events['stim']
-
-        print 'subtracting mean...'
-
-        wshapes = sort.extract.extract_spikes(sp, stim, window)
-        mean_waves = np.mean(wshapes['data'], 1)
-
-        stim_idx = sort.extract.filter_spt(sp, stim, window)
-        stim_data_idx = (stim['data'][stim_idx] / 1000.0 * sp['FS']).astype(np.int32)
-        win_data_idx = (np.asarray(window) / 1000.0 * sp['FS']).astype(np.int32)
-
-        for i in stim_idx:
-            insert_start_idx = stim_data_idx[i] + win_data_idx[0]
-            insert_end_idx = insert_start_idx + mean_waves.shape[0]
-            sp['data'][:, insert_start_idx:insert_end_idx] -= mean_waves.T
-        print '... done'
-
-
 class SpikeDetector(base.Component):
     """Detect Spikes with alignment"""
     waveform_src = base.RequiredFeature("SignalSource",
