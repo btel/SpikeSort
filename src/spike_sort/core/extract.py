@@ -42,7 +42,7 @@ def remove_spikes(spt_dict, remove_dict, tolerance):
 
 
 def detect_spikes(spike_data, thresh='auto', edge="rising",
-                  contact=0, filter=None):
+                  contact=0):
     r"""Detects spikes in extracellular data using amplitude thresholding.
 
     Parameters
@@ -57,8 +57,6 @@ def detect_spikes(spike_data, thresh='auto', edge="rising",
     contact : int, optional
         index of tetrode contact to use for detection, defaults to
         first contact
-    filter : object, optional
-        filter used for spike detection; defaults to no filtering
 
     Returns
     -------
@@ -71,8 +69,6 @@ def detect_spikes(spike_data, thresh='auto', edge="rising",
     sp_data = spike_data['data'][contact, :]
     n_contacts = spike_data['n_contacts']
 
-    if filter is not None:
-        sp_data = filter(sp_data, spike_data['FS'])
     #if n_contacts>1:
     #    sp_data = sp_data[:,contact]
 
