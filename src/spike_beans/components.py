@@ -151,7 +151,6 @@ class SpikeDetector(base.Component):
                  type='max',
                  resample=1,
                  sp_win=(-0.2, 0.8),
-                 f_filter=None,
                  align=True):
         self._thresh = thresh
         self.contact = contact
@@ -160,7 +159,6 @@ class SpikeDetector(base.Component):
         self.resample = resample
         self.sp_win = sp_win
         self.sp_times = None
-        self.f_filter = f_filter
         self._est_thresh = None
         super(SpikeDetector, self).__init__()
 
@@ -176,15 +174,9 @@ class SpikeDetector(base.Component):
     def _detect(self):
         sp = self.waveform_src.signal
 
-        if self.f_filter is None:
-            filt = None
-        else:
-            filt = sort.extract.Filter(*self.f_filter)
-            sp = sort.extract.filter_proxy(sp, filt)
         spt = sort.extract.detect_spikes(sp, edge=self.type,
                                              contact=self.contact,
-                                             thresh=self._thresh,
-                                             filter=filt)
+                                             thresh=self._thresh)
         self._est_thresh = spt['thresh']
         if self.align:
             self.sp_times = sort.extract.align_spikes(sp, spt,
