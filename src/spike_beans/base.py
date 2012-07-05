@@ -100,22 +100,34 @@ class DataAttribute(object):
 
 
 class RequiredFeature(object):
-    def __init__(self, feature, assertion=NoAssertion()):
+    def __init__(self, feature, assertion=NoAssertion(), alt_name = "_alternative_"):
         self.feature = feature
+        self.alt_name = alt_name
         self.assertion = assertion
         self.result = None
 
     def __get__(self, obj, T):
         self.result = self.Request(obj)
-        return self.result  # <-- will request the feature upon first
-# call
+        return self.result  # <-- will request the feature upon first call
+
+    def __set__(self, instance, value):
+        '''Rename the feature'''
+        if isinstance(value, str):
+            print "changed %s to %s"%(self.feature, value)
+            setattr(instance, self.alt_name+self.feature, value)            
+        else:
+            print "can't change the feature name to non-string type"
 
     def __getattr__(self, name):
         assert name == 'result', "Unexpected attribute request other then 'result'"
         return self.result
 
     def Request(self, callee):
-        obj = features[self.feature]
+        fet_name = self.feature        
+        if hasattr(callee, self.alt_name + self.feature):
+            fet_name = getattr(callee, self.alt_name + self.feature) 
+        obj = features[fet_name]
+
         try:
             #handler = getattr(callee, ("on_%s_change" % self.feature).lower())
             #handler = callee.update
