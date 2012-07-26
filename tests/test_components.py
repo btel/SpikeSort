@@ -132,6 +132,29 @@ class RandomFeatures(base.Component):
         return {"data": features, "names":names}
     features = property(read_features)
         
+@with_setup(setup, teardown)
+def test_renaming():
+    class StringSource(base.Component):
+        value = "asdf"
+
+    class IntSource(base.Component):
+        value = int(5)
+
+    class Consumer(base.Component):
+        source = base.RequiredFeature("SourceOne", base.HasAttributes("value"))
+
+    str_src = StringSource()
+    int_src = IntSource() 
+    consumer = Consumer()
+
+    base.features.Provide("SourceOne", str_src)
+    base.features.Provide("SourceTwo", int_src)
+
+    test1 = consumer.source.value == "asdf"
+    consumer.source = "SourceTwo" # renaming the requested feature name
+    test2 = consumer.source.value == 5
+
+    ok_(test1 and test2)
 
 @with_setup(setup, teardown)
 def test_spike_detection():
