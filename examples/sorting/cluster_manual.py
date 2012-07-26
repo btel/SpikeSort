@@ -48,3 +48,4 @@ if __name__ == "__main__":
     raw_input('Press any key to exit...')
     
     h5filter.close()
+    exit()
