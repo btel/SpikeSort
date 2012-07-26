@@ -24,9 +24,12 @@ sp_win = [-0.6, 0.8]
 path = filter(None, os.environ['DATAPATH'].split(os.sep)) + [hdf5filename]
 hdf5file = os.path.join(os.sep, *path)
 
-io_filter = components.PyTablesSource(hdf5file, dataset, f_filter=filter_freq)
+io = components.PyTablesSource(hdf5file, dataset)
+io_filter = components.FilterStack()
+
+base.features.Provide("RawSource", io)
+base.features.Provide("EventsOutput", io)
 base.features.Provide("SignalSource", io_filter)
-base.features.Provide("EventsOutput", io_filter)
 base.features.Provide("SpikeMarkerSource",
                       components.SpikeDetector(contact=contact, 
                                                thresh=thresh,
@@ -45,6 +48,9 @@ legend = components.Legend()
 export = components.ExportCells()
 
 #############################################################
+# Add filters here:
+base.features["SignalSource"].add_filter("LinearIIR", *filter_freq)
+
 # Add the features here: 
 base.features["FeatureSource"].add_feature("P2P")
 base.features["FeatureSource"].add_feature("PCs", ncomps=2)

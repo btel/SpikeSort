@@ -8,7 +8,7 @@ import spike_sort as sort
 
 import base
 from spike_sort.io.filters import BakerlabFilter, PyTablesFilter
-from spike_sort import features
+from spike_sort import features, filters
 from spike_sort.ui import plotting
 from spike_sort.ui import zoomer
 from spike_analysis import dashboard
@@ -16,20 +16,16 @@ import numpy as np
 
 
 class GenericSource(base.Component):
-    def __init__(self, dataset, overwrite=False, f_filter=None):
+    def __init__(self, dataset, overwrite=False):
         self.dataset = dataset
         self._signal = None
         self._events = None
         self.overwrite = overwrite
-        self.f_filter = f_filter
         super(GenericSource, self).__init__()
 
     def read_signal(self):
         if self._signal is None:
             self._signal = self.read_sp(self.dataset)
-            if self.f_filter is not None:
-                filter = sort.extract.Filter(*self.f_filter)
-                self._signal = sort.extract.filter_proxy(self._signal, filter)
         return self._signal
 
     def read_events(self, cell):
@@ -50,68 +46,47 @@ class GenericSource(base.Component):
 
 
 class BakerlabSource(GenericSource, BakerlabFilter):
-    def __init__(self, conf_file, dataset, overwrite=False, f_filter=None):
-        GenericSource.__init__(self, dataset, overwrite, f_filter)
+    def __init__(self, conf_file, dataset, overwrite=False):
+        GenericSource.__init__(self, dataset, overwrite)
         BakerlabFilter.__init__(self, conf_file)
 
 
 class PyTablesSource(GenericSource, PyTablesFilter):
     # TODO: add unit test
-    def __init__(self, h5file, dataset, overwrite=False, f_filter=None):
-        GenericSource.__init__(self, dataset, overwrite, f_filter)
+    def __init__(self, h5file, dataset, overwrite=False):
+        GenericSource.__init__(self, dataset, overwrite)
         PyTablesFilter.__init__(self, h5file)
 
+class FilterStack(base.Component):
+    raw_src = base.RequiredFeature("RawSource",
+                                        base.HasAttributes("signal"))
 
-class NoMeanSource(object):
-    """
-    A wrapper class to any proper I/O filter component.
-    Subtracts mean from the signal in the specified window
-    """
-    def __init__(self, io_filter, window):
-        # this is to avoid use of overridden __setattr__
-        object.__setattr__(self, '_io_filter', io_filter)
-        object.__setattr__(self, '_window', window)
+    def __init__(self):
+        self._filters = []
+        self._signal = None
+        super(FilterStack, self).__init__()
 
-    def __getattribute__(self, name):
-        io_filter = object.__getattribute__(self, '_io_filter')
+    def add_filter(self, filt, *args, **kwargs):
+        # type checking 
+        if hasattr(filt, "__call__"):
+            self._filters.append(lambda signal: filt(signal, *args, **kwargs))
+        elif isinstance(filt, str):
+            try:
+                filter_func = filters.__getattribute__("flt" + filt)
+                self._filters.append(lambda signal: filter_func(signal, *args, **kwargs))
+            except AttributeError:
+                raise AttributeError("No such method found in 'core.filters': %s" % ("flt" + filt))
+        else:
+            raise TypeError("Unsupported argument type: %s. Only string or callable are accepted" % type(filt))
 
-        if name == 'signal' and io_filter._signal is None:
-            subtract_mean = object.__getattribute__(self, 'subtract_mean')
-            window = object.__getattribute__(self, '_window')
-            subtract_mean(io_filter, window)
+    def read_signal(self):
+        if self._signal is None:
+            self._signal = self.raw_src.signal
+            for filt in self._filters:
+                self._signal = filt(self._signal)
+        return self._signal
 
-        try:
-            attr = getattr(io_filter, name)
-        except AttributeError:
-            attr = object.__getattribute__(self, name)
-
-        return attr
-
-    def __setattr__(self, name, value):
-        io_filter = object.__getattribute__(self, '_io_filter')
-        setattr(io_filter, name, value)
-
-    def subtract_mean(self, io_filter, window):
-        """
-        subtract mean before returning signal
-        """
-        sp = io_filter.read_signal()
-        stim = io_filter.events['stim']
-
-        print 'subtracting mean...'
-
-        wshapes = sort.extract.extract_spikes(sp, stim, window)
-        mean_waves = np.mean(wshapes['data'], 1)
-
-        stim_idx = sort.extract.filter_spt(sp, stim, window)
-        stim_data_idx = (stim['data'][stim_idx] / 1000.0 * sp['FS']).astype(np.int32)
-        win_data_idx = (np.asarray(window) / 1000.0 * sp['FS']).astype(np.int32)
-
-        for i in stim_idx:
-            insert_start_idx = stim_data_idx[i] + win_data_idx[0]
-            insert_end_idx = insert_start_idx + mean_waves.shape[0]
-            sp['data'][:, insert_start_idx:insert_end_idx] -= mean_waves.T
-        print '... done'
+    signal = property(read_signal)
 
 
 class SpikeDetector(base.Component):
@@ -124,7 +99,6 @@ class SpikeDetector(base.Component):
                  type='max',
                  resample=1,
                  sp_win=(-0.2, 0.8),
-                 f_filter=None,
                  align=True):
         self._thresh = thresh
         self.contact = contact
@@ -133,7 +107,6 @@ class SpikeDetector(base.Component):
         self.resample = resample
         self.sp_win = sp_win
         self.sp_times = None
-        self.f_filter = f_filter
         self._est_thresh = None
         super(SpikeDetector, self).__init__()
 
@@ -149,15 +122,9 @@ class SpikeDetector(base.Component):
     def _detect(self):
         sp = self.waveform_src.signal
 
-        if self.f_filter is None:
-            filt = None
-        else:
-            filt = sort.extract.Filter(*self.f_filter)
-            sp = sort.extract.filter_proxy(sp, filt)
         spt = sort.extract.detect_spikes(sp, edge=self.type,
                                              contact=self.contact,
-                                             thresh=self._thresh,
-                                             filter=filt)
+                                             thresh=self._thresh)
         self._est_thresh = spt['thresh']
         if self.align:
             self.sp_times = sort.extract.align_spikes(sp, spt,
@@ -627,15 +594,11 @@ class ExportWithMetadata(ExportCells):
                                                          "threshold",
                                                          "type",
                                                          "sp_win"))
-    export_filter = base.RequiredFeature("EventsOutput",
-                                        base.HasAttributes("events",
-                                                           "f_filter"))
 
     def get_metadata(self):
         metadata = {'contact': self.marker_src.contact,
                     'threshold': self.marker_src.threshold,
                     'type': self.marker_src.type,
-                    'filter': self.export_filter.f_filter,
                     'sp_win': self.marker_src.sp_win}
         return metadata
 
