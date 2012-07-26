@@ -15,7 +15,7 @@ dataset = "/SubjectA/session01/el1"
 
 # spike detection/extraction properties
 contact = 3
-type = "max"
+detection_type = "max"
 thresh = "auto"
 filter_freq = (800.0, 100.0)
 
@@ -33,7 +33,7 @@ base.features.Provide("SignalSource", io_filter)
 base.features.Provide("SpikeMarkerSource",
                       components.SpikeDetector(contact=contact, 
                                                thresh=thresh,
-                                               type=type,
+                                               type=detection_type,
                                                sp_win=sp_win,
                                                resample=1,
                                                align=True))
@@ -42,8 +42,8 @@ base.features.Provide("FeatureSource", components.FeatureExtractor())
 base.features.Provide("LabelSource", components.ClusterAnalyzer("gmm", 4))
 
 browser = components.SpikeBrowserWithLabels()
-plot1 = components.PlotFeaturesTimeline()
-plot2 = components.PlotSpikes()
+feaute_plot = components.PlotFeaturesTimeline()
+wave_plot = components.PlotSpikes()
 legend = components.Legend()
 export = components.ExportCells()
 
