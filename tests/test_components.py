@@ -43,21 +43,24 @@ class DummySignalSource(base.Component):
         self.n_spikes = n_spikes
         self.f_filter = None
         super(DummySignalSource, self).__init__()
-        
+
+        self._generate_data()
+
+    def _generate_data(self):
         n_pts = int(self.n_spikes*self.period/1000.*FS)
         sp_idx = (np.arange(1,self.n_spikes-1)*self.period*FS/1000).astype(int)
         spikes = np.zeros(n_pts)[np.newaxis,:]
         spikes[0,sp_idx]=spike_amp
-        
+
         n = int(spike_dur/1000.*FS) #spike length
         spikes[0,:] = np.convolve(spikes[0,:], np.ones(n), 'full')[:n_pts]
         self.spt = (sp_idx+0.5)*1000./FS
         self.FS = FS
         self._spikes = spikes
-        
+
     def read_signal(self):
         
-         #in milisecs
+        #in milisecs
 
         spk_data ={"data":self._spikes,"n_contacts":1, "FS":self.FS}
         return spk_data
@@ -65,6 +68,7 @@ class DummySignalSource(base.Component):
     def _update(self):
         self.period = period*2
         self.n_spikes = n_spikes/2
+        self._generate_data()
        
     signal = property(read_signal)
     
@@ -425,5 +429,6 @@ def test_pipeline_update():
     cl1 = base.features["ClusterAnalyzer"].labels
     base.features["SignalSource"].update()
     cl2 = base.features["ClusterAnalyzer"].labels
-    ok_(~(len(cl1)==len(cl2)))
+    ok_(len(cl1)==98)
+    ok_(len(cl2)==48)
     
