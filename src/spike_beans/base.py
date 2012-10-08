@@ -29,9 +29,16 @@ class FeatureBroker(object):
             raise AttributeError("Unknown feature named %r" % feature)
         return provider()
 
+    def __setitem__(self, feature, component):
+        self.Provide(feature, component)
+
 
 features = FeatureBroker()
 
+def register(feature, component):
+    """register `component` as providing `feature`"""
+    features[feature]=component
+    return component
 ######################################################################
 ##
 ## Representation of Required Features and Feature Assertions

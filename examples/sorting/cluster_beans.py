@@ -27,19 +27,19 @@ hdf5file = os.path.join(os.sep, *path)
 io = components.PyTablesSource(hdf5file, dataset)
 io_filter = components.FilterStack()
 
-base.features.Provide("RawSource", io)
-base.features.Provide("EventsOutput", io)
-base.features.Provide("SignalSource", io_filter)
-base.features.Provide("SpikeMarkerSource",
+base.register("RawSource", io)
+base.register("EventsOutput", io)
+base.register("SignalSource", io_filter)
+base.register("SpikeMarkerSource",
                       components.SpikeDetector(contact=contact, 
                                                thresh=thresh,
                                                type=detection_type,
                                                sp_win=sp_win,
                                                resample=1,
                                                align=True))
-base.features.Provide("SpikeSource", components.SpikeExtractor(sp_win=sp_win))
-base.features.Provide("FeatureSource", components.FeatureExtractor())
-base.features.Provide("LabelSource", components.ClusterAnalyzer("gmm", 4))
+base.register("SpikeSource", components.SpikeExtractor(sp_win=sp_win))
+base.register("FeatureSource", components.FeatureExtractor())
+base.register("LabelSource", components.ClusterAnalyzer("gmm", 4))
 
 browser = components.SpikeBrowserWithLabels()
 feaute_plot = components.PlotFeaturesTimeline()
