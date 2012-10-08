@@ -26,6 +26,11 @@ class Dummy(base.Component):
     def _update(self):
         self.data += 1
 
+class DummyDataWithZeroDivision(object):
+    @property
+    def data(self):
+        data = 1/0
+        return data
 
 class DummyTwoWay(Dummy):
     con2 = base.RequiredFeature('Data2', base.HasAttributes('get_data'))
@@ -82,3 +87,15 @@ def test_on_change():
     comp.get_data()
     base.features['Data'].update()
     ok_(comp.data)
+
+@raises(ZeroDivisionError)
+@with_setup(setup, teardown)
+def test_hasattribute_exceptions():
+    '''test whether HasAttributes lets exceptions through (other than AttributeError)'''
+    c = DummyDataWithZeroDivision()
+    base.features.Provide('Data', c)
+    comp = Dummy()
+    data = comp.get_data()
+    assert True
+
+
