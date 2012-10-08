@@ -24,5 +24,5 @@ def ks1d(data):
 def ks(data):
     return np.array([ks1d(x) for x in data])
 
-def var(data):
-    return std_r(data).T
+def std(data):
+    return np.std(data, 1)
