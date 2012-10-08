@@ -3,10 +3,10 @@ import numpy as np
 from scipy import stats as st
 
 def mean_r(data):
-    return np.median(data, 1)[:, None]
+    return np.median(data, 1)
 
 def std_r(data):
-    np.median(np.abs(data - mean_r(data)), 1)[:, None]/0.6745
+    return np.median(np.abs(data - mean_r(data)[:, None]), 1)/0.6745
 
 #def dip1d(data):
     #sdata = np.sort(data)
@@ -22,7 +22,7 @@ def ks1d(data):
     #return np.array([dip1d(x) for x in data])[:, None]
 
 def ks(data):
-    return np.array([ks1d(x) for x in data])[:, None]
+    return np.array([ks1d(x) for x in data])
 
 def var(data):
     return std_r(data).T
