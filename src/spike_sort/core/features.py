@@ -267,7 +267,7 @@ def fetPCs(spikes_data,ncomps=2, contacts='all'):
 def fetWTs(spikes_data, nfeatures=3, contacts='all',  wavelet='haar', mode='sym', select_method='var'):
     # TODO: white docs
     #import pdb; pdb.set_trace()
-    import stat_tests
+    import stats
     spikes = _get_data(spikes_data, contacts)
 
     if spikes.ndim == 3: 
@@ -286,16 +286,16 @@ def fetWTs(spikes_data, nfeatures=3, contacts='all',  wavelet='haar', mode='sym'
         data = data[nonzero_idx]
 
         if select_method in ['ksPCA', 'dipPCA']:
-            test_func = getattr(stat_tests, select_method[:-3])
+            test_func = getattr(stats, select_method[:-3])
             feature_name = 'WTPC'
 
             scores = test_func(data)
-            data = data*scores/stat_tests.std_r(data)
+            data = data*scores/stats.std_r(data)
             data = PCA(data, nfeatures)[2]
             order = np.arange(nfeatures)
 
         else:
-            test_func = getattr(stat_tests, select_method)
+            test_func = getattr(stats, select_method)
             feature_name = 'WT'
 
             scores = test_func(data).squeeze()
