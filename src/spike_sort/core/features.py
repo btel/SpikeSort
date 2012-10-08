@@ -213,7 +213,6 @@ def WT(data, wavelet, mode='sym'):
             new_data[:, i, c] = np.hstack(coeffs)
 
     return new_data
-   
 
 
 def _get_data(spk_dict, contacts):
@@ -266,7 +265,7 @@ def fetPCs(spikes_data,ncomps=2, contacts='all'):
 
 @add_mask
 def fetWTs(spikes_data, nfeatures=3, contacts='all',  wavelet='haar', mode='sym', select_method='var'):
-    # TODO: white docs, lookup if there are any double actions, fix 'var' method
+    # TODO: white docs
     #import pdb; pdb.set_trace()
     import stat_tests
     spikes = _get_data(spikes_data, contacts)
@@ -279,44 +278,6 @@ def fetWTs(spikes_data, nfeatures=3, contacts='all',  wavelet='haar', mode='sym'
     n_channels = coeffs.shape[2]
     features = np.empty((nfeatures, coeffs.shape[1], n_channels))
 
-    #if select_method == 'var':
-        #for contact in xrange(n_channels):
-            #data = coeffs[:,:,contact]
-            #order = np.argsort(std(data).T)[::-1][:nfeatures]
-            #features[:, :, contact] = coeffs[order, :, contact]
-            #fet_name = 'WT'
-
-    #elif select_method in ['dip', 'ks', 'dipPCA', 'ksPCA']:
-        #from sklearn.decomposition import PCA
-        #import stat_tests
-        #for contact in xrange(n_channels):
-            #data = coeffs[:,:,contact]
-            ##if select_method =='mwd':
-                ##data_truncated = stat_tests.prepare_data(data)
-                ##scores = np.array([stat_tests.mwd(x) for x in data_truncated])
-            #if select_method in ['dip', 'ks']:
-                ##data_truncated = stat_tests.prepare_data(data)
-                ##scores = np.array([stat_tests.dip(x) for x in data])
-                #test_func = 
-            ##elif select_method == 'pca_mwd':
-                ##pca = PCA()
-                ##data = pca.fit(data.T).transform(data.T).T
-                ##data_truncated = stat_tests.prepare_data(data)
-                ##scores = np.array([stat_tests.mwd(x) for x in data_truncated])
-            #elif select_method == 'ks':
-                ##data_truncated = stat_tests.prepare_data(data)
-                #scores = np.array([stat_tests.ks(x) for x in data])
-                ##import pdb; pdb.set_trace()
-            #elif select_method == 'ksPCA':
-                #pca = PCA()
-                #scores = np.array([stat_tests.dip(x) for x in data])[:,None]
-                #std = np.std(data,1)[:,None]
-                ##std = np.median(np.abs(data - np.median(data,1)[:,None]),1)[:,None]/0.6745
-                #data = data*scores/std
-                #data = pca.fit(data.T).transform(data.T).T
-                #scores = np.arange(data.shape[1])[::-1]
-
-
     for contact in xrange(n_channels):
         data = coeffs[:,:,contact]
 
@@ -324,10 +285,8 @@ def fetWTs(spikes_data, nfeatures=3, contacts='all',  wavelet='haar', mode='sym'
             test_func = getattr(stat_tests, select_method[:-3])
             feature_name = 'WTPC'
 
-            #pca = PCA()
             scores = test_func(data)
             data = data*scores/stat_tests.std_r(data)
-            #data = pca.fit(data.T).transform(data.T).T
             data = PCA(data, nfeatures)[2]
             order = np.arange(nfeatures)
 
