@@ -281,6 +281,10 @@ def fetWTs(spikes_data, nfeatures=3, contacts='all',  wavelet='haar', mode='sym'
     for contact in xrange(n_channels):
         data = coeffs[:,:,contact]
 
+        std = np.std(data, 1)
+        nonzero_idx = std > 0.
+        data = data[nonzero_idx]
+
         if select_method in ['ksPCA', 'dipPCA']:
             test_func = getattr(stat_tests, select_method[:-3])
             feature_name = 'WTPC'
