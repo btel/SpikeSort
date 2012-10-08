@@ -290,7 +290,7 @@ def fetWTs(spikes_data, nfeatures=3, contacts='all',  wavelet='haar', mode='sym'
             feature_name = 'WTPC'
 
             scores = test_func(data)
-            data = data*scores/stats.std_r(data)
+            data = data*scores[:, None]/stats.std_r(data)[:, None]
             data = PCA(data, nfeatures)[2]
             order = np.arange(nfeatures)
 
@@ -298,7 +298,7 @@ def fetWTs(spikes_data, nfeatures=3, contacts='all',  wavelet='haar', mode='sym'
             test_func = getattr(stats, select_method)
             feature_name = 'WT'
 
-            scores = test_func(data).squeeze()
+            scores = test_func(data)
             order = np.argsort(scores)[::-1][:nfeatures]
     
         features[:, :, contact] = data[order]
