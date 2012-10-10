@@ -264,7 +264,7 @@ def fetPCs(spikes_data,ncomps=2, contacts='all'):
     return {'data': sc, "names":names}
 
 @add_mask
-def fetWTs(spikes_data, nfeatures=3, contacts='all',  wavelet='haar', mode='sym', select_method='var'):
+def fetWTs(spikes_data, nfeatures=3, contacts='all',  wavelet='haar', mode='sym', select_method='std'):
     # TODO: white docs
     #import pdb; pdb.set_trace()
     import stats
