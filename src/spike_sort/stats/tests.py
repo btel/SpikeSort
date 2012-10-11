@@ -17,6 +17,10 @@ def ks1d(data):
     mr = np.median(data)
     stdr = np.median(np.abs(data - mr))/0.6745
 
+    # avoid zero-variance
+    if stdr == 0:
+        return 0.
+
     return st.kstest(data, st.norm(loc=mr, scale=stdr).cdf)[0]
 
 def dip(data):
