@@ -276,7 +276,13 @@ def fetWTs(spikes_data, nfeatures=3, contacts='all',  wavelet='haar', mode='sym'
 
     n_channels = coeffs.shape[2]
     features = np.empty((nfeatures, coeffs.shape[1], n_channels))
-    feature_name = 'WT'
+
+    # name
+    if isinstance(wavelet, basestring):
+        feature_name = wavelet
+    else:
+        feature_name = wavelet.name
+    feature_name = "%sWT" % feature_name
 
     for contact in xrange(n_channels):
         data = coeffs[:,:,contact]
@@ -288,7 +294,6 @@ def fetWTs(spikes_data, nfeatures=3, contacts='all',  wavelet='haar', mode='sym'
         # mPCA based selection
         elif select_method in ['ksPCA', 'dipPCA']:
             test_func = getattr(stats, select_method[:-3])
-            feature_name = 'WTPC'
             scores = test_func(data)
 
             std_r = stats.std_r(data)
