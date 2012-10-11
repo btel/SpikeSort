@@ -267,7 +267,7 @@ def fetPCs(spikes_data,ncomps=2, contacts='all'):
 def fetWTs(spikes_data, nfeatures=3, contacts='all',  wavelet='haar', mode='sym', select_method='std'):
     # TODO: white docs
     #import pdb; pdb.set_trace()
-    import stats
+    from spike_sort import stats
     spikes = _get_data(spikes_data, contacts)
 
     if spikes.ndim == 3: 
