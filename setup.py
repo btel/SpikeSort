@@ -1,7 +1,12 @@
 #!/usr/bin/env python
 #coding=utf-8
 
-from setuptools import setup
+import setuptools
+from numpy.distutils.core import setup, Extension
+
+diptst_ext = Extension(name = 'spike_sort.stats._diptst',
+                       sources = ['src/spike_sort/stats/diptst/diptst.f',
+                                  'src/spike_sort/stats/diptst/diptst.pyf'])
 
 setup(name='SpikeSort',
       version='0.1',
@@ -9,8 +14,10 @@ setup(name='SpikeSort',
       author='Bartosz Telenczuk',
       author_email='bartosz.telenczuk@gmail.com',
       url='http://neuroscience.telenczuk.pl',
+      ext_modules = [diptst_ext],
       packages=['spike_sort', 
                 'spike_sort.core', 
+                'spike_sort.stats',
                 'spike_sort.ui',
                 'spike_sort.io', 
                 'spike_beans',
@@ -23,6 +30,6 @@ setup(name='SpikeSort',
           'numpy >= 1.4.1',
           'scipy'
         ]
-      
      )
+
 
