@@ -277,26 +277,32 @@ def fetWTs(spikes_data, nfeatures=3, contacts='all',  wavelet='haar', mode='sym'
 
     n_channels = coeffs.shape[2]
     features = np.empty((nfeatures, coeffs.shape[1], n_channels))
+    feature_name = 'WT'
 
     for contact in xrange(n_channels):
         data = coeffs[:,:,contact]
 
-        std = np.std(data, 1)
-        nonzero_idx = std > 0.
-        data = data[nonzero_idx]
+        # no selection
+        if not select_method:
+            order = slice(nfeatures) # no sorting
 
-        if select_method in ['ksPCA', 'dipPCA']:
+        # mPCA based selection
+        elif select_method in ['ksPCA', 'dipPCA']:
             test_func = getattr(stats, select_method[:-3])
             feature_name = 'WTPC'
-
             scores = test_func(data)
-            data = data*scores[:, None]/stats.std_r(data)[:, None]
+
+            std_r = stats.std_r(data)
+            zero_idx = ~(std_r > 0.)
+            std_r[zero_idx] = 1. # avoid division by zero
+
+            data = data*scores[:, None]/std_r[:, None]
             data = PCA(data, nfeatures)[2]
             order = np.arange(nfeatures)
 
+        # statistical selection
         else:
             test_func = getattr(stats, select_method)
-            feature_name = 'WT'
 
             scores = test_func(data)
             order = np.argsort(scores)[::-1][:nfeatures]
