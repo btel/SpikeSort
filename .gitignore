@@ -1,6 +1,7 @@
 *.swp
 *.swo
 *.pyc
+*.so
 docs/build/
 build/
 /dist
