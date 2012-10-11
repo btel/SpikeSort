@@ -78,6 +78,62 @@ class TestFeatures(object):
         feat = ss.features.fetSpProjection(spikes_dict, labels)
         ok_(((feat['data'][:, 0] > 0.5) == labels).all())
 
+    def test_WT(self):
+        # simple test for linearity
+        # assuming pywt works correctly
+        spike1, spike2 = self.cells
+        spike3 = 0.1 * spike1 + 0.7 * spike2
+        spikes = np.vstack((spike1, spike2, spike3)).T
+        spikes = spikes[:, :, np.newaxis] # WT only accepts 3D arrays
+
+        wavelet = 'db3'
+        wt = ss.features.WT(spikes, wavelet)
+        wt1, wt2, wt3 = wt.squeeze().T
+
+        almost_equal(wt3, 0.1 * wt1 + 0.7 * wt2)
+
+    def test_fetWTs_math(self):
+        n_samples = 256
+
+        # upsampled haar wavelet
+        spike1 = np.hstack((np.ones(n_samples / 2), -1 * np.ones(n_samples / 2)))
+        # upsampled haar scaling function
+        spike2 = np.ones(n_samples)
+        
+        spikes = np.vstack((spike1, spike2)).T
+        spikes = spikes[:, :, np.newaxis]
+        spikes_dict = {'data' : spikes}
+
+        features = ss.features.fetWTs(spikes_dict, n_samples, wavelet='haar', select_method=None)
+        idx = np.nonzero(features['data']) # nonzero indices
+        
+        # if nonzero elements are ONLY at (0,1) and (1,0),
+        # this should be eye(2)
+        eye = np.fliplr(np.vstack(idx))
+
+        ok_((eye == np.eye(2)).all())
+
+    def test_fetWTs_selection(self):
+        n_samples = 30
+        n_channels = 4
+        n_spikes = 50
+        n_features = 10
+        methods = [None, 'std', 'std_r', 'ks', 'dip', 'ksPCA', 'dipPCA']
+
+        spikes = np.random.randn(n_samples, n_spikes, n_channels)
+        spikes_dict = {'data' : spikes}
+
+        shapes = [(n_spikes, n_features * n_channels)]
+
+        for met in methods:
+            wt = ss.features.fetWTs(spikes_dict, n_features, wavelet='haar', select_method=met)
+            shapes.append(wt['data'].shape)
+
+        equal = lambda x, y: x == y and y or False
+        success = bool(reduce(equal, shapes)) # returned shapes for all methods are correct
+
+        ok_(success)
+
     def test_add_mask_decorator(self):
         spikes_dict = {'data': np.zeros((10, 2)),
                        'is_valid': np.zeros(2,)}
