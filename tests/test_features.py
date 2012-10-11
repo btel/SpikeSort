@@ -115,7 +115,7 @@ class TestFeatures(object):
 
     def test_fetWTs_selection(self):
         n_samples = 30
-        n_channels = 4
+        n_channels = 2
         n_spikes = 50
         n_features = 10
         methods = [None, 'std', 'std_r', 'ks', 'dip', 'ksPCA', 'dipPCA']
