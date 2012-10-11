@@ -20,7 +20,7 @@ def ks1d(data):
     return st.kstest(data, st.norm(loc=mr, scale=stdr).cdf)[0]
 
 def dip(data):
-    return np.array([dip1d(x) for x in data])[:, None]
+    return np.array([dip1d(x) for x in data])
 
 def ks(data):
     return np.array([ks1d(x) for x in data])
