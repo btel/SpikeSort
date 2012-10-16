@@ -23,7 +23,7 @@ class TestStats(object):
 
     def test_multimodality_detection(self):
         data = [self.normal, self.uniform, self.laplace]
-        tests = [stats.dip1d, stats.ks1d]
+        tests = [stats.dip, stats.ks]
 
         detected = [test(self.multimodal) > test(dist) for dist in data for test in tests]
 
