@@ -53,12 +53,13 @@ def std_r(data, axis = 0):
     Parameters
     ----------
     data : array
-        (n_vecs, n_obs) input data array
+        input data array
+    axis : int
 
     Returns
     -------
     data : array
-        (n_vecs) row-wise std values
+
     """
     median = unsqueeze(np.median(data, axis), axis)
     std_r = np.median(np.abs(data - median), axis)/0.6745
