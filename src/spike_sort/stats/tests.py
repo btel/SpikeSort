@@ -101,7 +101,7 @@ def ks(data):
         KS statistic. If the input data is flat, returns float
     """
     mr = np.median(data)
-    stdr = np.median(np.abs(data - mr))/0.6745
+    stdr = std_r(data)
 
     # avoid zero-variance
     if stdr == 0:
