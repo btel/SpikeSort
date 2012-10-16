@@ -355,11 +355,11 @@ def fetWTs(spikes_data, nfeatures=3, contacts='all',  wavelet='haar', mode='sym'
             test_func = getattr(stats, select_method[:-3])
             scores = test_func(data)
 
-            std_r = stats.std_r(data)
-            zero_idx = ~(std_r > 0.)
-            std_r[zero_idx] = 1. # avoid division by zero
+            norm = np.sqrt((data**2.).sum(1))
+            zero_idx = ~(norm > 0.)
+            norm[zero_idx] = 1.
 
-            data = data*scores[:, None]/std_r[:, None]
+            data = data*scores[:, None]/norm[:, None]
             data = PCA(data, nfeatures)[2]
             order = np.arange(nfeatures)
 
