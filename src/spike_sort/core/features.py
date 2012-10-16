@@ -353,13 +353,13 @@ def fetWTs(spikes_data, nfeatures=3, contacts='all',  wavelet='haar', mode='sym'
         # mPCA based selection
         elif select_method in ['ksPCA', 'dipPCA']:
             test_func = getattr(stats, select_method[:-3])
-            scores = test_func(data)
+            scores = test_func(data, 1)
 
             norm = np.sqrt((data**2.).sum(1))
             zero_idx = ~(norm > 0.)
             norm[zero_idx] = 1.
 
-            data = data*scores[:, None]/norm[:, None]
+            data = data*scores[:, np.newaxis]/norm[:, np.newaxis]
             data = PCA(data, nfeatures)[2]
             order = np.arange(nfeatures)
 
@@ -367,7 +367,7 @@ def fetWTs(spikes_data, nfeatures=3, contacts='all',  wavelet='haar', mode='sym'
         else:
             test_func = getattr(stats, select_method)
 
-            scores = test_func(data)
+            scores = test_func(data, 1)
             order = np.argsort(scores)[::-1][:nfeatures]
     
         features[:, :, contact] = data[order]
