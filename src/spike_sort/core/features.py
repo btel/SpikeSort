@@ -174,15 +174,36 @@ def PCA(data,ncomps=2):
     return evals,evecs,score
 
 def WT(data, wavelet, mode='sym'):
-    """Perfrom a principle component analysis.
+    """Perfroms a batch 1D wavelet transform.  
 
     Parameters
     ----------
-     
     data : array 
-        (n_vars, n_obs) array where `n_vars` is the number of
-        variables (vector dimensions) and `n_obs` the number of
-        observations
+        (n_vars, n_obs, n_contacts) array where `n_vars` is the number of
+        variables (vector dimensions), `n_obs` the number of observations
+        and `n_contacts` is the number of contacts. Only 3D arrays are
+        accepted.
+    wavelet : string or pywt.Wavelet
+        wavelet to be used to perform the transform
+    mode : string, optional
+        signal extension mode (see modes in PyWavelets documentation)
+
+    Returns
+    -------
+    data : array
+        (n_coeffs, n_obs, n_contacts) 1D wavelet transform of each vector
+        of the input data array. `pywt.wavedec` is used to perform the
+        transform. For every vector of the input array, a 1D transformation
+        is returned of the form [cA_n, cD_n, cD_n-1, ..., cD_n2, cD_n1]
+        where cA_n and cD_n are approximation and detailed coefficients of
+        level n. cA_n and cD_n's are stacked together in a single vector.
+
+    Notes
+    -----
+
+    PyWavelets documentation contains more detailed information on the
+    wavelet transform.
+        
     """
     # TODO: complete docstring, add wavelet type checking,
     # think about dependencies
@@ -265,7 +286,45 @@ def fetPCs(spikes_data,ncomps=2, contacts='all'):
 
 @add_mask
 def fetWTs(spikes_data, nfeatures=3, contacts='all',  wavelet='haar', mode='sym', select_method='std'):
-    # TODO: white docs
+    """Calculate wavelet transform reduce the dimensionality
+
+    The dimensionality reduction is done by picking the most "interesting"
+    wavelet coefficients or their linear combibations, depending on the
+    `select_method` value
+
+    Parameters
+    ----------
+    spikes_data : dict
+    nfeatures : int, optional
+        number of wavelet coefficients to return
+    contacts : string or int or list, optional
+        contacts to be processed
+    wavelet : string or pywt.Wavelet, optional
+        wavelet to be used for transformation
+    mode : string, optional
+        signal extension mode (see modes in PyWavelets documentation)
+    select_method : string, optional
+        method to select the "interesting" coefficients. Following
+        statistics are supported:
+        'std'
+            standard deviation
+        'std_r'
+            robust estimate of std (Quiroga et al, 2004)
+        'ks'
+            Kolmogorov-Smirnov test for normality (useful for selecting
+            coeffs with multimodal distributions)
+        'dip'
+            DIP statistic (tests unimodality) by Hartigan & Hartigan 1985.
+            Also useful for picking coeffs with multimodal distributions.
+        'ksPCA' and 'dipPCA'
+            implementation of modality-weighted PCA (Takekawa et al, 2012)
+            using 'ks' and 'dip' tests respectively
+
+    Returns
+    -------
+    features : dict
+
+    """
     from spike_sort import stats
     spikes = _get_data(spikes_data, contacts)
 
