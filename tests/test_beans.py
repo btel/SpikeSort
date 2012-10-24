@@ -98,4 +98,16 @@ def test_hasattribute_exceptions():
     data = comp.get_data()
     assert True
 
+@with_setup(setup, teardown)
+def test_register_new_feature_by_setitem():
+    base.features['Data']=DummyDataProvider()
+    comp = Dummy()
+    ok_(comp.get_data() == 'some data')
 
+@with_setup(setup, teardown)
+def test_register_new_feature_by_register():
+    dep_comp = DummyDataProvider()
+    added_comp = base.register("Data", dep_comp)
+    comp = Dummy()
+    ok_(comp.get_data() == 'some data')
+    assert dep_comp is added_comp
