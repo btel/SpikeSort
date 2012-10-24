@@ -57,8 +57,10 @@ def IsInstanceOf(*classes):
 
 def HasAttributes(*attributes):
     def test(obj):
-        for each in attributes:
-            if not hasattr(obj, each):
+        for attr_name in attributes:
+            try:
+                _attr = getattr(obj, attr_name)
+            except AttributeError:
                 return False
         return True
     return test
@@ -135,7 +137,9 @@ class RequiredFeature(object):
         except AttributeError:
             pass
 
-        assert self.assertion(obj), \
+
+        isComponentCorrect = self.assertion(obj)
+        assert isComponentCorrect, \
                  "The value %r of %r does not match the specified criteria" \
                  % (obj, self.feature)
         return obj

@@ -84,7 +84,7 @@ class BakerlabFilter(object):
         n_contacts = conf_dict['n_contacts']
         f_spike = conf_dict['fspike']
 
-        dirname = conf_dict['dirname'].format(**os.environ)
+        dirname = os.path.expandvars(conf_dict['dirname'])
         rec_dict['contact_id'] = 1
 
         full_path = os.path.join(dirname, f_spike)
@@ -117,8 +117,9 @@ class BakerlabFilter(object):
             sp = np.memmap(fname, dtype=np.int16, mode='r')
             
             # read and copy data by chunks
+            _npts = min(sp.shape[0], npts)
             for j in range(n_chunks):
-                stop = np.min((npts, (j + 1) * sz))
+                stop = np.min((_npts, (j + 1) * sz))
                 fp[i, j * sz:stop] = sp[j * sz:stop]
             # fp[:,i]=sp[:]
             del sp
@@ -171,7 +172,7 @@ class BakerlabFilter(object):
         conf_dict = self.conf_dict
         rec = self._match_dataset(dataset)
 
-        dirname = conf_dict['dirname'].format(**os.environ)
+        dirname = os.path.expandvars(conf_dict['dirname'])
         fspt = conf_dict[rec['type']]
         full_path = os.path.join(dirname, fspt)
         fname = full_path.format(**rec)

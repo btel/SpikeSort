@@ -6,7 +6,7 @@ import operator
 
 from scipy import interpolate
 import numpy as np
-
+from warnings import warn
 
 
 def split_cells(spikes, idx, which='all'):
@@ -229,6 +229,11 @@ def align_spikes(spike_data, spt_dict, sp_win, type="max", resample=1,
 
     """
 
+    tol = 0.1
+
+    if (sp_win[0]>-tol) or (sp_win[1]<tol):
+        warn('You are using very short sp_win. This may lead to alignment problems.')
+
     spt = spt_dict['data'].copy()
 
     idx_align = np.arange(len(spt))
@@ -260,7 +265,7 @@ def align_spikes(spike_data, spt_dict, sp_win, type="max", resample=1,
 
         #if spike maximum/minimum was at the edge we have to extract it at the
         # new marker and repeat the alignment
-        tol = 0.1
+
         idx_align = idx_align[(shift < (sp_win[0] + tol)) | (shift > (sp_win[1] - tol))]
         iter_id += 1
         #print "Align. iteration %d, remaining idx %d" % (iter_id, len(idx_align))
