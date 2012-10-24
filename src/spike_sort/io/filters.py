@@ -117,8 +117,9 @@ class BakerlabFilter(object):
             sp = np.memmap(fname, dtype=np.int16, mode='r')
             
             # read and copy data by chunks
+            _npts = min(sp.shape[0], npts)
             for j in range(n_chunks):
-                stop = np.min((npts, (j + 1) * sz))
+                stop = np.min((_npts, (j + 1) * sz))
                 fp[i, j * sz:stop] = sp[j * sz:stop]
             # fp[:,i]=sp[:]
             del sp
