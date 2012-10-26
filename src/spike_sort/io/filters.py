@@ -145,7 +145,7 @@ class BakerlabFilter(object):
         m = re.match(self._regexp, dataset)
         n_contacts = sp.shape[0]
         rec_dict = m.groupdict()
-        dirname = conf_dict['dirname'].format(**os.environ)
+        dirname = os.path.expandvars(conf_dict['dirname'])
 
         for i in range(n_contacts):
             rec_dict['contact_id'] = i + 1
@@ -196,7 +196,7 @@ class BakerlabFilter(object):
         conf_dict = self.conf_dict
         rec = self._match_dataset(dataset)
         spt = spt_dict['data']
-        dirname = conf_dict['dirname'].format(**os.environ)
+        dirname = os.path.expandvars(conf_dict['dirname'])
 
         fspt = conf_dict[rec['type']]
         full_path = os.path.join(dirname, fspt)
