@@ -42,7 +42,7 @@ base.register("FeatureSource", components.FeatureExtractor())
 base.register("LabelSource", components.ClusterAnalyzer("gmm", 4))
 
 browser = components.SpikeBrowserWithLabels()
-feaute_plot = components.PlotFeaturesTimeline()
+feature_plot = components.PlotFeaturesTimeline()
 wave_plot = components.PlotSpikes()
 legend = components.Legend()
 export = components.ExportCells()
