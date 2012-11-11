@@ -185,7 +185,6 @@ def legend(labels, colors=None, ax=None):
     ax.set_xlim([0,1])
     ax.set_xticks([])
     ax.set_yticks([])
-    ax.format_coord = lambda x,y: '' # don't show mouse coordinates
 
     for i, l in enumerate(labels):
         ax.text(x[i]+0.1, y[i], "Cell {0}".format(l), va='center', ha='left',
