@@ -180,11 +180,13 @@ def legend(labels, colors=None, ax=None):
         
     ax.set_frame_on(False)
     n_classes = len(labels)
-    x, y =np.zeros(n_classes)+0.5, 0.1*np.arange(n_classes)
+    x, y =np.zeros(n_classes)+0.4, 0.1*np.arange(n_classes)
     ax.scatter(x, y, c=colors, marker='s',edgecolors="none",s=100)
     ax.set_xlim([0,1])
     ax.set_xticks([])
     ax.set_yticks([])
+    ax.format_coord = lambda x,y: '' # don't show mouse coordinates
+
     for i, l in enumerate(labels):
         ax.text(x[i]+0.1, y[i], "Cell {0}".format(l), va='center', ha='left',
                  transform=ax.transData)
