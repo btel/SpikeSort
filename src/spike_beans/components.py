@@ -479,7 +479,7 @@ class SpikeBrowserWithLabels(SpikeBrowser):
                 self._showcells = value
             except TypeError:
                 self._showcells = [value]
-        self._set_data()
+        self.update()
 
     show_cells = property(_get_showcells, _set_showcells, None,
                          "list of labels of cells to plot")
