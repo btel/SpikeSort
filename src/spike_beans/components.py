@@ -544,12 +544,19 @@ class Legend(MplPlotComponent):
 
     def __init__(self):
         super(Legend, self).__init__()
-        self.figsize = (1, 2)
+        self.figsize = (2, 2)
 
     def _plot(self):
         labels = np.unique(self.cluster_src.labels)
         ax = self.fig.add_axes([0, 0, 1, 1])
         plotting.legend(labels, ax=ax)
+
+    def _draw(self, *args, **kwargs):
+        # hide the toolbar
+        tb = plotting.plt.rcParams['toolbar']
+        plotting.plt.rcParams['toolbar'] = 'None'
+        super(Legend, self)._draw(*args, **kwargs)
+        plotting.plt.rcParams['toolbar'] = tb
 
 
 class ExportCells(base.Component):
