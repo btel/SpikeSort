@@ -14,6 +14,23 @@ Each of the function returns a (mapping) object with following keys:
  """
 
 import numpy as np
+try:
+    import pywt as wt
+except ImportError:
+    wt = None
+    
+from spike_sort import stats
+
+def requires(module, msg):
+    def _decorator(func):
+        def _wrapper(*args, **kwargs):
+            if module is None:
+                raise NotImplementedError(msg)
+            else:
+                return func(*args, **kwargs) 
+        _wrapper.__doc__ = func.__doc__
+        return _wrapper
+    return _decorator
 
 def split_cells(features, idx, which='all'):
     """return the spike features splitted into separate cells"""
@@ -173,6 +190,7 @@ def PCA(data,ncomps=2):
     score = score/np.sqrt(evals[:ncomps, np.newaxis])
     return evals,evecs,score
 
+@requires(wt, "Install PyWavelets to use wavelet transform")
 def WT(data, wavelet, mode='sym'):
     """Perfroms a batch 1D wavelet transform.  
 
@@ -207,7 +225,7 @@ def WT(data, wavelet, mode='sym'):
     """
     # TODO: complete docstring, add wavelet type checking,
     # think about dependencies
-    import pywt as wt
+
     
     def full_coeff_len(datalen, filtlen, mode):
         max_level = wt.dwt_max_level(datalen, filtlen)
@@ -284,6 +302,7 @@ def fetPCs(spikes_data,ncomps=2, contacts='all'):
     
     return {'data': sc, "names":names}
 
+@requires(wt, "Install PyWavelets to use wavelet transform")
 @add_mask
 def fetWTs(spikes_data, nfeatures=3, contacts='all',  wavelet='haar', mode='sym', select_method='std'):
     """Calculate wavelet transform reduce the dimensionality
@@ -325,7 +344,7 @@ def fetWTs(spikes_data, nfeatures=3, contacts='all',  wavelet='haar', mode='sym'
     features : dict
 
     """
-    from spike_sort import stats
+    
     spikes = _get_data(spikes_data, contacts)
 
     if spikes.ndim == 3: 
