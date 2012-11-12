@@ -65,11 +65,9 @@ class SpikeBrowserUI(object):
         self.canvas = window.get_canvas(self.fig)
         
         self._mpl_init()
-        self.canvas.mpl_connect('key_press_event', self._on_key)
+        self.canvas.mpl_connect('key_press_event', self._zoom_key_handler)
+        self.canvas.mpl_connect('key_press_event', self._browse_spikes_key_handler)
         self.window.set_scroll_handler(self.OnScrollEvt)
-        
-        
-
         
     def _mpl_init(self):
         self.fig.clf()
@@ -116,7 +114,7 @@ class SpikeBrowserUI(object):
         except IndexError:
             pass
 
-    def _on_key(self, event):
+    def _zoom_key_handler(self, event):
         if event.key=='+' or event.key=='=':
             self.ylims/=2.
         elif event.key == '-':
@@ -126,6 +124,14 @@ class SpikeBrowserUI(object):
         offset = self.ylims[1]-self.ylims[0]
         self.offsets = np.arange(self.n_chans)*offset
         self.draw_plot()
+        
+    def _browse_spikes_key_handler(self, event):
+        if event.key == 'right':
+            self._next_spike(event)
+        elif event.key == 'left':
+            self._prev_spike(event)
+        else:
+            return
 
     def set_spiketimes(self, spk_idx, labels=None, all_labels=None):
         if spk_idx:
