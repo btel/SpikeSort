@@ -79,8 +79,7 @@ class TestFeatures(object):
         ok_(((feat['data'][:, 0] > 0.5) == labels).all())
 
     def test_WT(self):
-        # simple test for linearity
-        # assuming pywt works correctly
+        "simple test for linearity of wavelet transform"
         spike1, spike2 = self.cells
         spike3 = 0.1 * spike1 + 0.7 * spike2
         spikes = np.vstack((spike1, spike2, spike3)).T
