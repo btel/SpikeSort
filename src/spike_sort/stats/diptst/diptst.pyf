@@ -1,0 +1,24 @@
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module _diptst ! in 
+    interface  ! in :_diptst
+        subroutine diptst1(x,n,dip,xl,xu,ifault,gcm,lcm,mn,mj,ddx,ddxsgn) ! in :_diptst:diptst.f
+            real dimension(n),intent(in) :: x
+            integer optional,check(len(x)>=n),intent(hide),depend(x) :: n=len(x)
+            real intent(out) :: dip
+            real intent(out) :: xl
+            real intent(out) :: xu
+            integer intent(out) :: ifault
+            integer intent(hide,cache),dimension(n),depend(n) :: gcm
+            integer intent(hide,cache),dimension(n),depend(n) :: lcm
+            integer intent(hide,cache),dimension(n),depend(n) :: mn
+            integer intent(hide,cache),dimension(n),depend(n) :: mj
+            real intent(hide,cache),dimension(n),depend(n) :: ddx
+            integer intent(hide,cache),dimension(n),depend(n) :: ddxsgn
+        end subroutine diptst1
+    end interface 
+end python module _diptst
+
+! This file was auto-generated with f2py (version:2).
+! See http://cens.ioc.ee/projects/f2py2e/
