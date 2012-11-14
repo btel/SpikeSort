@@ -16,6 +16,7 @@ setup(name='SpikeSort',
       author='Bartosz Telenczuk',
       author_email='bartosz.telenczuk@gmail.com',
       url='http://neuroscience.telenczuk.pl',
+      ext_modules = [diptst_ext],
 
       packages=['spike_sort', 
                 'spike_sort.core', 
