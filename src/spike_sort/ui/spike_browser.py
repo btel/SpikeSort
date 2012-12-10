@@ -147,6 +147,8 @@ class SpikeBrowserUI(object):
             
             self.ax_next.set_visible(True)
             self.ax_prev.set_visible(True)
+
+            self.update_i_sipke()
                 
         else:
             self.spt = None
@@ -257,13 +259,25 @@ class SpikeBrowserUI(object):
         # Update the indices of the plot:
         self.i_start = self.i_min + pos
         self.i_end = self.i_min + self.i_window + pos
-        t_center = (self.i_start+self.i_window/2.)*1000./self.FS
+
+        self.update_i_sipke()
+        self.draw_plot()
+
+    def update_i_sipke(self):
+        '''
+        Finds a spike index which is near or inside the current data
+        window (between i_start and i_end). The i_spike variable is then
+        updated with this index.
+        '''
+
+        t_center = (self.i_start + self.i_window / 2.) * 1000. / self.FS
         idx, = np.where(self.spt<t_center)
         if len(idx)>0:
             self.i_spike = idx[-1]
         else:
             self.i_spike = 0
-        self.draw_plot()
+
+
 
 
 def browse_data_tk(data, spk_idx=None, labels=None, win=100):
