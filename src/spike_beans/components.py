@@ -216,6 +216,7 @@ class ClusterAnalyzer(base.Component):
         self.kwargs = kwargs
         self.cluster_labels = None
         self.trash_label = 0
+        self.force_recluster_on_update = False
         super(ClusterAnalyzer, self).__init__()
         self.use_features = 'all'
 
@@ -310,7 +311,11 @@ class ClusterAnalyzer(base.Component):
         self.notify_observers()
 
     def _update(self):
-        self._cluster(None, self.method, *self.args, **self.kwargs)
+        n_spikes_old = self.labels.shape[0]
+        n_spikes_new = self.feature_src.features['data'].shape[0]
+
+        if (n_spikes_new != n_spikes_old) or self.force_recluster_on_update:
+            self._cluster(None, self.method, *self.args, **self.kwargs)
 
     labels = property(read_labels)
 
