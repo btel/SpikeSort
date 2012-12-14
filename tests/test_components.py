@@ -101,16 +101,31 @@ class DummyFeatureExtractor(base.Component):
     
     def __init__(self):
         n_feats=2
-        features = np.vstack((np.zeros((n_spikes, n_feats)), 
+        features = np.vstack((
+                              np.zeros((n_spikes, n_feats)), 
                               np.ones((n_spikes, n_feats))
                             ))
         names = ["Fet{0}".format(i) for i in range(n_feats)]
         
         self._features = {"data": features, "names":names}
+
+        super(DummyFeatureExtractor, self).__init__()
         
     def read_features(self):
 
         return self._features
+
+    def add_feature(self, name):
+        ''' adds random feature with specifid name '''
+
+        self._features['data'] = np.hstack((self._features['data'], np.random.randn(n_spikes * 2, 1)))
+        self._features['names'].append(name)
+
+    def add_spikes(self, num = 10):
+        '''appends `num` random values to each feature'''
+
+        n_features = self._features['data'].shape[1]
+        self._features['data'] = np.vstack((self._features['data'], np.random.randn(num, n_features)))
     
     features = property(read_features)
     
@@ -353,6 +368,32 @@ def test_cluster_component_relabel():
     labels.sort()
     
     ok_((labels==np.array([0,1])).all())
+
+@with_setup(setup, teardown)
+def test_cluster_component_smart_update():
+    feature_comp = base.register("FeatureSource", DummyFeatureExtractor())
+    cluster_comp = components.ClusterAnalyzer("k_means", 2)
+    labs = cluster_comp.labels # this is a workaround to call _cluster()
+
+    # cluster_comp should NOT recluster when updated, if the number of
+    # spikes didn't change
+    cluster_comp.delete_cells(1) # modify lablels
+    labels_orig = cluster_comp.labels.copy()
+
+    feature_comp.add_feature('new_feature')
+    feature_comp.update()
+    labels_new_feat = cluster_comp.labels.copy()
+
+    # cluster_comp should recluster when updated, if the number of
+    # spikes DID change
+    feature_comp.add_spikes(10)
+    feature_comp.update()
+    labels_new_spikes = cluster_comp.labels.copy()
+
+    test1 = (labels_orig == labels_new_feat).all()
+    test2 = len(labels_new_spikes) != len(labels_new_feat)
+
+    ok_(test1 and test2)
 
 @with_setup(setup, teardown)
 def test_truncated_spikes_from_end():
