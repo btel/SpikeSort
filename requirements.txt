@@ -1,0 +1,6 @@
+numpy
+matplotlib
+numexpr
+tables
+scikits.learn
+pywavelets
