@@ -1,7 +1,7 @@
 import time
 
 from matplotlib.widgets import Lasso
-from matplotlib.nxutils import points_inside_poly
+from matplotlib.path import Path
 from matplotlib.colors import colorConverter
 from matplotlib.collections import RegularPolyCollection  # , LineCollection
 
@@ -28,7 +28,7 @@ class LassoManager(object):
             fig.dpi, 6, sizes=(1,),
             facecolors=facecolors,
             edgecolors=facecolors,
-            offsets=self.data,
+            offsets=data,
             transOffset=ax.transData)
 
         ax.add_collection(self.collection, autolim=True)
@@ -47,7 +47,7 @@ class LassoManager(object):
     def callback(self, verts):
         facecolors = self.collection.get_facecolors()
         edgecolors = self.collection.get_edgecolors()
-        ind = nonzero(points_inside_poly(self.data, verts))[0]
+        ind = nonzero(Path(verts).contains_points(self.data))[0]
         for i in range(self.Nxy):
             if i in ind:
                 facecolors[i] = self.color_on
