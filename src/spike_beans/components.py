@@ -278,7 +278,7 @@ class ClusterAnalyzer(base.Component):
         if label is None:
             idx = None
         else:
-            idx = self.cluster_labels == label
+            idx = self.labels == label
         self._cluster(idx, method, *args, **kwargs)
         self.notify_observers()
 
@@ -288,7 +288,8 @@ class ClusterAnalyzer(base.Component):
         if len(cell_ids) == 1 and cell_ids[0] == 'all':
             cell_id = np.unique(self.labels)
         for cell_id in cell_ids:
-            self.cluster_labels[self.cluster_labels == cell_id] = self.trash_label
+            idx = self.labels == cell_id
+            self.cluster_labels[idx] = self.trash_label
         self.notify_observers()
 
     def delete_spikes(self, idx_list):
@@ -300,6 +301,7 @@ class ClusterAnalyzer(base.Component):
             list of spike indices to remove
 
         """
+        self.read_labels() # prevent NoneType assignment
         self.cluster_labels[idx_list] = self.trash_label
         self.notify_observers()
 
@@ -307,7 +309,8 @@ class ClusterAnalyzer(base.Component):
         """merge selected cells. after merging all cells receive the label of the
         first cell"""
         for cell in cell_ids:
-            self.cluster_labels[self.cluster_labels == cell] = cell_ids[0]
+            idx = self.labels == cell 
+            self.cluster_labels[idx] = cell_ids[0]
         self.notify_observers()
 
     def _update(self):
