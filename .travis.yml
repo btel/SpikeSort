@@ -12,4 +12,4 @@ install:
   - "pip install -r requirements.txt --use-mirrors"
   - "pip install ."
 # command to run tests
-script: nosetests
+script: nosetests -P
