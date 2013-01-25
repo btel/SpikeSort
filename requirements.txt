@@ -2,6 +2,5 @@ numpy >= 1.4
 matplotlib >= 1.0
 numexpr
 tables
-scipy >= 0.8.0
 scikits.learn
 pywavelets
