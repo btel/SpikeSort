@@ -4,6 +4,7 @@ import spike_sort as ss
 from nose.tools import ok_, eq_, raises
 from numpy.testing import assert_array_almost_equal as almost_equal
 
+import os
 
 class TestFilter(object):
     def __init__(self):
@@ -20,6 +21,14 @@ class TestFilter(object):
         filter = ss.filters.Filter(sp_freq * 0.5, sp_freq * 0.4, 1, 10, 'ellip')
         spk_filt = ss.filters.filter_proxy(self.spk_data, filter)
         ok_(self.spk_data['data'].shape == spk_filt['data'].shape)
+
+    def test_remove_proxy_files_after_exit(self):
+        filter_func = lambda x, f: x
+        spk_filt = ss.filters.filter_proxy(self.spk_data, filter_func)
+        fname = spk_filt['data']._v_file.filename
+        ss.filters.clean_after_exit()
+        assert not os.path.isfile(fname)
+        
 
     def test_LiearIIR_detect(self):
         n_spikes = self.n_spikes
