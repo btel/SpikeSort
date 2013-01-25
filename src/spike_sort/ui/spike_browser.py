@@ -60,7 +60,7 @@ class SpikeBrowserUI(object):
         self.sp_win = [-0.8, 1]
         self.spike_collection = None
         
-        self.fig = Figure((5, 4), 75)
+        self.fig = Figure((9, 5), 75)
         
         self.canvas = window.get_canvas(self.fig)
         
@@ -71,7 +71,7 @@ class SpikeBrowserUI(object):
         
     def _mpl_init(self):
         self.fig.clf()
-        self.axes = self.fig.add_axes([0.05, 0.1, 0.95,0.9])
+        self.axes = self.fig.add_axes([0.06, 0.1, 0.9,0.85])
         self.ax_prev = self.fig.add_axes([0.8, 0.0, 0.1,0.05])
         self.ax_next = self.fig.add_axes([0.9, 0.0, 0.1,0.05])
         
@@ -205,7 +205,7 @@ class SpikeBrowserUI(object):
         self.axes.set_ylim((self.ylims[0]+self.offsets.min(), 
                             self.ylims[1]+self.offsets.max()))
 
-        self.canvas.draw()
+        self.draw_plot()
 
     def draw_plot(self):
 
@@ -218,11 +218,19 @@ class SpikeBrowserUI(object):
         self.axes.set_xlim((self.time[0], self.time[-1]))
         self.axes.set_ylim((self.ylims[0]+self.offsets.min(), 
                             self.ylims[1]+self.offsets.max()))
+        self.draw_axes_labels()
         
         if self.spt is not None:
             self.draw_spikes()
         # Redraw:                  
         self.canvas.draw()
+
+    def draw_axes_labels(self):
+        ticklabels = np.arange(self.n_chans).astype('str')
+
+        self.axes.set_yticks(self.offsets)
+        self.axes.set_yticklabels(ticklabels)
+        self.axes.set_ylabel("channels")
         
     def draw_spikes(self):
         if self.spike_collection is not None:
