@@ -2,6 +2,9 @@ import tables
 import tempfile
 import numpy as np
 from scipy import signal
+import os
+import atexit
+_open_files = {}
 
 class ZeroPhaseFilter(object):
     """IIR Filter with zero phase delay"""
@@ -120,12 +123,13 @@ def filter_proxy(spikes, filter_obj, chunksize=1E6):
     if filter_obj is None:
         return spikes
 
-    tmp_file = tempfile.NamedTemporaryFile(mode='w')
-    filename = tmp_file.name
+    filename = tempfile.mktemp(suffix='.h5')
     atom = tables.Atom.from_dtype(np.dtype('float64'))
     shape = data.shape
     h5f = tables.openFile(filename, 'w')
     carray = h5f.createCArray('/', 'test', atom, shape)
+    
+    _open_files[filename] = h5f
 
     chunksize = int(chunksize)
     n_chunks = int(np.ceil(shape[1] * 1.0 / chunksize))
@@ -163,3 +167,14 @@ def fltLinearIIR(signal, fpass, fstop, gpass=1, gstop=10, ftype='butter'):
     """
     filt = Filter(fpass, fstop, gpass, gstop, ftype)
     return filter_proxy(signal, filt)
+
+def clean_after_exit():
+    for fname, fid in _open_files.items():
+        fid.close()
+        try:
+            os.remove(fname)
+        except OSError:
+            pass
+    _open_files.clear()
+
+atexit.register(clean_after_exit)
