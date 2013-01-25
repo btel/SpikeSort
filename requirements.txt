@@ -1,0 +1,6 @@
+numpy >= 1.4
+matplotlib >= 1.0
+numexpr
+tables
+scikits.learn
+pywavelets

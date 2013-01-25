@@ -1,0 +1,13 @@
+language: python
+python:
+  - "2.7"
+before_install: 
+  - sudo apt-get update -qq
+  - sudo apt-get install libhdf5-serial-dev python-numpy python-scipy libatlas-dev
+# command to install dependencies
+install:
+  - "pip install numexpr cython --use-mirrors"
+  - "pip install -r requirements.txt --use-mirrors"
+  - "pip install ."
+# command to run tests
+script: nosetests
