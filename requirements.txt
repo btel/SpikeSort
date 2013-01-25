@@ -1,7 +1,8 @@
-numpy
-matplotlib
+SpikeSort
+numpy >= 1.4
+matplotlib >= 1.0
 numexpr
 tables
-scipy
+scipy >= 0.9
 scikits.learn
 pywavelets
