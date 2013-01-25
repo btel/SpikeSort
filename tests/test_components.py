@@ -396,6 +396,28 @@ def test_cluster_component_smart_update():
     ok_(test1 and test2)
 
 @with_setup(setup, teardown)
+def test_cluster_component_methods_before_labels_requested():
+    # issue #75
+    # The followig methods should not fail when called before lebels are
+    # externally requested (cluster_labels = None)
+
+    base.features.Provide("FeatureSource", RandomFeatures())
+    cluster_comp = components.ClusterAnalyzer("k_means", 2)
+
+    cluster_comp.delete_cells(1)
+
+    cluster_comp.cluster_labels = None
+    cluster_comp.delete_spikes([0])
+
+    cluster_comp.cluster_labels = None
+    cluster_comp.merge_cells(1, 2)
+
+    cluster_comp.cluster_labels = None
+    cluster_comp.relabel()
+
+    ok_(cluster_comp.cluster_labels is not None)
+
+@with_setup(setup, teardown)
 def test_truncated_spikes_from_end():
     signal_src = DummySignalSource()
     signal_src._spikes = signal_src._spikes[:, :-period/1000.*FS*2.5]
