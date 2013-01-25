@@ -1,4 +1,3 @@
-SpikeSort
 numpy >= 1.4
 matplotlib >= 1.0
 numexpr
