@@ -3,7 +3,7 @@ python:
   - "2.7"
 before_install: 
   - sudo apt-get update -qq
-  - sudo apt-get install python-numpy  python-scipy python-cython
+  - sudo apt-get install python-numpy  python-scipy cython
 # command to install dependencies
 install:
   - "pip install numexpr --use-mirrors"
