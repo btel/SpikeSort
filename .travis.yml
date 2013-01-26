@@ -5,7 +5,7 @@ virtualenv:
   system_site_packages: true
 before_install: 
   - sudo apt-get update -qq
-  - sudo apt-get install libhdf5-serial-dev python-numpy python-scipy libatlas-dev liblapack-dev gfortran python-tk python-matplotlib
+  - sudo apt-get install libhdf5-serial-dev python-numpy python-scipy libatlas-dev liblapack-dev gfortran python-tk python-matplotlib hdf5-tools python-tables
 # command to install dependencies
 install:
   - "pip install numexpr cython --use-mirrors"
