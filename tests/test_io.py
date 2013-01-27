@@ -18,7 +18,22 @@ class TestNeo:
         path = os.path.dirname(os.path.abspath(__file__))
         self.samples_dir = os.path.join(path, 'samples')
         self.file_names = {'Axon': 'File_axon_5.abf'}
+        
+        self.download_files() 
 
+    def download_files(self):
+        if os.path.exists(self.samples_dir):
+            return
+       
+        os.mkdir(self.samples_dir)
+        import urllib
+        from urlparse import urlparse
+        urls = ['https://portal.g-node.org/neo/axon/File_axon_5.abf']
+        for url in urls:
+            path = urlparse(url).path
+            _, fname = os.path.split(path)
+            urllib.urlretrieve(url, os.path.join(self.samples_dir, fname))
+    
     def test_read_abf(self):
         fname = self.file_names['Axon']
         file_path = os.path.join(self.samples_dir, fname)
