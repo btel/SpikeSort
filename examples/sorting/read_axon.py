@@ -12,7 +12,11 @@ from spike_sort.io import neo_filters
 
 sp_win = [-0.6, 0.8]
 
-path = '/media/Data/File_axon_1.abf'
+url = 'https://portal.g-node.org/neo/axon/File_axon_1.abf'
+path = 'file_axon.abf'
+
+import urllib
+urllib.urlretrieve(url, path)
 
 io = neo_filters.NeoSource(path)
 

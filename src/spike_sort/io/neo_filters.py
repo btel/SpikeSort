@@ -29,7 +29,7 @@ class AxonFilter(object):
         self.block = self.reader.read_block()
         self.electrodes = electrodes
 
-    def read_sp(self, dataset):
+    def read_sp(self, dataset=None):
         electrodes = self.electrodes
         analogsignals = self.block.segments[0].analogsignals
         if electrodes is not None:
