@@ -7,3 +7,4 @@ Tutorials
 
     tutorial_beans
     tutorial_manual
+    tutorial_io
