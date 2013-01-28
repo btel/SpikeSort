@@ -116,9 +116,9 @@ class SpikeBrowserUI(object):
 
     def _zoom_key_handler(self, event):
         if event.key=='+' or event.key=='=':
-            self.ylims/=2.
+            self.ylims = self.ylims/2.
         elif event.key == '-':
-            self.ylims*=2.
+            self.ylims = self.ylims*2.
         else:
             return
         offset = self.ylims[1]-self.ylims[0]
@@ -184,6 +184,7 @@ class SpikeBrowserUI(object):
         self.segs = np.empty((n_chans, self.i_window, 2))
         self.segs[:,:,0] = self.time[np.newaxis,:]
         self.segs[:,:,1] = self.x[:,self.i_start:self.i_end]
+        self.segs[:,:,1] -= self.segs[:,:,1].mean(1)[:,None]
          
         ylims = (self.segs[:,:,1].min(), self.segs[:,:,1].max())
         offset = ylims[1]-ylims[0]
@@ -211,7 +212,9 @@ class SpikeBrowserUI(object):
 
         self.time = np.arange(self.i_start,self.i_end)*1./self.FS
         self.segs[:,:,0] = self.time[np.newaxis,:]
-        self.segs[:,:,1] = self.x[:,self.i_start:self.i_end]+self.offsets[:,np.newaxis]
+        y_signal = self.x[:,self.i_start:self.i_end]
+        y_signal = y_signal - np.mean(y_signal,1)[:, None]
+        self.segs[:,:,1] = y_signal + self.offsets[:,np.newaxis]
         self.line_collection.set_segments(self.segs)
 
         # Adjust plot limits:
