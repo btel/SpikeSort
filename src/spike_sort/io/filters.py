@@ -59,7 +59,10 @@ class BakerlabFilter(object):
     """
     def __init__(self, conf_file):
         """constructor"""
-        self._regexp = "^/(?P<subject>[a-zA-z]+)/s(?P<ses_id>.+)/el(?P<el_id>[0-9]+)/?(?P<type>[a-zA-Z]+)?(?P<cell_id>[0-9]+)?$"
+        self._regexp = ("^/(?P<subject>[a-zA-z]+)"
+                        "/s(?P<ses_id>.+)"
+                        "/el(?P<el_id>[0-9]+)"
+                        "/?(?P<type>[a-zA-Z]+)?(?P<cell_id>[0-9]+)?$")
         self.conf_file = conf_file
         self._tempfiles = []
         with open(conf_file) as fid:
@@ -115,7 +118,7 @@ class BakerlabFilter(object):
             rec_dict['contact_id'] = i + 1
             fname = full_path.format(**rec_dict)
             sp = np.memmap(fname, dtype=np.int16, mode='r')
-            
+
             # read and copy data by chunks
             _npts = min(sp.shape[0], npts)
             for j in range(n_chunks):
@@ -242,6 +245,8 @@ class PyTablesFilter(object):
     This layout may be adjusted by changing paths
     """
 
+    _open_files = {}
+
     def __init__(self, fname, mode='a'):
         self.h5file = tables.openFile(fname, mode)
 
@@ -249,8 +254,8 @@ class PyTablesFilter(object):
     def _get_attrs(node):
         PYTABLES_ATTRS = ["VERSION", "TITLE", "FLAVOR", "CLASS"]
         extra_attrs = dict([(name, node.getAttr(name))
-            for name in node.attrs._v_attrnames
-            if name not in PYTABLES_ATTRS])
+                            for name in node.attrs._v_attrnames
+                            if name not in PYTABLES_ATTRS])
 
         return extra_attrs
 
@@ -262,17 +267,16 @@ class PyTablesFilter(object):
                 h5f = tables.openFile(fname, mode)
             except ValueError:
                 fname.close()
-                _open_files.remove(fname)
+                self._open_files.remove(fname)
                 h5f = tables.openFile(fname, mode)
-        if not h5f in _open_files:
-            _open_files.append(h5f)
+        if not h5f in self._open_files:
+            self._open_files.append(h5f)
         return h5f
 
     def close_all(self):
-        global _open_files
-        for f in _open_files:
+        for f in self._open_files:
             f.close()
-        _open_files = []
+        self._open_files = []
 
     def read_sp(self, dataset):
         """Read continous waveforms (EEG, LFG, spike waveform)
@@ -341,7 +345,7 @@ class PyTablesFilter(object):
                 pass
 
         arr_node = h5f.createArray(group, node_name, spt,
-                title="", createparents=True)
+                                   title="", createparents=True)
 
         attrs = spt_dict.copy()
         del attrs['data']
@@ -369,8 +373,8 @@ class PyTablesFilter(object):
         shape = sp.shape
         filters = tables.Filters(complevel=0, complib='zlib')
         arr_node = h5f.createCArray(group, node_name, atom, shape,
-                                         filters=filters,
-                                         createparents=True)
+                                    filters=filters,
+                                    createparents=True)
         arr_node[:] = sp
 
         arr_node.attrs['sampfreq'] = sp_dict['FS']
