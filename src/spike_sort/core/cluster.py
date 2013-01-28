@@ -18,6 +18,7 @@ except ImportError:
     except ImportError:
         pass
 
+
 def k_means_plus(*args, **kwargs):
     """k means with smart initialization.
 
@@ -30,15 +31,14 @@ def k_means_plus(*args, **kwargs):
     kmeans
 
     """
-        
+
     try:
         clusters = skcluster.k_means(*args, **kwargs)[1]
     except NameError:
         raise NotImplementedError(
-                    "scikits.learn must be installed to use k_mean_plus")
+            "scikits.learn must be installed to use k_mean_plus")
     return clusters
-    
-    
+
 
 def gmm(data, k):
     """Cluster based on gaussian mixture models
@@ -63,21 +63,20 @@ def gmm(data, k):
 
     try:
         #scikits.learn 0.8
-        clf = mixture.GMM(n_states=k, cvtype='full') 
+        clf = mixture.GMM(n_states=k, cvtype='full')
     except TypeError:
         try:
             clf = mixture.GMM(n_components=k, cvtype='full')
         except TypeError:
             #scikits.learn 0.11
-            clf = mixture.GMM(n_components=k, covariance_type='full') 
+            clf = mixture.GMM(n_components=k, covariance_type='full')
     except NameError:
         raise NotImplementedError(
-                "scikits.learn must be installed to use gmm")
-        
+            "scikits.learn must be installed to use gmm")
+
     clf.fit(data)
     cl = clf.predict(data)
     return cl
-
 
 
 def manual(data, *args, **kwargs):
@@ -164,8 +163,7 @@ def cluster(method, features, *args, **kwargs):
         cluster_func = eval(method)
     except NameError:
         raise NotImplementedError(
-                    "clustering method %s is not implemented" % method
-                    )
+            "clustering method %s is not implemented" % method)
 
     data = features['data']
     mask = features.get('is_valid')

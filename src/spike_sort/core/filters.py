@@ -6,6 +6,7 @@ import os
 import atexit
 _open_files = {}
 
+
 class ZeroPhaseFilter(object):
     """IIR Filter with zero phase delay"""
     def __init__(self, ftype, fband, tw=200., stop=20):
@@ -128,7 +129,7 @@ def filter_proxy(spikes, filter_obj, chunksize=1E6):
     shape = data.shape
     h5f = tables.openFile(filename, 'w')
     carray = h5f.createCArray('/', 'test', atom, shape)
-    
+
     _open_files[filename] = h5f
 
     chunksize = int(chunksize)
@@ -141,10 +142,11 @@ def filter_proxy(spikes, filter_obj, chunksize=1E6):
     sp_dict['data'] = carray
     return sp_dict
 
-def fltLinearIIR(signal, fpass, fstop, gpass=1, gstop=10, ftype='butter'): 
+
+def fltLinearIIR(signal, fpass, fstop, gpass=1, gstop=10, ftype='butter'):
     """An IIR acausal linear filter. Works through
     spike_sort.core.filters.filter_proxy method
-    
+
     Parameters
     ----------
     signal : dict
@@ -167,6 +169,7 @@ def fltLinearIIR(signal, fpass, fstop, gpass=1, gstop=10, ftype='butter'):
     """
     filt = Filter(fpass, fstop, gpass, gstop, ftype)
     return filter_proxy(signal, filt)
+
 
 def clean_after_exit():
     for fname, fid in _open_files.items():
