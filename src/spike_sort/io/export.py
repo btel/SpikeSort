@@ -1,6 +1,6 @@
 def export_cells(io_filter, node_templ, spike_times, overwrite=False):
     """Export discriminated spike times of all cells to a file.
-    
+
     Parameters
     ----------
     io_filter : object,
@@ -9,7 +9,7 @@ def export_cells(io_filter, node_templ, spike_times, overwrite=False):
         string identifing the dataset name. It will be passed to
         IOFilters.write_spt method. It can contain the
         `{cell_id}` placeholder that will be substituted by cell
-        identifier. 
+        identifier.
     spt_dict : dict
         dictionary in which keys are the cell IDs and values are spike
         times structures

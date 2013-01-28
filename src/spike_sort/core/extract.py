@@ -6,7 +6,6 @@ import operator
 
 from scipy import interpolate
 import numpy as np
-from warnings import warn
 
 
 def split_cells(spikes, idx, which='all'):
@@ -67,10 +66,6 @@ def detect_spikes(spike_data, thresh='auto', edge="rising",
     """
 
     sp_data = spike_data['data'][contact, :]
-    n_contacts = spike_data['n_contacts']
-
-    #if n_contacts>1:
-    #    sp_data = sp_data[:,contact]
 
     FS = spike_data['FS']
 
@@ -87,13 +82,13 @@ def detect_spikes(spike_data, thresh='auto', edge="rising",
 
     if edge not in edges:
         raise TypeError("'edge' parameter must be 'rising' or 'falling'")
-    
+
     op1, op2 = operator.lt, operator.gt
 
     if edge in edges[2:]:
         op1, op2 = op2, op1
 
-    i, = np.where(op1(sp_data[:-1], thresh) & op2(sp_data[1:], thresh))      
+    i, = np.where(op1(sp_data[:-1], thresh) & op2(sp_data[1:], thresh))
 
     spt = i * 1000.0 / FS
     return {'data': spt, 'thresh': thresh, 'contact': contact}
@@ -150,7 +145,7 @@ def extract_spikes(spike_data, spt_dict, sp_win,
     spt = spt_dict['data']
     idx = np.arange(len(spt))
     inner_idx = filter_spt(spike_data, spt_dict, sp_win)
-    outer_idx = idx[np.in1d(idx, inner_idx) == False]
+    outer_idx = idx[~np.in1d(idx, inner_idx)]
 
     indices = (spt / 1000.0 * FS).astype(np.int32)
     win = (np.asarray(sp_win) / 1000.0 * FS).astype(np.int32)
@@ -171,7 +166,8 @@ def extract_spikes(spike_data, spt_dict, sp_win,
         sp = indices[i]
         l, r = map(minmax, sp + win)
         if l != r:
-            spWave[(l - sp) - win[0]:(r - sp) - win[0], i, :] = sp_data[contacts, l:r].T
+            spWave[(l - sp) - win[0]:(r - sp) - win[0], i, :] = \
+                sp_data[contacts, l:r].T
 
     wavedict = {"data": spWave, "time": time, "FS": FS}
 
@@ -203,13 +199,14 @@ def resample_spikes(spikes_dict, FS_new):
     for i in range(n_spikes):
         for contact in range(n_contacts):
             tck = interpolate.splrep(time, sp_waves[:, i, contact], s=0)
-            spike_resamp[:, i, contact] = interpolate.splev(resamp_time, tck, der=0)
+            spike_resamp[:, i, contact] = interpolate.splev(resamp_time,
+                                                            tck, der=0)
 
     return {"data": spike_resamp, "time": resamp_time, "FS": FS}
 
 
 def align_spikes(spike_data, spt_dict, sp_win, type="max", resample=1,
-                contact=0, remove=True):
+                 contact=0, remove=True):
     """Aligns spike waves and returns corrected spike times
 
     Parameters
@@ -231,13 +228,13 @@ def align_spikes(spike_data, spt_dict, sp_win, type="max", resample=1,
 
     tol = 0.1
 
-    if (sp_win[0]>-tol) or (sp_win[1]<tol):
-        warn('You are using very short sp_win. This may lead to alignment problems.')
+    if (sp_win[0] > -tol) or (sp_win[1] < tol):
+        warn('You are using very short sp_win. '
+             'This may lead to alignment problems.')
 
     spt = spt_dict['data'].copy()
 
     idx_align = np.arange(len(spt))
-    #spt_align = {'data': spt}
 
     #go in a loop until all spikes are correctly aligned
     iter_id = 0
@@ -245,13 +242,10 @@ def align_spikes(spike_data, spt_dict, sp_win, type="max", resample=1,
         spt_align = {'data': spt[idx_align]}
         spt_inbound = filter_spt(spike_data, spt_align, sp_win)
         idx_align = idx_align[spt_inbound]
-        #spt_align = {'data': spt[idx_align]}
         sp_waves_dict = extract_spikes(spike_data, spt_align, sp_win,
                                        resample=resample, contacts=contact)
 
         sp_waves = sp_waves_dict['data'][:, spt_inbound, 0]
-        #if sp_waves_dict.has_key('is_valid'):
-        #    sp_waves = sp_waves[:, sp_waves_dict['is_valid']]
         time = sp_waves_dict['time']
 
         if type == "max":
@@ -266,10 +260,9 @@ def align_spikes(spike_data, spt_dict, sp_win, type="max", resample=1,
         #if spike maximum/minimum was at the edge we have to extract it at the
         # new marker and repeat the alignment
 
-        idx_align = idx_align[(shift < (sp_win[0] + tol)) | (shift > (sp_win[1] - tol))]
+        idx_align = idx_align[(shift < (sp_win[0] + tol)) |
+                              (shift > (sp_win[1] - tol))]
         iter_id += 1
-        #print "Align. iteration %d, remaining idx %d" % (iter_id, len(idx_align))
-        #print shift
 
     ret_dict = {'data': spt}
 

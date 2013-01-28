@@ -5,6 +5,9 @@ The intial version of this code was adapted from a recipe by Zoran Isailovski
 http://code.activestate.com/recipes/413268-dependency-injection-the-python-way/
 """
 
+import logging
+
+
 class FeatureBroker(object):
     def __init__(self, allowReplace=False):
         self.providers = {}
@@ -12,14 +15,13 @@ class FeatureBroker(object):
 
     def Provide(self, feature, provider, *args, **kwargs):
         if not self.allowReplace:
-            assert feature not in self.providers, "Duplicate feature: %r" % feature
+            assert feature not in self.providers, \
+                "Duplicate feature: %r" % feature
 
         if callable(provider):
-            def call():
-                return provider(*args, **kwargs)
+            call = lambda: provider(*args, **kwargs)
         else:
-            def call():
-                return provider
+            call = lambda: provider
         self.providers[feature] = call
 
     def __getitem__(self, feature):
@@ -35,20 +37,15 @@ class FeatureBroker(object):
 
 features = FeatureBroker()
 
+
 def register(feature, component):
     """register `component` as providing `feature`"""
-    features[feature]=component
+    features[feature] = component
     return component
-######################################################################
-##
+
 ## Representation of Required Features and Feature Assertions
-##
-######################################################################
 
-#
 # Some basic assertions to test the suitability of injected features
-#
-
 
 def NoAssertion():
     def test(obj):
@@ -66,7 +63,7 @@ def HasAttributes(*attributes):
     def test(obj):
         for attr_name in attributes:
             try:
-                _attr = getattr(obj, attr_name)
+                getattr(obj, attr_name)
             except AttributeError:
                 return False
         return True
@@ -85,10 +82,7 @@ def HasMethods(*methods):
         return True
     return test
 
-#
 # An attribute descriptor to "declare" required features
-#
-
 
 class DataAttribute(object):
     """A data descriptor that sets and returns values
@@ -109,7 +103,8 @@ class DataAttribute(object):
 
 
 class RequiredFeature(object):
-    def __init__(self, feature, assertion=NoAssertion(), alt_name = "_alternative_"):
+    def __init__(self, feature, assertion=NoAssertion(),
+                 alt_name="_alternative_"):
         self.feature = feature
         self.alt_name = alt_name
         self.assertion = assertion
@@ -122,33 +117,31 @@ class RequiredFeature(object):
     def __set__(self, instance, value):
         '''Rename the feature'''
         if isinstance(value, str):
-            print "changed %s to %s"%(self.feature, value)
-            setattr(instance, self.alt_name+self.feature, value)            
+            logging.info("changed %s to %s" % (self.feature, value))
+            setattr(instance, self.alt_name + self.feature, value)
         else:
-            print "can't change the feature name to non-string type"
+            raise TypeError("can't change the feature name to non-string type")
 
     def __getattr__(self, name):
-        assert name == 'result', "Unexpected attribute request other then 'result'"
+        assert name == 'result', \
+            "Unexpected attribute request other then 'result'"
         return self.result
 
     def Request(self, callee):
-        fet_name = self.feature        
+        fet_name = self.feature
         if hasattr(callee, self.alt_name + self.feature):
-            fet_name = getattr(callee, self.alt_name + self.feature) 
+            fet_name = getattr(callee, self.alt_name + self.feature)
         obj = features[fet_name]
 
         try:
-            #handler = getattr(callee, ("on_%s_change" % self.feature).lower())
-            #handler = callee.update
             obj.register_handler(callee)
         except AttributeError:
             pass
 
-
         isComponentCorrect = self.assertion(obj)
         assert isComponentCorrect, \
-                 "The value %r of %r does not match the specified criteria" \
-                 % (obj, self.feature)
+            "The value %r of %r does not match the specified criteria" \
+            % (obj, self.feature)
         return obj
 
 
@@ -192,7 +185,7 @@ class Component(object):
 
 class dictproperty(object):
     """implements collection properties with dictionary-like access.
-    Copied and modified from a recipe by Ed Swierk 
+    Copied and modified from a recipe by Ed Swierk
     published under PSF license
     <http://code.activestate.com/recipes/440514-dictproperty-properties-for-dictionary-attributes/>`_
     """

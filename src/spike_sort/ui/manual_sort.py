@@ -69,7 +69,8 @@ class LassoManager(object):
             return
         if event.inaxes is None:
             return
-        self.lasso = Lasso(event.inaxes, (event.xdata, event.ydata), self.callback)
+        self.lasso = Lasso(event.inaxes, (event.xdata, event.ydata),
+                           self.callback)
         # acquire a lock on the widget drawing
         self.canvas.widgetlock(self.lasso)
 
