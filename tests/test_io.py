@@ -17,30 +17,15 @@ class TestNeo:
     def setUp(self):
         path = os.path.dirname(os.path.abspath(__file__))
         self.samples_dir = os.path.join(path, 'samples')
-        self.file_names = {'Axon': 'File_axon_5.abf'}
-        
-        self.download_files() 
+        self.file_names = {'Axon': 'axonio.abf'}
 
-    def download_files(self):
-        if os.path.exists(self.samples_dir):
-            return
-       
-        os.mkdir(self.samples_dir)
-        import urllib
-        from urlparse import urlparse
-        urls = ['https://portal.g-node.org/neo/axon/File_axon_5.abf']
-        for url in urls:
-            path = urlparse(url).path
-            _, fname = os.path.split(path)
-            urllib.urlretrieve(url, os.path.join(self.samples_dir, fname))
-    
     def test_read_abf(self):
         fname = self.file_names['Axon']
         file_path = os.path.join(self.samples_dir, fname)
         abf = neo_filters.AxonFilter(file_path)
         sp = abf.read_sp()
         assert len(np.array(sp['data']))>0
-        assert sp['FS'] == 20000
+        assert sp['FS'] == 125000
     
     def test_read_abf_via_component(self):
         fname = self.file_names['Axon']
