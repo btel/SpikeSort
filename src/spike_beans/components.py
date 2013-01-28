@@ -52,14 +52,14 @@ class BakerlabSource(GenericSource, BakerlabFilter):
 
 
 class PyTablesSource(GenericSource, PyTablesFilter):
-    # TODO: add unit test
     def __init__(self, h5file, dataset, overwrite=False):
         GenericSource.__init__(self, dataset, overwrite)
         PyTablesFilter.__init__(self, h5file)
 
+
 class FilterStack(base.Component):
     raw_src = base.RequiredFeature("RawSource",
-                                        base.HasAttributes("signal"))
+                                   base.HasAttributes("signal"))
 
     def __init__(self):
         self._filters = []
@@ -67,17 +67,20 @@ class FilterStack(base.Component):
         super(FilterStack, self).__init__()
 
     def add_filter(self, filt, *args, **kwargs):
-        # type checking 
+        # type checking
         if hasattr(filt, "__call__"):
             self._filters.append(lambda signal: filt(signal, *args, **kwargs))
         elif isinstance(filt, str):
             try:
                 filter_func = filters.__getattribute__("flt" + filt)
-                self._filters.append(lambda signal: filter_func(signal, *args, **kwargs))
+                self._filters.append(
+                    lambda signal: filter_func(signal, *args, **kwargs))
             except AttributeError:
-                raise AttributeError("No such method found in 'core.filters': %s" % ("flt" + filt))
+                raise AttributeError("No such method found in 'core.filters':"
+                                     + " flt" + filt)
         else:
-            raise TypeError("Unsupported argument type: %s. Only string or callable are accepted" % type(filt))
+            raise TypeError(("Unsupported argument type: %s." % type(filt)) +
+                            "Only string or callable are accepted")
 
     def read_signal(self):
         if self._signal is None:
@@ -123,8 +126,8 @@ class SpikeDetector(base.Component):
         sp = self.waveform_src.signal
 
         spt = sort.extract.detect_spikes(sp, edge=self.type,
-                                             contact=self.contact,
-                                             thresh=self._thresh)
+                                         contact=self.contact,
+                                         thresh=self._thresh)
         self._est_thresh = spt['thresh']
         if self.align:
             self.sp_times = sort.extract.align_spikes(sp, spt,
@@ -148,9 +151,9 @@ class SpikeDetector(base.Component):
 
 class SpikeExtractor(base.Component):
     waveform_src = base.RequiredFeature("SignalSource",
-                                    base.HasAttributes("signal"))
+                                        base.HasAttributes("signal"))
     spike_times = base.RequiredFeature("SpikeMarkerSource",
-                                    base.HasAttributes("events"))
+                                       base.HasAttributes("events"))
 
     def __init__(self, sp_win=[-0.2, 0.8]):
         self._sp_shapes = None
@@ -237,7 +240,7 @@ class ClusterAnalyzer(base.Component):
         if idx is not None:
             new_features = sort.features.select_spikes(feature_data, idx)
             clust_idx = sort.cluster.cluster(method, new_features, *args,
-                                         **kwargs)
+                                             **kwargs)
             all_labels = set(range(1, 100))
             used_labels = set(np.unique(self.cluster_labels))
             free_labels = list(all_labels - used_labels)
@@ -250,7 +253,7 @@ class ClusterAnalyzer(base.Component):
             self.cluster_labels[idx] = new_clust_idx
         else:
             clust_idx = sort.cluster.cluster(method, feature_data, *args,
-                                         **kwargs)
+                                             **kwargs)
             self.cluster_labels = clust_idx + 1
 
     def read_labels(self):
@@ -301,15 +304,15 @@ class ClusterAnalyzer(base.Component):
             list of spike indices to remove
 
         """
-        self.read_labels() # prevent NoneType assignment
+        self.read_labels()  # prevent NoneType assignment
         self.cluster_labels[idx_list] = self.trash_label
         self.notify_observers()
 
     def merge_cells(self, *cell_ids):
-        """merge selected cells. after merging all cells receive the label of the
-        first cell"""
+        """merge selected cells. after merging all cells receive the
+        label of the first cell"""
         for cell in cell_ids:
-            idx = self.labels == cell 
+            idx = self.labels == cell
             self.cluster_labels[idx] = cell_ids[0]
         self.notify_observers()
 
@@ -392,7 +395,7 @@ class PlotFeatures(MplPlotComponent):
             self._draw()
 
     show_cells = property(_get_showcells, _set_showcells, None,
-                         "list of labels of cells to plot")
+                          "list of labels of cells to plot")
 
     def _get_features(self):
         return self.feature_src.features
@@ -456,7 +459,8 @@ class SpikeBrowser(base.Component):
 
 
 class SpikeBrowserWithLabels(SpikeBrowser):
-    label_src = base.RequiredFeature("LabelSource", base.HasAttributes("labels"))
+    label_src = base.RequiredFeature("LabelSource",
+                                     base.HasAttributes("labels"))
 
     def __init__(self):
         super(SpikeBrowserWithLabels, self).__init__()
@@ -474,7 +478,8 @@ class SpikeBrowserWithLabels(SpikeBrowser):
             i = np.in1d(labels, self._showcells)
             spike_time = spike_time.copy()
             spike_time['data'] = spike_time['data'][i]
-            self.browser.set_spiketimes(spike_time, labels[i], np.unique(labels))
+            self.browser.set_spiketimes(spike_time, labels[i],
+                                        np.unique(labels))
 
     def _get_showcells(self):
         return self._showcells
@@ -490,12 +495,12 @@ class SpikeBrowserWithLabels(SpikeBrowser):
         self.update()
 
     show_cells = property(_get_showcells, _set_showcells, None,
-                         "list of labels of cells to plot")
+                          "list of labels of cells to plot")
 
 
 class PlotFeaturesTimeline(PlotFeatures):
     spk_time_src = base.RequiredFeature("SpikeMarkerSource",
-                                         base.HasAttributes("events"))
+                                        base.HasAttributes("events"))
 
     def _get_features(self):
         spt_dict = self.spk_time_src.events
@@ -506,8 +511,10 @@ class PlotFeaturesTimeline(PlotFeatures):
 
 
 class PlotSpikes(MplPlotComponent):
-    spike_src = base.RequiredFeature("SpikeSource", base.HasAttributes("spikes"))
-    cluster_src = base.RequiredFeature("LabelSource", base.HasAttributes("labels"))
+    spike_src = base.RequiredFeature("SpikeSource",
+                                     base.HasAttributes("spikes"))
+    cluster_src = base.RequiredFeature("LabelSource",
+                                       base.HasAttributes("labels"))
 
     def __init__(self):
         super(PlotSpikes, self).__init__()
@@ -532,7 +539,7 @@ class PlotSpikes(MplPlotComponent):
             self._draw()
 
     show_cells = property(_get_showcells, _set_showcells, None,
-                         "list of labels of cells to plot")
+                          "list of labels of cells to plot")
 
     def _plot(self):
         spikes = self.spike_src.spikes
@@ -548,7 +555,8 @@ class PlotSpikes(MplPlotComponent):
 
 
 class Legend(MplPlotComponent):
-    cluster_src = base.RequiredFeature("LabelSource", base.HasAttributes("labels"))
+    cluster_src = base.RequiredFeature("LabelSource",
+                                       base.HasAttributes("labels"))
 
     def __init__(self):
         super(Legend, self).__init__()
@@ -573,7 +581,7 @@ class ExportCells(base.Component):
     marker_src = base.RequiredFeature("SpikeMarkerSource",
                                       base.HasAttributes("events"))
     export_filter = base.RequiredFeature("EventsOutput",
-                                        base.HasAttributes("events"))
+                                         base.HasAttributes("events"))
 
     def export(self, mapping=None, overwrite=False, metadata='default'):
         labels = self.labels_src.labels
@@ -581,7 +589,7 @@ class ExportCells(base.Component):
         self.export_filter.overwrite = overwrite
         export_events = self.export_filter.events
         spt_clust = sort.cluster.split_cells(spike_idx, labels)
-        
+
         if metadata == 'default':
             md = self.get_metadata()
         else:
@@ -624,10 +632,12 @@ class Dashboard(MplPlotComponent):
     marker_src = base.RequiredFeature("SpikeMarkerSource",
                                       base.HasAttributes("events"))
     export_filter = base.RequiredFeature("EventsOutput",
-                                        base.HasAttributes("dataset"))
+                                         base.HasAttributes("dataset"))
 
     def _plot(self):
-        stim = self.export_filter.read_spt("/".join((self.export_filter.dataset, 'stim')))
+        stim = self.export_filter.read_spt("/".join(
+                                           (self.export_filter.dataset,
+                                            'stim')))
 
         labels = self.labels_src.labels
         spike_idx = self.marker_src.events
@@ -639,11 +649,13 @@ class Dashboard(MplPlotComponent):
             for c in range(max(self.labels_src.labels) + 1)[::-1]:
                 if c in spt_all:
                     self.cell = c
-                    print "Dashboard: cell %s doesn't exist, plotting cell %s" % \
-                          (old_cell, self.cell)
+                    print("Dashboard: cell %s doesn't exist, plotting cell %s"
+                          % (old_cell, self.cell))
                     break
 
-        dataset = {'spt': spt_all[self.cell]['data'], 'stim': stim['data'], 'ev': []}
+        dataset = {'spt': spt_all[self.cell]['data'],
+                   'stim': stim['data'],
+                   'ev': []}
         dashboard.plot_dataset(dataset, self.fig)
 
     def show(self, cell):
