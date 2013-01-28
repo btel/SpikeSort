@@ -2,10 +2,11 @@ import _diptst
 import numpy as np
 from scipy import stats as st
 
+
 def multidimensional(func1d):
     """apply 1d function along specified axis
     """
-    def _decorated(data, axis = 0):
+    def _decorated(data, axis=0):
         if data.ndim <= 1:
             return func1d(data)
         else:
@@ -14,9 +15,10 @@ def multidimensional(func1d):
 
     return _decorated
 
+
 def unsqueeze(data, axis):
     """inserts new axis to data at position `axis`.
-    
+
     This is very useful when one wants to do operations which support
     broadcasting without using np.newaxis every time.
 
@@ -32,7 +34,7 @@ def unsqueeze(data, axis):
     out : array
         array which has data.ndim+1 dimensions. Additional dimension
         has length 1
-    
+
     Example
     -------
     >>> data = [[1,2,3], [4,5,6]]
@@ -40,13 +42,14 @@ def unsqueeze(data, axis):
     >>> data -= unsqueeze(m, 1)
     >>> data.mean(1)
     array([ 0.,  0.])
-    
+
     """
     shape = data.shape
     shape = np.insert(shape, axis, 1)
     return np.reshape(data, shape)
 
-def std_r(data, axis = 0):
+
+def std_r(data, axis=0):
     """Computes robust estimate of standard deviation
     (Quiroga et al, 2004)
 
@@ -64,6 +67,7 @@ def std_r(data, axis = 0):
     median = unsqueeze(np.median(data, axis), axis)
     std_r = np.median(np.abs(data - median), axis)/0.6745
     return std_r
+
 
 @multidimensional
 def dip(data):
@@ -83,6 +87,7 @@ def dip(data):
     """
     sdata = np.sort(data)
     return _diptst.diptst1(sdata)[0]
+
 
 @multidimensional
 def ks(data):
@@ -109,12 +114,5 @@ def ks(data):
 
     return st.kstest(data, st.norm(loc=mr, scale=stdr).cdf)[0]
 
-std = np.std
-
-
-
-
-
-
-
-
+def std(*args, **kwargs):
+    return np.std(*args, **kwargs)
