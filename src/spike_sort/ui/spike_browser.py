@@ -124,13 +124,14 @@ class SpikeBrowserUI(object):
 
     def _zoom_key_handler(self, event):
         if event.key == '+' or event.key == '=':
-            self.ylims = self.ylims / 2.
+            self.scale_y(0.5)
         elif event.key == '-':
-            self.ylims = self.ylims * 2.
-        else:
-            return
-        offset = self.ylims[1] - self.ylims[0]
-        self.offsets = np.arange(self.n_chans) * offset
+            self.scale_y(2)
+        elif event.key == 'ctrl++' or event.key == 'ctrl+=':
+            self.scale_x(0.5)
+        elif event.key == 'ctrl+-':
+            self.scale_x(2)
+
         self.draw_plot()
 
     def _browse_spikes_key_handler(self, event):
@@ -164,7 +165,6 @@ class SpikeBrowserUI(object):
             self.ax_prev.set_visible(False)
 
     def set_data(self, data):
-
         self.x = data['data']
         self.FS = data['FS']
         n_chans, n_pts = self.x.shape
@@ -182,20 +182,15 @@ class SpikeBrowserUI(object):
 
         # Indices of data interval to be plotted:
         self.i_end = self.i_start + self.i_window
-
-        self.time = np.arange(self.i_start, self.i_end) * 1. / self.FS
-
-        self.segs = np.empty((n_chans, self.i_window, 2))
-        self.segs[:, :, 0] = self.time[np.newaxis, :]
-        self.segs[:, :, 1] = self.x[:, self.i_start:self.i_end]
-        self.segs[:, :, 1] -= self.segs[:, :, 1].mean(1)[:, None]
-
-        ylims = (self.segs[:, :, 1].min(), self.segs[:, :, 1].max())
+        curr_slice = self.x[:, self.i_start:self.i_end]
+        ylims = (curr_slice.min(), curr_slice.max())
         offset = ylims[1] - ylims[0]
-        self.offsets = np.arange(n_chans) * offset
-        self.segs[:, :, 1] += self.offsets[:, np.newaxis]
 
         self.ylims = np.array(ylims)
+        self.offsets = np.arange(n_chans) * offset
+        
+        # will be filled in draw_plot
+        self.segs = np.empty((n_chans, self.i_window, 2))
 
         if self.line_collection:
             self.line_collection.remove()
@@ -211,7 +206,6 @@ class SpikeBrowserUI(object):
         self.draw_plot()
 
     def draw_plot(self):
-
         self.time = np.arange(self.i_start, self.i_end) * 1. / self.FS
         self.segs[:, :, 0] = self.time[np.newaxis, :]
         y_signal = self.x[:, self.i_start:self.i_end]
@@ -259,6 +253,21 @@ class SpikeBrowserUI(object):
                                                    color=colors,
                                                    transform=self.axes.transData)
             self.axes.add_collection(self.spike_collection)
+
+    def scale_y(self, factor):
+        self.ylims *= factor
+        offset = self.ylims[1] - self.ylims[0]
+        self.offsets = np.arange(self.n_chans) * offset
+
+    def scale_x(self, factor):
+        i_center = self.i_start + self.i_window / 2
+        self.i_window = int(self.i_window * factor)
+        self.i_start = i_center - self.i_window / 2
+        self.i_start = self.i_start >= 0 and self.i_start or 0
+        self.i_end = self.i_start + self.i_window
+
+        self.segs = np.empty((self.n_chans, self.i_window, 2))
+
 
     def OnScrollEvt(self, pos):
 
