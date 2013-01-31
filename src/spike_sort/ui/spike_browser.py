@@ -215,8 +215,10 @@ class SpikeBrowserUI(object):
 
         # Adjust plot limits:
         self.axes.set_xlim((self.time[0], self.time[-1]))
-        self.axes.set_ylim((-self.ylims[1] + self.offsets.min(),
-                            self.ylims[1] + self.offsets.max()))
+
+        ygap = np.max(np.abs(self.ylims))
+        self.axes.set_ylim((- ygap + self.offsets.min(),
+                            ygap + self.offsets.max()))
         self.fancyyaxis.update()
 
         if self.spt is not None:
