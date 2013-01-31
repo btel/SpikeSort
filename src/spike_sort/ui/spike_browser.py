@@ -215,7 +215,7 @@ class SpikeBrowserUI(object):
 
         # Adjust plot limits:
         self.axes.set_xlim((self.time[0], self.time[-1]))
-        self.axes.set_ylim((self.ylims[0] + self.offsets.min(),
+        self.axes.set_ylim((-self.ylims[1] + self.offsets.min(),
                             self.ylims[1] + self.offsets.max()))
         self.fancyyaxis.update()
 
@@ -307,8 +307,8 @@ class FancyYAxis:
     def reset(self):
         """Initialize or Reset"""
         # delete references to previous annotations
-        if self.annotations:
-            self.annotations = {}
+        for obj in self.annotations.values():
+            obj.remove()
 
         spine_pos = self.data_xoffset * self.spine_xoffset
 
