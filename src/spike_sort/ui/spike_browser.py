@@ -6,6 +6,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from matplotlib.collections import LineCollection
 from matplotlib.widgets import Button
+from matplotlib.spines import Spine
 
 import Tkinter as Tk
 
@@ -75,7 +76,8 @@ class SpikeBrowserUI(object):
 
     def _mpl_init(self):
         self.fig.clf()
-        self.axes = self.fig.add_axes([0.06, 0.1, 0.9, 0.85])
+        self.axes = self.fig.add_axes([0.02, 0.1, 0.96, 0.85])
+        self.fancyyaxis = FancyYAxis(self, 0.05)
         self.ax_prev = self.fig.add_axes([0.8, 0.0, 0.1, 0.05])
         self.ax_next = self.fig.add_axes([0.9, 0.0, 0.1, 0.05])
 
@@ -204,9 +206,7 @@ class SpikeBrowserUI(object):
                                               color='k')
 
         self.axes.add_collection(self.line_collection)
-        self.axes.set_xlim((self.time[0], self.time[-1]))
-        self.axes.set_ylim((self.ylims[0] + self.offsets.min(),
-                            self.ylims[1] + self.offsets.max()))
+        self.fancyyaxis.reset()
 
         self.draw_plot()
 
@@ -223,19 +223,13 @@ class SpikeBrowserUI(object):
         self.axes.set_xlim((self.time[0], self.time[-1]))
         self.axes.set_ylim((self.ylims[0] + self.offsets.min(),
                             self.ylims[1] + self.offsets.max()))
-        self.draw_axes_labels()
+        self.fancyyaxis.update()
 
         if self.spt is not None:
             self.draw_spikes()
         # Redraw:
         self.canvas.draw()
 
-    def draw_axes_labels(self):
-        ticklabels = np.arange(self.n_chans).astype('str')
-
-        self.axes.set_yticks(self.offsets)
-        self.axes.set_yticklabels(ticklabels)
-        self.axes.set_ylabel("channels")
 
     def draw_spikes(self):
         if self.spike_collection is not None:
@@ -288,6 +282,95 @@ class SpikeBrowserUI(object):
             self.i_spike = idx[-1]
         else:
             self.i_spike = 0
+
+
+class FancyYAxis:
+    def __init__(self, browser,
+            data_xoffset = 0.1,
+            spine_xoffset = 0.7,
+            text_xoffset = 0.4):
+        self.b = browser
+        self.data_xoffset = data_xoffset
+        self.spine_xoffset = spine_xoffset
+        self.text_xoffset = text_xoffset
+        self.annotations = {}
+
+    def reset(self):
+        """Initialize or Reset"""
+        # delete references to previous annotations
+        if self.annotations:
+            self.annotations = {}
+
+        spine_pos = self.data_xoffset * self.spine_xoffset
+
+        for chan in range(self.b.n_chans):
+            # add spines for channel unit bars
+            sp = Spine(self.b.axes, 'left', self.b.axes.spines['left']._path)
+            sp.set_position(('axes', spine_pos))
+            self.b.axes.spines['ch%s' % chan] = sp
+
+            # add channel names
+            self.annotations['ch%s' % chan] = self.b.axes.text(
+                    0, 0,  # dummy location
+                    'Ch%s' % chan,
+                    ha='center',
+                    va='center',
+                    rotation='vertical')
+
+        # hide unneeded spines and move ticks
+        self.b.axes.spines['left'].set_color('none')
+        self.b.axes.spines['right'].set_color('none')
+        self.b.axes.spines['left'].set_position(('axes', spine_pos))
+
+    def update(self):
+        """Update"""
+
+        # initialize if needed
+        if not self.annotations:
+            self.reset()
+
+        # create space for axis drawing
+        xlim = self.b.axes.get_xlim()
+        xrang = xlim[1] - xlim[0]
+        self.b.axes.set_xlim((xlim[0] - xrang * self.data_xoffset, xlim[1]))
+
+        # compute ticks and labels for each bar
+        yrange = self.b.ylims[1]-self.b.ylims[0]
+        half_range = self.closest_nice_float(yrange * 0.4)
+        rel_ticks = np.array([-half_range, 0, half_range])
+        ticks = rel_ticks[np.newaxis, :] + self.b.offsets[:, np.newaxis]
+
+        labels = []
+        text_offset = xlim[0] \
+                - xrang * self.data_xoffset * (1 - self.text_xoffset)
+
+        for chan in range(self.b.n_chans):
+            # update vertical ranges and labels for bars
+            labels.extend([str(rel_ticks[0]), "", str(rel_ticks[2])])
+            self.b.axes.spines['ch%s' % chan].set_bounds(ticks[chan, 0],
+                    ticks[chan, -1])
+
+            # update horizontal text position
+            self.annotations['ch%s' % chan].set_position((text_offset,
+                    self.b.offsets[chan]))
+
+        self.b.axes.set_yticks(ticks.flatten())
+        self.b.axes.set_yticklabels(labels)
+
+        # put Y tick labels inside the plot
+        for tick in self.b.axes.yaxis.get_major_ticks():
+            tick.set_pad(-6)
+            tick.label.set_horizontalalignment('left')
+
+    @staticmethod
+    def closest_nice_float(value, proximity = 2):
+        """
+        Find closest value to `value`, who's mantissa has `proximity` digits
+        after comma
+        """
+        exp = int(np.log10(value))
+        mnt = value / 10 ** exp
+        return round(mnt, proximity) * 10 ** exp
 
 
 def browse_data_tk(data, spk_idx=None, labels=None, win=100):
