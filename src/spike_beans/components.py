@@ -196,7 +196,7 @@ class FeatureExtractor(base.Component):
         self.feature_methods.append(func)
 
     def delete_features(self, pattern):
-        """Delete featues matching `pattern`.
+        """Delete featues, with names matching `pattern`.
 
         Patterns are Unix shell style:
 
@@ -205,6 +205,10 @@ class FeatureExtractor(base.Component):
         [seq]   matches any character in seq
         [!seq]  matches any char not in seq
 
+        Parameters
+        ----------
+        pattern : string
+            search pattern
         """
         if not isinstance(pattern, basestring):
             raise TypeError("Wrong pattern type: %s. Must be string"
@@ -213,14 +217,19 @@ class FeatureExtractor(base.Component):
         fts_to_delete = fnmatch.filter(self.features['names'], pattern)
 
         if not fts_to_delete:
-            raise ValueError("No matching fatures found")
+            raise ValueError("No matching features found")
         
         self._deleted_features = list(
                 set(fts_to_delete) | set(self._deleted_features))
 
     def undelete_features(self, pattern):
-        """Recover features matching `pattern` if they were previously deleted
-        with `delete_features`
+        """Recover features matching `pattern`, if they were previously
+        deleted with `delete_features`
+
+        Parameters
+        ----------
+        pattern : string
+            search pattern
         """
         fts_to_undelete = fnmatch.filter(self._deleted_features, pattern)
         if not fts_to_undelete:
