@@ -14,6 +14,8 @@ from spike_sort.ui import zoomer
 from spike_analysis import dashboard
 import numpy as np
 
+import fnmatch
+
 
 class GenericSource(base.Component):
     def __init__(self, dataset, overwrite=False):
@@ -183,6 +185,7 @@ class FeatureExtractor(base.Component):
     def __init__(self, normalize=True):
         self.feature_methods = []
         self._feature_data = None
+        self._deleted_features = []
         self.normalize = normalize
         super(FeatureExtractor, self).__init__()
 
@@ -192,10 +195,64 @@ class FeatureExtractor(base.Component):
         func = lambda x: _func(x, *args, **kwargs)
         self.feature_methods.append(func)
 
+    def delete_features(self, pattern):
+        """Delete featues matching `pattern`.
+
+        Patterns are Unix shell style:
+
+        *       matches everything
+        ?       matches any single character
+        [seq]   matches any character in seq
+        [!seq]  matches any char not in seq
+
+        """
+        if not isinstance(pattern, basestring):
+            raise TypeError("Wrong pattern type: %s. Must be string"
+                    % type(pattern))
+
+        fts_to_delete = fnmatch.filter(self.features['names'], pattern)
+
+        if not fts_to_delete:
+            raise ValueError("No matching fatures found")
+        
+        self._deleted_features = list(
+                set(fts_to_delete) | set(self._deleted_features))
+
+    def undelete_features(self, pattern):
+        """Recover features matching `pattern` if they were previously deleted
+        with `delete_features`
+        """
+        fts_to_undelete = fnmatch.filter(self._deleted_features, pattern)
+        if not fts_to_undelete:
+            raise ValueError(
+                "Error: features matching '%s' were never deleted. \
+                 Use `add_features` to add new features" % pattern)
+
+        for ft in fts_to_undelete:
+            self._deleted_features.remove(ft)
+
+    def clear_selection(self):
+        """ Bring back all previously deleted features
+        """
+        self._deleted_features = []
+
     def _calc_features(self):
         spikes = self.spikes_src.spikes
         feats = [f(spikes) for f in self.feature_methods]
-        self._feature_data = features.combine(feats, norm=self.normalize)
+        ft_data = features.combine(feats, norm=self.normalize)
+        
+        # Filter feature_data to remove _deleted_features.
+        # This routine is O(n^2), to deal woth possible repetitions
+        names, idx = [], []
+        for i, name in enumerate(ft_data['names']):
+            if name not in self._deleted_features:
+                names.append(name)
+                idx.append(i)
+
+        ft_data['names'] = names
+        ft_data['data'] = ft_data['data'][:, idx]
+
+        self._feature_data = ft_data
 
     def read_features(self):
         if self._feature_data is None:
