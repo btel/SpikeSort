@@ -376,7 +376,7 @@ class FancyYAxis:
     @staticmethod
     def closest_nice_float(value, proximity = 2):
         """
-        Find closest value to `value`, who's mantissa has `proximity` digits
+        Find closest value to `value`, whose mantissa has `proximity` digits
         after comma
         """
         exp = int(np.log10(value))
