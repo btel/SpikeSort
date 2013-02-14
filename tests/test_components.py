@@ -344,7 +344,7 @@ def test_feature_extractor():
     ok_((features['data']==spike_amp).all())       
 
 @with_setup(setup, teardown)
-def test_feature_extractor_delete_features():
+def test_feature_extractor_hide_features():
     base.features.Provide("SignalSource",      DummySignalSource())
     base.features.Provide("SpikeMarkerSource", DummySpikeDetector())
     base.features.Provide("SpikeSource",       components.SpikeExtractor())
@@ -352,7 +352,7 @@ def test_feature_extractor_delete_features():
     feat_comp = components.FeatureExtractor(normalize=False)
     feat_comp.add_feature("P2P")
     feat_comp.add_feature("SpIdx")
-    feat_comp.delete_features("Sp*")
+    feat_comp.hide_features("Sp*")
     feat_comp.update()
     features = feat_comp.features
 
@@ -363,7 +363,7 @@ def test_feature_extractor_delete_features():
     ok_(test1 and test2 and test3)       
 
 @with_setup(setup, teardown)
-def test_feature_extractor_delete_features_not_found():
+def test_feature_extractor_hide_features_not_found():
     base.features.Provide("SignalSource",      DummySignalSource())
     base.features.Provide("SpikeMarkerSource", DummySpikeDetector())
     base.features.Provide("SpikeSource",       components.SpikeExtractor())
@@ -372,10 +372,10 @@ def test_feature_extractor_delete_features_not_found():
     feat_comp.add_feature("P2P")
     feat_comp.update()
 
-    assert_raises(ValueError, feat_comp.delete_features, "NonExistingFeature")
+    assert_raises(ValueError, feat_comp.hide_features, "NonExistingFeature")
 
 @with_setup(setup, teardown)
-def test_feature_extractor_undelete_features():
+def test_feature_extractor_unhide_features():
     base.features.Provide("SignalSource",      DummySignalSource())
     base.features.Provide("SpikeMarkerSource", DummySpikeDetector())
     base.features.Provide("SpikeSource",       components.SpikeExtractor())
@@ -383,9 +383,9 @@ def test_feature_extractor_undelete_features():
     feat_comp = components.FeatureExtractor(normalize=False)
     feat_comp.add_feature("P2P")
     feat_comp.add_feature("SpIdx")
-    feat_comp.delete_features("*")
+    feat_comp.hide_features("*")
     feat_comp.update()
-    feat_comp.undelete_features("Ch0*")
+    feat_comp.unhide_features("Ch0*")
     feat_comp.update()
     features = feat_comp.features
 
@@ -395,7 +395,7 @@ def test_feature_extractor_undelete_features():
     ok_(test1 and test2)       
 
 @with_setup(setup, teardown)
-def test_feature_extractor_undelete_features_not_found():
+def test_feature_extractor_unhide_features_not_found():
     base.features.Provide("SignalSource",      DummySignalSource())
     base.features.Provide("SpikeMarkerSource", DummySpikeDetector())
     base.features.Provide("SpikeSource",       components.SpikeExtractor())
@@ -403,11 +403,11 @@ def test_feature_extractor_undelete_features_not_found():
     feat_comp = components.FeatureExtractor(normalize=False)
     feat_comp.add_feature("P2P")
     feat_comp.add_feature("SpIdx")
-    feat_comp.delete_features("SpIdx")
+    feat_comp.hide_features("SpIdx")
     feat_comp.update()
 
     assert_raises(ValueError, 
-            feat_comp.undelete_features,
+            feat_comp.unhide_features,
             "NonExistingFeature")
 
 @with_setup(setup, teardown)
