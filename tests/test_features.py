@@ -167,3 +167,12 @@ class TestFeatures(object):
                     'is_valid': mask2}
         combined = ss.features.combine((feature1, feature2))
         ok_((combined['is_valid'] == (mask1 & mask2)).all())
+
+    def test_create_method_name(self):
+        names = ['methA', 'methB', 'methA_1', 'methC', 'methA_2', 'methD']
+
+        test1 = ss.features.create_method_name('methE', names) == 'methE'
+        test2 = ss.features.create_method_name('methB', names) == 'methB_1'
+        test3 = ss.features.create_method_name('methA', names) == 'methA_3'
+
+        ok_(test1 and test2 and test3)
