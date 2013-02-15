@@ -53,7 +53,7 @@ base.features["SignalSource"].add_filter("LinearIIR", *filter_freq)
 
 # Add the features here: 
 base.features["FeatureSource"].add_feature("P2P")
-base.features["FeatureSource"].add_feature("PCs", ncomps=2)
+base.features["FeatureSource"].add_feature("PCA", ncomps=2)
 
 #############################################################
 # Run the analysis (this can take a while)
