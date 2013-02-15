@@ -94,7 +94,7 @@ def select_spikes(features, idx):
     return new_feats
 
 
-def combine(args, norm=True):
+def combine(feat_data, norm=True, feat_method_names=None):
     """Combine features into a single structure
 
     Parameters
@@ -107,11 +107,11 @@ def combine(args, norm=True):
     combined_fetures : dict
     """
 
-    features = [d['data'] for d in args]
-    names = [d['names'] for d in args]
+    features = [d['data'] for d in feat_data]
+    names = [d['names'] for d in feat_data]
 
-    # get mask, if it exist
-    mask = [d['is_valid'] for d in args if 'is_valid' in d]
+    # get mask, if it exists
+    mask = [d['is_valid'] for d in feat_data if 'is_valid' in d]
 
     try:
         if mask:
@@ -120,6 +120,12 @@ def combine(args, norm=True):
         data = np.hstack(features)
     except ValueError:
         raise ValueError('all features must contain the same number of spikes')
+
+    # prepend feature names with corresponding method names, if given
+    if feat_method_names:
+        for i, method_name in enumerate(feat_method_names):
+            for j, feature_name in enumerate(names[i]):
+                names[i][j] = method_name + ':' + feature_name
 
     combined_features = {"data": data,
                          "names": np.concatenate(names)}
