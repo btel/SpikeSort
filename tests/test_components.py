@@ -356,7 +356,7 @@ def test_feature_extractor_hide_features():
     feat_comp.update()
     features = feat_comp.features
 
-    test1 = features['names'] == ["Ch0:P2P"]  # it's P2P
+    test1 = features['names'] == ["P2P:Ch0:P2P"]  # it's P2P
     test2 = features['data'].shape[1] == 1
     test3 = (features['data'] == spike_amp).all()  # with corresponding data
     
@@ -385,11 +385,11 @@ def test_feature_extractor_unhide_features():
     feat_comp.add_feature("SpIdx")
     feat_comp.hide_features("*")
     feat_comp.update()
-    feat_comp.unhide_features("Ch0*")
+    feat_comp.unhide_features("*Ch0*")
     feat_comp.update()
     features = feat_comp.features
 
-    test1 = features['names'] == ["Ch0:P2P"]   # it's PC1
+    test1 = features['names'] == ["P2P:Ch0:P2P"]   # it's PC1
     test2 = features['data'].shape[1] == 1  # with corresponding data
     
     ok_(test1 and test2)       
@@ -403,7 +403,7 @@ def test_feature_extractor_unhide_features_not_found():
     feat_comp = components.FeatureExtractor(normalize=False)
     feat_comp.add_feature("P2P")
     feat_comp.add_feature("SpIdx")
-    feat_comp.hide_features("SpIdx")
+    feat_comp.hide_features("*SpIdx")
     feat_comp.update()
 
     assert_raises(ValueError, 
