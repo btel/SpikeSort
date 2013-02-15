@@ -14,7 +14,9 @@ from spike_sort.ui import zoomer
 from spike_analysis import dashboard
 import numpy as np
 
+from collections import OrderedDict
 import fnmatch
+import re
 
 
 class GenericSource(base.Component):
@@ -183,7 +185,7 @@ class FeatureExtractor(base.Component):
                                       base.HasAttributes("spikes"))
 
     def __init__(self, normalize=True):
-        self.feature_methods = []
+        self.feature_methods = OrderedDict()
         self._feature_data = None
         self._hidden_features = []
         self.normalize = normalize
@@ -193,7 +195,9 @@ class FeatureExtractor(base.Component):
         func_name = "fet" + name
         _func = features.__getattribute__(func_name)
         func = lambda x: _func(x, *args, **kwargs)
-        self.feature_methods.append(func)
+        name = self._create_method_name(name, self.feature_methods.keys())
+
+        self.feature_methods[name] = func
 
     def hide_features(self, pattern):
         """Hide featues, with names matching `pattern`.
@@ -245,10 +249,42 @@ class FeatureExtractor(base.Component):
         """
         self._hidden_features = []
 
+    def _create_method_name(self, name, name_lst):
+        """Modifies `name` based on the contents of `name_lst`.
+
+        Parameters
+        ----------
+        name : string
+            name to be modified
+        name_lst : list of string
+            a list of names to be checked against
+
+        Returns
+        -------
+        result : string
+            if `name_lst` doesn't contain `name`:
+                returns `name` unchanged
+            if `name_lst` contains `name`:
+                returns `name` + '_1'
+            if `name_lst` contains `name` + '_n', where n is any integer:
+                returns `name` + '_k', where k = max(n) + 1
+        """
+        result = name
+        for s in name_lst:
+            pat = re.match('^{0}$|^{0}_([0-9]+)$'.format(name), s)
+            if pat:
+                if pat.group(1):
+                    result = name + '_{0}'.format(int(pat.group(1)) + 1)
+                    continue
+                result = name + '_1'
+        return result
+
     def _calc_features(self):
         spikes = self.spikes_src.spikes
-        feats = [f(spikes) for f in self.feature_methods]
-        ft_data = features.combine(feats, norm=self.normalize)
+        feats = [f(spikes) for f in self.feature_methods.values()]
+        ft_data = features.combine(feats,
+                norm=self.normalize,
+                feat_method_names = self.feature_methods.keys())
         
         # Filter feature_data to remove _hidden_features.
         # This routine is O(n^2), to deal woth possible repetitions
