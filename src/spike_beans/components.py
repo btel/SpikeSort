@@ -195,7 +195,7 @@ class FeatureExtractor(base.Component):
         func_name = "fet" + name
         _func = features.__getattribute__(func_name)
         func = lambda x: _func(x, *args, **kwargs)
-        name = self._create_method_name(name, self.feature_methods.keys())
+        name = features.create_method_name(name, self.feature_methods.keys())
 
         self.feature_methods[name] = func
 
@@ -248,36 +248,6 @@ class FeatureExtractor(base.Component):
         """ Bring back all previously hidden features
         """
         self._hidden_features = []
-
-    def _create_method_name(self, name, name_lst):
-        """Modifies `name` based on the contents of `name_lst`.
-
-        Parameters
-        ----------
-        name : string
-            name to be modified
-        name_lst : list of string
-            a list of names to be checked against
-
-        Returns
-        -------
-        result : string
-            if `name_lst` doesn't contain `name`:
-                returns `name` unchanged
-            if `name_lst` contains `name`:
-                returns `name` + '_1'
-            if `name_lst` contains `name` + '_n', where n is any integer:
-                returns `name` + '_k', where k = max(n) + 1
-        """
-        result = name
-        for s in name_lst:
-            pat = re.match('^{0}$|^{0}_([0-9]+)$'.format(name), s)
-            if pat:
-                if pat.group(1):
-                    result = name + '_{0}'.format(int(pat.group(1)) + 1)
-                    continue
-                result = name + '_1'
-        return result
 
     def _calc_features(self):
         spikes = self.spikes_src.spikes
