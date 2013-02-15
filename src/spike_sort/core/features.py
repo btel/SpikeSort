@@ -308,7 +308,7 @@ def _get_data(spk_dict, contacts):
 
 
 @add_mask
-def fetPCs(spikes_data, ncomps=2, contacts='all'):
+def fetPCA(spikes_data, ncomps=2, contacts='all'):
     """Calculate principal components (PCs).
 
     Parameters
@@ -348,7 +348,7 @@ def fetPCs(spikes_data, ncomps=2, contacts='all'):
 
 @requires(wt, "Install PyWavelets to use wavelet transform")
 @add_mask
-def fetWTs(spikes_data, nfeatures=3, contacts='all', wavelet='haar',
+def fetWT(spikes_data, nfeatures=3, contacts='all', wavelet='haar',
            mode='sym', select_method='std'):
     """Calculate wavelet transform reduce the dimensionality
 
@@ -405,7 +405,7 @@ def fetWTs(spikes_data, nfeatures=3, contacts='all', wavelet='haar',
         feature_name = wavelet
     else:
         feature_name = wavelet.name
-    feature_name = "%sWT" % feature_name
+    feature_name = "%sWC" % feature_name
 
     for contact in xrange(n_channels):
         data = coeffs[:, :, contact]
