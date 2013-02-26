@@ -110,8 +110,8 @@ class RequiredFeature(object):
         self.assertion = assertion
         self.result = None
 
-    def __get__(self, obj, T):
-        self.result = self.Request(obj)
+    def __get__(self, callee, T):
+        self.result = self.Request(callee)
         return self.result  # <-- will request the feature upon first call
 
     def __set__(self, instance, value):
@@ -144,6 +144,18 @@ class RequiredFeature(object):
             % (obj, self.feature)
         return obj
 
+class OptionalFeature(RequiredFeature):
+    def Request(self, callee):
+        fet_name = self.feature
+        if hasattr(callee, self.alt_name + self.feature):
+            fet_name = getattr(callee, self.alt_name + self.feature)
+
+        try:    
+            features[fet_name]
+        except AttributeError:
+            return None
+
+        return super(OptionalFeature, self).Request(callee)
 
 class Component(object):
     "Symbolic base class for components"
