@@ -432,7 +432,7 @@ class MplPlotComponent(base.Component):
 class PlotFeatures(MplPlotComponent):
     feature_src = base.RequiredFeature("FeatureSource",
                                        base.HasAttributes("features"))
-    cluster_src = base.RequiredFeature("LabelSource",
+    cluster_src = base.OptionalFeature("LabelSource",
                                        base.HasAttributes("labels"))
 
     def __init__(self):
@@ -478,13 +478,19 @@ class PlotFeatures(MplPlotComponent):
 
     def _plot(self):
         feats = self._get_features()
-        labels = self.cluster_src.labels
-        if self.show_cells == 'all':
-            show_labels = list(np.unique(labels))
-            if 0 in show_labels:
-                show_labels.remove(0)
+
+        if self.cluster_src is not None:
+            labels = self.cluster_src.labels
+            if self.show_cells == 'all':
+                show_labels = list(np.unique(labels))
+                if 0 in show_labels:
+                    show_labels.remove(0)
+            else:
+                show_labels = self.show_cells
         else:
-            show_labels = self.show_cells
+            labels = None
+            show_labels = None
+
         data_range = None if self._autoscale else [0, 1]
         plotting.plot_features(feats, labels, show_cells=show_labels,
                                datarange=data_range, fig=self.fig)
@@ -495,6 +501,8 @@ from spike_sort.ui import spike_browser
 class SpikeBrowser(base.Component):
     raw_src = base.RequiredFeature("SignalSource")
     spt_src = base.RequiredFeature("SpikeMarkerSource")
+    label_src = base.OptionalFeature("LabelSource",
+                                     base.HasAttributes("labels"))
 
     def __init__(self):
         super(SpikeBrowser, self).__init__()
@@ -507,6 +515,12 @@ class SpikeBrowser(base.Component):
         self.frame = None
 
     def _set_data(self):
+        if self.label_src is None:
+            self._set_data_without_labels()
+        else:
+            self._set_data_with_labels()
+
+    def _set_data_without_labels(self):
         sp_data = self.raw_src.signal
         spike_time = self.spt_src.events
         self.browser.winsz = self.win
@@ -514,31 +528,7 @@ class SpikeBrowser(base.Component):
 
         self.browser.set_spiketimes(spike_time)
 
-    def _draw(self):
-        self.frame = spike_browser.PlotWithScrollBarTk()
-        self.frame.root.protocol("WM_DELETE_WINDOW", self._on_close)
-        self.browser = spike_browser.SpikeBrowserUI(self.frame)
-        self._set_data()
-
-    def _update(self):
-        if self.frame:
-            self._set_data()
-            self.browser.draw_plot()
-
-    def show(self):
-        if not self.frame:
-            self._draw()
-
-
-class SpikeBrowserWithLabels(SpikeBrowser):
-    label_src = base.RequiredFeature("LabelSource",
-                                     base.HasAttributes("labels"))
-
-    def __init__(self):
-        super(SpikeBrowserWithLabels, self).__init__()
-        self._showcells = 'all'
-
-    def _set_data(self):
+    def _set_data_with_labels(self):
         sp_data = self.raw_src.signal
         spike_time = self.spt_src.events
         labels = self.label_src.labels
@@ -569,6 +559,21 @@ class SpikeBrowserWithLabels(SpikeBrowser):
     show_cells = property(_get_showcells, _set_showcells, None,
                           "list of labels of cells to plot")
 
+    def _draw(self):
+        self.frame = spike_browser.PlotWithScrollBarTk()
+        self.frame.root.protocol("WM_DELETE_WINDOW", self._on_close)
+        self.browser = spike_browser.SpikeBrowserUI(self.frame)
+        self._set_data()
+
+    def _update(self):
+        if self.frame:
+            self._set_data()
+            self.browser.draw_plot()
+
+    def show(self):
+        if not self.frame:
+            self._draw()
+
 
 class PlotFeaturesTimeline(PlotFeatures):
     spk_time_src = base.RequiredFeature("SpikeMarkerSource",
@@ -585,7 +590,7 @@ class PlotFeaturesTimeline(PlotFeatures):
 class PlotSpikes(MplPlotComponent):
     spike_src = base.RequiredFeature("SpikeSource",
                                      base.HasAttributes("spikes"))
-    cluster_src = base.RequiredFeature("LabelSource",
+    cluster_src = base.OptionalFeature("LabelSource",
                                        base.HasAttributes("labels"))
 
     def __init__(self):
@@ -615,13 +620,19 @@ class PlotSpikes(MplPlotComponent):
 
     def _plot(self):
         spikes = self.spike_src.spikes
-        labels = self.cluster_src.labels
-        if self.show_cells == 'all':
-            show_labels = list(np.unique(labels))
-            if 0 in show_labels:
-                show_labels.remove(0)
+
+        if self.cluster_src is not None:
+            labels = self.cluster_src.labels
+            if self.show_cells == 'all':
+                show_labels = list(np.unique(labels))
+                if 0 in show_labels:
+                    show_labels.remove(0)
+            else:
+                show_labels = self.show_cells
         else:
-            show_labels = self.show_cells
+            labels = None
+            show_labels = None
+
         plotting.plot_spikes(spikes, labels, show_cells=show_labels,
                              fig=self.fig)
 
