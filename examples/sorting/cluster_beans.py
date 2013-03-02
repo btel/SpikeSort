@@ -41,7 +41,7 @@ base.register("SpikeSource", components.SpikeExtractor(sp_win=sp_win))
 base.register("FeatureSource", components.FeatureExtractor())
 base.register("LabelSource", components.ClusterAnalyzer("gmm", 4))
 
-browser = components.SpikeBrowserWithLabels()
+browser = components.SpikeBrowser()
 feature_plot = components.PlotFeaturesTimeline()
 wave_plot = components.PlotSpikes()
 legend = components.Legend()
