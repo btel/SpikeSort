@@ -129,7 +129,7 @@ def combine(feat_data, norm=True, feat_method_names=None):
                 names[i][j] = method_name + ':' + feature_name
 
     combined_features = {"data": data,
-                         "names": np.concatenate(names)}
+                         "names": list(np.concatenate(names))}
     if list(mask):
         combined_features["is_valid"] = mask
 
