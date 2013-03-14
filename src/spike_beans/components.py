@@ -300,12 +300,12 @@ class ClusterAnalyzer(base.Component):
         use_features = self.use_features
 
         if use_features != 'all' and use_features is not None:
-            names = list(feature_data['names'])
+            names = list(feature_data['names']) # safety measure
             try:
                 ii = np.array([names.index(l) for l in use_features])
                 feature_data = feature_data.copy()
                 feature_data['data'] = feature_data['data'][:, ii]
-                feature_data['names'] = feature_data['names'][ii]
+                feature_data['names'] = [names[i] for i in ii]
             except ValueError:
                 raise ValueError("Feature {0} does not exist" % l)
 
