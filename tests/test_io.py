@@ -10,7 +10,29 @@ import numpy as np
 
 from spike_sort.io.filters import BakerlabFilter, PyTablesFilter
 from spike_sort.io import export
+from spike_sort.io import neo_filters
 
+class TestNeo:
+
+    def setUp(self):
+        path = os.path.dirname(os.path.abspath(__file__))
+        self.samples_dir = os.path.join(path, 'samples')
+        self.file_names = {'Axon': 'axonio.abf'}
+
+    def test_read_abf(self):
+        fname = self.file_names['Axon']
+        file_path = os.path.join(self.samples_dir, fname)
+        abf = neo_filters.AxonFilter(file_path)
+        sp = abf.read_sp()
+        assert len(np.array(sp['data']))>0
+        assert sp['FS'] == 125000
+    
+    def test_read_abf_via_component(self):
+        fname = self.file_names['Axon']
+        file_path = os.path.join(self.samples_dir, fname)
+        source = neo_filters.NeoSource(file_path)
+        sp = source.read_sp()
+        assert len(np.array(sp['data']))>0
 
 class TestHDF(object):
     def setUp(self):
