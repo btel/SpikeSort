@@ -621,7 +621,7 @@ class PlotSpikes(MplPlotComponent):
     def _plot(self):
         spikes = self.spike_src.spikes
 
-        if self.cluster_src is not None:
+        if not self.cluster_src:
             labels = self.cluster_src.labels
             if self.show_cells == 'all':
                 show_labels = list(np.unique(labels))
