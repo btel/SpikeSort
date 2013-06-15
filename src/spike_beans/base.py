@@ -105,8 +105,22 @@ class DataAttribute(object):
 
 
 class RequiredFeature(object):
+    """Descriptor class for required dependencies. Implements dependency
+    injection."""
     def __init__(self, feature, assertion=NoAssertion(),
                  alt_name="_alternative_"):
+        """
+        Parameters
+        ----------
+        feature : string
+            name of the associated dependency
+        assertion : function
+            additional tests for the associated dependency
+        alt_name : string
+            in case of renaming the dependency, the variable named
+            'alt_name'+'feature' should contain the new name of the dependency
+        """
+
         self.feature = feature
         self.alt_name = alt_name
         self.assertion = assertion
@@ -147,6 +161,8 @@ class RequiredFeature(object):
         return obj
 
 class OptionalFeature(RequiredFeature):
+    """Descriptor class for optional dependencies. Implements dependency
+    injection. Acquires None if the dependency is not satisfied"""
     def Request(self, callee):
         fet_name = self.feature
         if hasattr(callee, self.alt_name + self.feature):
