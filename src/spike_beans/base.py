@@ -25,14 +25,16 @@ class FeatureBroker(object):
         self.providers[feature] = call
 
     def __getitem__(self, feature):
-        try:
-            provider = self.providers[feature]
-        except KeyError:
+        if not feature in self.providers:
             raise AttributeError("Unknown feature named %r" % feature)
-        return provider()
+        else:
+            return self.providers[feature]()
 
     def __setitem__(self, feature, component):
         self.Provide(feature, component)
+
+    def __contains__(self, feature):
+        return feature in self.providers
 
 
 features = FeatureBroker()
@@ -150,9 +152,7 @@ class OptionalFeature(RequiredFeature):
         if hasattr(callee, self.alt_name + self.feature):
             fet_name = getattr(callee, self.alt_name + self.feature)
 
-        try:    
-            features[fet_name]
-        except AttributeError:
+        if not fet_name in features:
             return None
 
         return super(OptionalFeature, self).Request(callee)
