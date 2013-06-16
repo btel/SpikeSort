@@ -25,14 +25,16 @@ class FeatureBroker(object):
         self.providers[feature] = call
 
     def __getitem__(self, feature):
-        try:
-            provider = self.providers[feature]
-        except KeyError:
+        if not feature in self.providers:
             raise AttributeError("Unknown feature named %r" % feature)
-        return provider()
+        else:
+            return self.providers[feature]()
 
     def __setitem__(self, feature, component):
         self.Provide(feature, component)
+
+    def __contains__(self, feature):
+        return feature in self.providers
 
 
 features = FeatureBroker()
@@ -103,15 +105,29 @@ class DataAttribute(object):
 
 
 class RequiredFeature(object):
+    """Descriptor class for required dependencies. Implements dependency
+    injection."""
     def __init__(self, feature, assertion=NoAssertion(),
                  alt_name="_alternative_"):
+        """
+        Parameters
+        ----------
+        feature : string
+            name of the associated dependency
+        assertion : function
+            additional tests for the associated dependency
+        alt_name : string
+            in case of renaming the dependency, the variable named
+            'alt_name'+'feature' should contain the new name of the dependency
+        """
+
         self.feature = feature
         self.alt_name = alt_name
         self.assertion = assertion
         self.result = None
 
-    def __get__(self, obj, T):
-        self.result = self.Request(obj)
+    def __get__(self, callee, T):
+        self.result = self.Request(callee)
         return self.result  # <-- will request the feature upon first call
 
     def __set__(self, instance, value):
@@ -144,6 +160,18 @@ class RequiredFeature(object):
             % (obj, self.feature)
         return obj
 
+class OptionalFeature(RequiredFeature):
+    """Descriptor class for optional dependencies. Implements dependency
+    injection. Acquires None if the dependency is not satisfied"""
+    def Request(self, callee):
+        fet_name = self.feature
+        if hasattr(callee, self.alt_name + self.feature):
+            fet_name = getattr(callee, self.alt_name + self.feature)
+
+        if not fet_name in features:
+            return None
+
+        return super(OptionalFeature, self).Request(callee)
 
 class Component(object):
     "Symbolic base class for components"

@@ -15,6 +15,7 @@ def teardown():
 
 class Dummy(base.Component):
     con = base.RequiredFeature('Data', base.HasAttributes('data'))
+    opt_con = base.OptionalFeature('OptionalData', base.HasAttributes('data'))
 
     def __init__(self):
         self.data = 0
@@ -22,6 +23,10 @@ class Dummy(base.Component):
 
     def get_data(self):
         return self.con.data
+
+    def get_optional_data(self):
+        if self.opt_con:
+            return self.opt_con.data
 
     def _update(self):
         self.data += 1
@@ -111,3 +116,20 @@ def test_register_new_feature_by_register():
     comp = Dummy()
     ok_(comp.get_data() == 'some data')
     assert dep_comp is added_comp
+
+@with_setup(setup, teardown)
+def test_missing_optional_dependency():
+    required_dep = base.register("Data", DummyDataProvider())
+    comp = Dummy()
+    ok_(comp.opt_con is None)
+
+@raises(ZeroDivisionError)
+@with_setup(setup, teardown)
+def test_hasattribute_exceptions_for_optional_deps():
+    '''test whether HasAttributes raises exceptions for optional features'''
+    required_dep = base.register("Data", DummyDataProvider())
+    optional_dep = base.register('OptionalData', DummyDataWithZeroDivision())
+    comp = Dummy()
+    data = comp.get_optional_data()
+    assert True
+
