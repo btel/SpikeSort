@@ -139,7 +139,7 @@ def combine(feat_data, norm=True, feat_method_names=None):
     return combined_features
 
 
-def create_method_name(name, name_lst):
+def _add_method_suffix(name, name_lst):
     """Modifies `name` based on the contents of `name_lst`.
 
     Parameters

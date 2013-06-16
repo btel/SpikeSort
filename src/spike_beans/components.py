@@ -195,7 +195,7 @@ class FeatureExtractor(base.Component):
         func_name = "fet" + name
         _func = features.__getattribute__(func_name)
         func = lambda x: _func(x, *args, **kwargs)
-        name = features.create_method_name(name, self.feature_methods.keys())
+        name = features._add_method_suffix(name, self.feature_methods.keys())
 
         self.feature_methods[name] = func
 
