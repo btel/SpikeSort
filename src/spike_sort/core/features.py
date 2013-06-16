@@ -14,6 +14,7 @@ Each of the function returns a (mapping) object with following keys:
  """
 
 import numpy as np
+import re
 try:
     import pywt as wt
 except ImportError:
@@ -94,7 +95,7 @@ def select_spikes(features, idx):
     return new_feats
 
 
-def combine(args, norm=True):
+def combine(feat_data, norm=True, feat_method_names=None):
     """Combine features into a single structure
 
     Parameters
@@ -107,11 +108,11 @@ def combine(args, norm=True):
     combined_fetures : dict
     """
 
-    features = [d['data'] for d in args]
-    names = [d['names'] for d in args]
+    features = [d['data'] for d in feat_data]
+    names = [d['names'] for d in feat_data]
 
-    # get mask, if it exist
-    mask = [d['is_valid'] for d in args if 'is_valid' in d]
+    # get mask, if it exists
+    mask = [d['is_valid'] for d in feat_data if 'is_valid' in d]
 
     try:
         if mask:
@@ -121,8 +122,14 @@ def combine(args, norm=True):
     except ValueError:
         raise ValueError('all features must contain the same number of spikes')
 
+    # prepend feature names with corresponding method names, if given
+    if feat_method_names:
+        for i, method_name in enumerate(feat_method_names):
+            for j, feature_name in enumerate(names[i]):
+                names[i][j] = method_name + ':' + feature_name
+
     combined_features = {"data": data,
-                         "names": np.concatenate(names)}
+                         "names": list(np.concatenate(names))}
     if list(mask):
         combined_features["is_valid"] = mask
 
@@ -131,6 +138,36 @@ def combine(args, norm=True):
 
     return combined_features
 
+
+def _add_method_suffix(name, name_lst):
+    """Modifies `name` based on the contents of `name_lst`.
+
+    Parameters
+    ----------
+    name : string
+        name to be modified
+    name_lst : list of string
+        a list of names to be checked against
+
+    Returns
+    -------
+    result : string
+        if `name_lst` doesn't contain `name`:
+            returns `name` unchanged
+        if `name_lst` contains `name`:
+            returns `name` + '_1'
+        if `name_lst` contains `name` + '_n', where n is any integer:
+            returns `name` + '_k', where k = max(n) + 1
+    """
+    result = name
+    for s in name_lst:
+        pat = re.match('^{0}$|^{0}_([0-9]+)$'.format(name), s)
+        if pat:
+            if pat.group(1):
+                result = name + '_{0}'.format(int(pat.group(1)) + 1)
+                continue
+            result = name + '_1'
+    return result
 
 def add_mask(feature_function):
     """Decorator to copy mask from waveshapes to features"""
@@ -271,7 +308,7 @@ def _get_data(spk_dict, contacts):
 
 
 @add_mask
-def fetPCs(spikes_data, ncomps=2, contacts='all'):
+def fetPCA(spikes_data, ncomps=2, contacts='all'):
     """Calculate principal components (PCs).
 
     Parameters
@@ -311,7 +348,7 @@ def fetPCs(spikes_data, ncomps=2, contacts='all'):
 
 @requires(wt, "Install PyWavelets to use wavelet transform")
 @add_mask
-def fetWTs(spikes_data, nfeatures=3, contacts='all', wavelet='haar',
+def fetWT(spikes_data, nfeatures=3, contacts='all', wavelet='haar',
            mode='sym', select_method='std'):
     """Calculate wavelet transform reduce the dimensionality
 
@@ -368,7 +405,7 @@ def fetWTs(spikes_data, nfeatures=3, contacts='all', wavelet='haar',
         feature_name = wavelet
     else:
         feature_name = wavelet.name
-    feature_name = "%sWT" % feature_name
+    feature_name = "%sWC" % feature_name
 
     for contact in xrange(n_channels):
         data = coeffs[:, :, contact]

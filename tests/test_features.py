@@ -50,7 +50,7 @@ class TestFeatures(object):
         error = np.mean((proj_cov - np.eye(n_dim)) ** 2)
         ok_(error < 0.01)
 
-    def test_fetPC(self):
+    def test_fetPCA(self):
         spikes_dict = self.spikes_dict.copy()
         n_spikes = 200
         n_cells = 2
@@ -63,7 +63,7 @@ class TestFeatures(object):
         spikes = spikes.astype(np.float32)
         spikes_dict['data'] = spikes[:, :, np.newaxis]
 
-        pcs = ss.features.fetPCs(spikes_dict, ncomps=1)
+        pcs = ss.features.fetPCA(spikes_dict, ncomps=1)
         pcs = pcs['data']
         compare = ~np.logical_xor(pcs[:, 0].astype(int) + 1, _amps)
         correct = np.sum(compare)
@@ -91,7 +91,7 @@ class TestFeatures(object):
 
         almost_equal(wt3, 0.1 * wt1 + 0.7 * wt2)
 
-    def test_fetWTs_math(self):
+    def test_fetWT_math(self):
         n_samples = 256
 
         # upsampled haar wavelet
@@ -103,7 +103,7 @@ class TestFeatures(object):
         spikes = spikes[:, :, np.newaxis]
         spikes_dict = {'data' : spikes}
 
-        features = ss.features.fetWTs(spikes_dict, n_samples, wavelet='haar', select_method=None)
+        features = ss.features.fetWT(spikes_dict, n_samples, wavelet='haar', select_method=None)
         idx = np.nonzero(features['data']) # nonzero indices
         
         # if nonzero elements are ONLY at (0,1) and (1,0),
@@ -112,7 +112,7 @@ class TestFeatures(object):
 
         ok_((eye == np.eye(2)).all())
 
-    def test_fetWTs_selection(self):
+    def test_fetWT_selection(self):
         n_samples = 30
         n_channels = 2
         n_spikes = 50
@@ -125,7 +125,7 @@ class TestFeatures(object):
         shapes = [(n_spikes, n_features * n_channels)]
 
         for met in methods:
-            wt = ss.features.fetWTs(spikes_dict, n_features, wavelet='haar', select_method=met)
+            wt = ss.features.fetWT(spikes_dict, n_features, wavelet='haar', select_method=met)
             shapes.append(wt['data'].shape)
 
         equal = lambda x, y: x == y and y or False
@@ -167,3 +167,12 @@ class TestFeatures(object):
                     'is_valid': mask2}
         combined = ss.features.combine((feature1, feature2))
         ok_((combined['is_valid'] == (mask1 & mask2)).all())
+
+    def test_add_method_suffix(self):
+        names = ['methA', 'methB', 'methA_1', 'methC', 'methA_2', 'methD']
+
+        test1 = ss.features._add_method_suffix('methE', names) == 'methE'
+        test2 = ss.features._add_method_suffix('methB', names) == 'methB_1'
+        test3 = ss.features._add_method_suffix('methA', names) == 'methA_3'
+
+        ok_(test1 and test2 and test3)

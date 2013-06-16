@@ -14,7 +14,9 @@ from spike_sort.ui import zoomer
 from spike_analysis import dashboard
 import numpy as np
 
+from collections import OrderedDict
 import fnmatch
+import re
 
 
 class GenericSource(base.Component):
@@ -183,9 +185,9 @@ class FeatureExtractor(base.Component):
                                       base.HasAttributes("spikes"))
 
     def __init__(self, normalize=True):
-        self.feature_methods = []
+        self.feature_methods = OrderedDict()
         self._feature_data = None
-        self._deleted_features = []
+        self._hidden_features = []
         self.normalize = normalize
         super(FeatureExtractor, self).__init__()
 
@@ -193,10 +195,12 @@ class FeatureExtractor(base.Component):
         func_name = "fet" + name
         _func = features.__getattribute__(func_name)
         func = lambda x: _func(x, *args, **kwargs)
-        self.feature_methods.append(func)
+        name = features._add_method_suffix(name, self.feature_methods.keys())
 
-    def delete_features(self, pattern):
-        """Delete featues, with names matching `pattern`.
+        self.feature_methods[name] = func
+
+    def hide_features(self, pattern):
+        """Hide featues, with names matching `pattern`.
 
         Patterns are Unix shell style:
 
@@ -219,42 +223,44 @@ class FeatureExtractor(base.Component):
         if not fts_to_delete:
             raise ValueError("No matching features found")
         
-        self._deleted_features = list(
-                set(fts_to_delete) | set(self._deleted_features))
+        self._hidden_features = list(
+                set(fts_to_delete) | set(self._hidden_features))
 
-    def undelete_features(self, pattern):
+    def unhide_features(self, pattern):
         """Recover features matching `pattern`, if they were previously
-        deleted with `delete_features`
+        hidden with `hide_features`
 
         Parameters
         ----------
         pattern : string
             search pattern
         """
-        fts_to_undelete = fnmatch.filter(self._deleted_features, pattern)
+        fts_to_undelete = fnmatch.filter(self._hidden_features, pattern)
         if not fts_to_undelete:
             raise ValueError(
-                "Error: features matching '%s' were never deleted. \
+                "Error: features matching '%s' were never hidden. \
                  Use `add_features` to add new features" % pattern)
 
         for ft in fts_to_undelete:
-            self._deleted_features.remove(ft)
+            self._hidden_features.remove(ft)
 
     def clear_selection(self):
-        """ Bring back all previously deleted features
+        """ Bring back all previously hidden features
         """
-        self._deleted_features = []
+        self._hidden_features = []
 
     def _calc_features(self):
         spikes = self.spikes_src.spikes
-        feats = [f(spikes) for f in self.feature_methods]
-        ft_data = features.combine(feats, norm=self.normalize)
+        feats = [f(spikes) for f in self.feature_methods.values()]
+        ft_data = features.combine(feats,
+                norm=self.normalize,
+                feat_method_names = self.feature_methods.keys())
         
-        # Filter feature_data to remove _deleted_features.
+        # Filter feature_data to remove _hidden_features.
         # This routine is O(n^2), to deal woth possible repetitions
         names, idx = [], []
         for i, name in enumerate(ft_data['names']):
-            if name not in self._deleted_features:
+            if name not in self._hidden_features:
                 names.append(name)
                 idx.append(i)
 
@@ -294,12 +300,12 @@ class ClusterAnalyzer(base.Component):
         use_features = self.use_features
 
         if use_features != 'all' and use_features is not None:
-            names = list(feature_data['names'])
+            names = list(feature_data['names']) # safety measure
             try:
                 ii = np.array([names.index(l) for l in use_features])
                 feature_data = feature_data.copy()
                 feature_data['data'] = feature_data['data'][:, ii]
-                feature_data['names'] = feature_data['names'][ii]
+                feature_data['names'] = [names[i] for i in ii]
             except ValueError:
                 raise ValueError("Feature {0} does not exist" % l)
 
