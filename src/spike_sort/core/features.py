@@ -331,10 +331,9 @@ def fetPCA(spikes_data, ncomps=2, contacts='all'):
 
     if spikes.ndim == 3:
         n_channels = spikes.shape[2]
-        sc = []
+        sc = np.zeros((n_channels*ncomps, spikes.shape[1]))
         for i in range(n_channels):
-            sc += [_getPCs(spikes[:, :, i])]
-        sc = np.vstack(sc)
+            sc[i::n_channels, ] = _getPCs(spikes[:, :, i])
     else:
         sc = _getPCs(spikes)
         n_channels = 1
