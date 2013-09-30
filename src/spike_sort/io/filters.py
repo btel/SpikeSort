@@ -184,7 +184,7 @@ class BakerlabFilter(object):
         return {"data": spt / 200.0}
 
     def write_spt(self, spt_dict, dataset, overwrite=False):
-        """Returns spike times in miliseconds.
+        """Write spike times to a binary file.
 
         Parameters
         ----------
