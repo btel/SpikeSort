@@ -66,19 +66,21 @@ class FilterStack(base.Component):
                                    base.HasAttributes("signal"))
 
     def __init__(self):
-        self._filters = []
+        self.filters = []
+        self._filter_functions = []
         self._signal = None
         super(FilterStack, self).__init__()
 
     def add_filter(self, filt, *args, **kwargs):
         # type checking
         if hasattr(filt, "__call__"):
-            self._filters.append(lambda signal: filt(signal, *args, **kwargs))
+            filter_func = filt
+            filter_descr = {'type': filter_func.__name__}
         elif isinstance(filt, str):
             try:
                 filter_func = filters.__getattribute__("flt" + filt)
-                self._filters.append(
-                    lambda signal: filter_func(signal, *args, **kwargs))
+                filter_descr = {'type': filt}
+                self._filter_functions.append(lambda signal: filter_func(signal, *args, **kwargs))
             except AttributeError:
                 raise AttributeError("No such method found in 'core.filters':"
                                      + " flt" + filt)
@@ -86,10 +88,14 @@ class FilterStack(base.Component):
             raise TypeError(("Unsupported argument type: %s." % type(filt)) +
                             "Only string or callable are accepted")
 
+        filter_descr.update({'args': args, 'extra_args': kwargs})
+        self.filters.append(filter_descr)
+        self._filter_functions.append(lambda signal: filter_func(signal, *args, **kwargs))
+
     def read_signal(self):
         if self._signal is None:
             self._signal = self.raw_src.signal
-            for filt in self._filters:
+            for filt in self._filter_functions:
                 self._signal = filt(self._signal)
         return self._signal
 

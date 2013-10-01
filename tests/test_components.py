@@ -182,6 +182,22 @@ def test_filter_stack_add_filter_string():
     ok_(np.linalg.norm(io.signal['data'] - io_filter.signal['data']) > 0.)
 
 @with_setup(setup, teardown)
+def test_filter_stack_is_json_serializable():
+    io = DummySignalSource()
+    base.features.Provide("RawSource", io)
+
+    def custom_filter(): pass
+
+    io_filter = components.FilterStack()
+    io_filter.add_filter("LinearIIR", 800., 300.)
+    io_filter.add_filter(custom_filter)
+    filter_json = json.dumps(io_filter.filters)
+    filter_descr = json.loads(filter_json)
+
+    assert filter_descr[0]['type'] == 'LinearIIR'
+    assert filter_descr[1]['type'] == 'custom_filter'
+
+@with_setup(setup, teardown)
 def test_filter_stack_add_filter_attribute_error():
     io = DummySignalSource()
     base.features.Provide("RawSource", io)
