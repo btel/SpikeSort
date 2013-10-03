@@ -530,3 +530,16 @@ def fetSpProjection(spikes_data, labels, cell_id=1):
     ncomps = len(projection)
     names = ["Ch%d:Proj" % i for i in range(ncomps)]
     return {'data': projection, 'names': names}
+
+@add_mask
+def fetMarkers(spikes_data, markers_time, contact=0):
+
+    spikes = spikes_data['data']
+    time = spikes_data['time']
+    markers_time = np.asarray(markers_time)
+
+    ind = np.argmin(np.abs(time[:, None] - markers_time[None, :]), 0)
+    marker_amplitudes = spikes[ind, :, contact].T
+
+    names = ["Ch0:t%.1f" % t for t in markers_time]
+    return {'data': marker_amplitudes, 'names': names}
