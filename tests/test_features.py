@@ -69,6 +69,38 @@ class TestFeatures(object):
         correct = np.sum(compare)
         eq_(n_spikes, correct)
 
+    def test_fetPCA_multichannel_labels(self):
+        # tests whether features are properly labeled, based on the linearity
+        # of PCA
+
+        spike1, spike2 = self.cells
+        ch0_spikes = np.vstack((spike1, spike2, spike1 + spike2)).T
+        ch1_spikes = np.vstack((spike1*2, spike2/2., spike1*2 - spike2/2.)).T
+
+        spikes = np.empty((ch0_spikes.shape[0], ch0_spikes.shape[1], 2))
+        spikes[:, :, 0] = ch0_spikes
+        spikes[:, :, 1] = ch1_spikes
+        spikes_dict = {'data' : spikes}
+
+        features = ss.features.fetPCA(spikes_dict, ncomps=3)
+        names = features['names']
+
+        print names
+
+        ch0_feats = np.empty((3, 3))
+        ch1_feats = np.empty((3, 3))
+        # sort features by channel using labels
+        for fidx in range(3):
+            i0 = names.index('Ch%d:PC%d' % (0, fidx))
+            i1 = names.index('Ch%d:PC%d' % (1, fidx))
+            ch0_feats[fidx, :] = features['data'][:, i0]
+            ch1_feats[fidx, :] = features['data'][:, i1]
+
+        # spike combinations on channel 0
+        almost_equal(ch0_feats[:, 2], ch0_feats[:, 0] + ch0_feats[:, 1])
+        # spike combinations on channel 1
+        almost_equal(ch1_feats[:, 2], ch1_feats[:, 0] - ch1_feats[:, 1])
+
     def test_getSpProjection(self):
         spikes_dict = self.spikes_dict.copy()
         cells = spikes_dict['data']
@@ -90,6 +122,36 @@ class TestFeatures(object):
         wt1, wt2, wt3 = wt.squeeze().T
 
         almost_equal(wt3, 0.1 * wt1 + 0.7 * wt2)
+
+    def test_fetWT_multichannel_labels(self):
+        # tests whether features are properly labeled, based on linearity of
+        # Wavelet Transform
+
+        spike1, spike2 = self.cells
+        ch0_spikes = np.vstack((spike1, spike2)).T
+        ch1_spikes = np.vstack((spike1 + spike2, spike1 - spike2)).T
+
+        spikes = np.empty((ch0_spikes.shape[0], ch0_spikes.shape[1], 2))
+        spikes[:, :, 0] = ch0_spikes
+        spikes[:, :, 1] = ch1_spikes
+        spikes_dict = {'data' : spikes}
+
+        features = ss.features.fetWT(spikes_dict, 3, wavelet='haar', select_method=None)
+        names = features['names']
+
+        print names
+
+        ch0_feats = np.empty((3, 2))
+        ch1_feats = np.empty((3, 2))
+        # sort features by channel using labels
+        for fidx in range(3):
+            i0 = names.index('Ch%d:haarWC%d' % (0, fidx))
+            i1 = names.index('Ch%d:haarWC%d' % (1, fidx))
+            ch0_feats[fidx, :] = features['data'][:, i0]
+            ch1_feats[fidx, :] = features['data'][:, i1]
+
+        almost_equal(ch1_feats[:, 0], ch0_feats[:, 0] + ch0_feats[:, 1])
+        almost_equal(ch1_feats[:, 1], ch0_feats[:, 0] - ch0_feats[:, 1])
 
     def test_fetWT_math(self):
         n_samples = 256
