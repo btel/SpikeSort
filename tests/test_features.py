@@ -85,8 +85,6 @@ class TestFeatures(object):
         features = ss.features.fetPCA(spikes_dict, ncomps=3)
         names = features['names']
 
-        print names
-
         ch0_feats = np.empty((3, 3))
         ch1_feats = np.empty((3, 3))
         # sort features by channel using labels
@@ -153,8 +151,6 @@ class TestFeatures(object):
 
         features = ss.features.fetWT(spikes_dict, 3, wavelet='haar', select_method=None)
         names = features['names']
-
-        print names
 
         ch0_feats = np.empty((3, 2))
         ch1_feats = np.empty((3, 2))
