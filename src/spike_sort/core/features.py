@@ -340,8 +340,8 @@ def fetPCA(spikes_data, ncomps=2, contacts='all'):
         n_channels = 1
     sc = np.asarray(sc).T
 
-    names = ["Ch%d:PC%d" % (j, i) for i in range(ncomps) for j in
-             range(n_channels)]
+    names = ["Ch%d:PC%d" % (i, j) for i in range(n_channels)
+                                  for j in range(ncomps)]
 
     return {'data': sc, "names": names}
 
@@ -436,8 +436,9 @@ def fetWT(spikes_data, nfeatures=3, contacts='all', wavelet='haar',
 
         features[:, :, contact] = data[order]
 
-    names = ["Ch%d:%s%d" % (j, feature_name, i) for i in range(nfeatures)
-                                                for j in range(n_channels)]
+    names = ["Ch%d:%s%d" % (i, feature_name, j) for i in range(n_channels) 
+                                                for j in range(nfeatures)]
+
     return {'data': np.hstack(features.T), 'names': names}
 
 
