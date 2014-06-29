@@ -180,10 +180,11 @@ class Component(object):
 
     @staticmethod
     def _rm_duplicate_deps(deps):
+        new_deps = []
         for i, d in enumerate(deps):
-            if d in deps[i + 1:]:
-                del deps[i]
-        return deps
+            if not d in deps[i + 1:]:
+                new_deps.append(d)
+        return new_deps
 
     def get_dependencies(self):
         deps = [o.get_dependencies() for o in self.observers]
