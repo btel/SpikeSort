@@ -108,6 +108,21 @@ class TestFeatures(object):
         feat = ss.features.fetSpProjection(spikes_dict, labels)
         ok_(((feat['data'][:, 0] > 0.5) == labels).all())
 
+    def test_fetMarkers(self):
+        spikes_dict = self.spikes_dict.copy()
+
+        n_spikes = 200
+        n_pts = self.cells.shape[1]
+        amps = np.random.randint(1, 100, n_spikes)
+        amps = amps[:, np.newaxis]
+        spikes = amps * self.cells[0, :]
+        spikes_dict['data'] = spikes.T[:, :, np.newaxis]
+        time = spikes_dict['time']
+        indices = np.array([0, n_pts/2, n_pts-1])
+        values = ss.features.fetMarkers(spikes_dict, time[indices])
+
+        ok_((values['data'] == spikes[:, indices]).all())
+
     def test_WT(self):
         "simple test for linearity of wavelet transform"
         spike1, spike2 = self.cells
