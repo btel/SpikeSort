@@ -89,7 +89,7 @@ def manual(data, *args, **kwargs):
     -----
     Only two first features are plotted
     """
-    return manual_sort._cluster(data[:, :2])
+    return manual_sort._cluster(data[:, :2], **kwargs)
 
 
 def none(data):

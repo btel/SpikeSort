@@ -12,7 +12,7 @@ import numpy as np
 
 
 class LassoManager(object):
-    def __init__(self, ax, data, labels=None, color_on='r', color_off='k'):
+    def __init__(self, ax, data, labels=None, color_on='r', color_off='k', markersize=1):
         self.axes = ax
         self.canvas = ax.figure.canvas
         self.data = data
@@ -25,7 +25,7 @@ class LassoManager(object):
         facecolors = [self.color_on for _ in range(self.Nxy)]
         fig = ax.figure
         self.collection = RegularPolyCollection(
-            fig.dpi, 6, sizes=(1,),
+            fig.dpi, 6, sizes=(markersize,),
             facecolors=facecolors,
             edgecolors=facecolors,
             offsets=data,
@@ -86,13 +86,13 @@ def manual_sort(features_dict, feat_idx):
     return _cluster(features[:, ii], names[:, ii])
 
 
-def _cluster(data, names=None):
+def _cluster(data, names=None, markersize=1):
     fig_cluster = figure(figsize=(6, 6))
     ax_cluster = fig_cluster.add_subplot(111,
                                          xlim=(-0.1, 1.1),
                                          ylim=(-0.1, 1.1),
                                          autoscale_on=True)
-    lman = LassoManager(ax_cluster, data, names)
+    lman = LassoManager(ax_cluster, data, names, markersize=markersize)
 
     while lman.ind is None:
         time.sleep(.01)
