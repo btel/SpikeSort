@@ -74,7 +74,8 @@ def spikegraph(spike_data, color='k', alpha=0.2, n_spikes='all',
     n_pts = len(time)
 
     if not n_spikes == 'all':
-        spikes = spikes[:, :n_spikes, :]
+        sample_idx = np.argsort(np.random.randn(spikes.shape[1]))[:n_spikes]
+        spikes = spikes[:, sample_idx, :]
     n_spikes = spikes.shape[1]
     if fig is None:
         fig = plt.gcf()
