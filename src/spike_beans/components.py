@@ -596,6 +596,7 @@ class PlotSpikes(MplPlotComponent):
     def __init__(self):
         super(PlotSpikes, self).__init__()
         self.show_cells = 'all'
+        self.n_spikes = 'all'
 
     def _update(self):
         self.show_cells = 'all'
@@ -634,7 +635,7 @@ class PlotSpikes(MplPlotComponent):
             show_labels = None
 
         plotting.plot_spikes(spikes, labels, show_cells=show_labels,
-                             fig=self.fig)
+                             fig=self.fig, n_spikes=self.n_spikes)
 
 
 class Legend(MplPlotComponent):
