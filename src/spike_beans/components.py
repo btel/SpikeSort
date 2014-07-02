@@ -346,9 +346,7 @@ class ClusterAnalyzer(base.Component):
         """repeat clustering of a selected cell"""
         if method is None:
             method = self.method
-        if not args:
             args = self.args
-        if not kwargs:
             kwargs = self.kwargs
         if label is None:
             idx = None
