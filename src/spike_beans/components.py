@@ -159,15 +159,17 @@ class SpikeExtractor(base.Component):
     spike_times = base.RequiredFeature("SpikeMarkerSource",
                                        base.HasAttributes("events"))
 
-    def __init__(self, sp_win=[-0.2, 0.8]):
+    def __init__(self, sp_win=[-0.2, 0.8], resample=1):
         self._sp_shapes = None
         self.sp_win = sp_win
+        self.resample = resample
         super(SpikeExtractor, self).__init__()
 
     def _extract_spikes(self):
         sp = self.waveform_src.signal
         spt = self.spike_times.events
-        self._sp_shapes = sort.extract.extract_spikes(sp, spt, self.sp_win)
+        self._sp_shapes = sort.extract.extract_spikes(sp, spt, self.sp_win, 
+                resample=self.resample)
 
     def read_spikes(self):
         if self._sp_shapes is None:

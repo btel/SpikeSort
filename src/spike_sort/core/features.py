@@ -478,6 +478,15 @@ def fetP2P(spikes_data, contacts='all'):
     names = ["Ch%d:P2P" % i for i in range(p2p.shape[1])]
     return {'data': p2p, 'names': names}
 
+@add_mask
+def fetMin(spikes_data, contacts='all'):
+    spikes = _get_data(spikes_data, contacts)
+    min = np.min(spikes, axis=0)
+    if min.ndim < 2:
+        min = p2p[:, np.newaxis]
+
+    names = ["Ch%d:Min" % i for i in range(min.shape[1])]
+    return {'data': min, 'names': names}
 
 @add_mask
 def fetSpIdx(spikes_data):
