@@ -4,6 +4,7 @@
 import numpy as np
 
 from spike_sort.ui import manual_sort
+from spike_sort.core.features import requires
 
 #optional scikits.learn imports
 try:
@@ -18,8 +19,49 @@ except ImportError:
     except ImportError:
         pass
 
+@requires(skcluster, "scikits.learn must be installed to use spectral")
+def spectral(data, n_clusters=2, affinity='rbf'):
 
-def k_means_plus(*args, **kwargs):
+    sp = skcluster.SpectralClustering(k=n_clusters, affinity=affinity)
+    sp.fit(data)
+    labels = sp.labels_
+    return labels
+
+@requires(skcluster, "scikits.learn must be installed to use dbsca")
+def dbscan(data, eps=0.3, min_samples=10):
+    """DBScan clustering
+
+    Parameters
+    ----------
+    data : float array
+        features array
+
+    Returns
+    -------
+    cl : int array
+        cluster indicies
+
+    Notes
+    -----
+    This function requires scikits-learn
+    """
+
+    db = skcluster.DBSCAN(eps=eps, min_samples=min_samples).fit(data)
+    labels = db.labels_
+    return labels
+
+@requires(skcluster, "scikits.learn must be installed to use mean_shift")
+def mean_shift(data, bandwith=None, n_samples=500, quantile=0.3):
+    if bandwith is None:
+        bandwidth = skcluster.estimate_bandwidth(data, 
+                                                 quantile=quantile,
+                                                 n_samples=n_samples)
+
+    ms = skcluster.MeanShift(bandwidth=bandwidth).fit(data)
+    labels = ms.labels_
+    return labels
+
+def k_means_plus(data, K=2):
     """k means with smart initialization.
 
     Notes
@@ -33,14 +75,14 @@ def k_means_plus(*args, **kwargs):
     """
 
     try:
-        clusters = skcluster.k_means(*args, **kwargs)[1]
+        clusters = skcluster.k_means(data, n_clusters=K)[1]
     except NameError:
         raise NotImplementedError(
             "scikits.learn must be installed to use k_mean_plus")
     return clusters
 
 
-def gmm(data, k):
+def gmm(data, k=2, cvtype='full'):
     """Cluster based on gaussian mixture models
 
     Parameters
@@ -63,13 +105,13 @@ def gmm(data, k):
 
     try:
         #scikits.learn 0.8
-        clf = mixture.GMM(n_states=k, cvtype='full')
+        clf = mixture.GMM(n_states=k, cvtype=cvtype)
     except TypeError:
         try:
-            clf = mixture.GMM(n_components=k, cvtype='full')
+            clf = mixture.GMM(n_components=k, cvtype=cvtype)
         except TypeError:
             #scikits.learn 0.11
-            clf = mixture.GMM(n_components=k, covariance_type='full')
+            clf = mixture.GMM(n_components=k, covariance_type=cvtype)
     except NameError:
         raise NotImplementedError(
             "scikits.learn must be installed to use gmm")
@@ -177,7 +219,7 @@ def cluster(method, features, *args, **kwargs):
     return labels
 
 
-def k_means(features, K):
+def k_means(features, K=2):
     """Perform K means clustering
 
     Parameters
