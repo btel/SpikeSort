@@ -11,11 +11,13 @@ try:
     #import scikits.learn >= 0.9
     from sklearn import cluster as skcluster
     from sklearn import mixture
+    from sklearn import decomposition
 except ImportError:
     try:
         #import scikits.learn < 0.9
         from scikits.learn import cluster as skcluster
         from scikits.learn import mixture
+        from scikits.learn import decomposition
     except ImportError:
         pass
 
@@ -61,7 +63,8 @@ def mean_shift(data, bandwith=None, n_samples=500, quantile=0.3):
     labels = ms.labels_
     return labels
 
-def k_means_plus(data, K=2):
+@requires(skcluster, "scikits.learn must be installed to use k_means_plus")
+def k_means_plus(data, K=2, whiten=False):
     """k means with smart initialization.
 
     Notes
@@ -73,12 +76,12 @@ def k_means_plus(data, K=2):
     kmeans
 
     """
+    if whiten:
+        pca = decomposition.PCA(whiten=True).fit(data)
+        data = pca.transform(data)
 
-    try:
-        clusters = skcluster.k_means(data, n_clusters=K)[1]
-    except NameError:
-        raise NotImplementedError(
-            "scikits.learn must be installed to use k_mean_plus")
+    clusters = skcluster.k_means(data, n_clusters=K)[1]
+
     return clusters
 
 
