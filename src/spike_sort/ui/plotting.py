@@ -132,7 +132,7 @@ def plot_features(features, clust_idx=None, show_cells='all', **kwargs):
             featuresgraph(features_cell[l], color_func(l), **kwargs)
 
 
-def featuresgraph(features_dict, color='k', size=1, datarange=None, fig=None):
+def featuresgraph(features_dict, color='k', size=1, datarange=None, fig=None, n_spikes='all'):
 
     features = features_dict['data']
     names = features_dict['names']
@@ -142,6 +142,11 @@ def featuresgraph(features_dict, color='k', size=1, datarange=None, fig=None):
         fig = plt.gcf()
     axes = [[fig.add_subplot(n_feats, n_feats, i * n_feats + j + 1)
              for i in range(n_feats)] for j in range(n_feats)]
+    
+    if not n_spikes == 'all':
+        sample_idx = np.argsort(np.random.randn(features.shape[0]))[:n_spikes]
+        features = features[sample_idx, :]
+    
     for i in range(n_feats):
         for j in range(n_feats):
             ax = axes[i][j]

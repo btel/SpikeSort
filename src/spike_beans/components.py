@@ -439,6 +439,7 @@ class PlotFeatures(MplPlotComponent):
         super(PlotFeatures, self).__init__()
         self._showcells = 'all'
         self._autoscale = False
+        self.n_spikes = 'all'
 
     def _get_autoscale(self):
         return self._autoscale
@@ -493,7 +494,8 @@ class PlotFeatures(MplPlotComponent):
 
         data_range = None if self._autoscale else [0, 1]
         plotting.plot_features(feats, labels, show_cells=show_labels,
-                               datarange=data_range, fig=self.fig)
+                               datarange=data_range, fig=self.fig,
+                               n_spikes=self.n_spikes)
 
 from spike_sort.ui import spike_browser
 
