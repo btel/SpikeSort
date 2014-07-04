@@ -536,8 +536,8 @@ def fetSpProjection(spikes_data, labels, cell_id=1):
     proj_matrix = np.mean(spikes[:, labels == cell_id, :], 1)
     projection = (proj_matrix[:, np.newaxis, :] * spikes).sum(0)
     projection /= np.sqrt((spikes ** 2).sum(0) * (proj_matrix ** 2).sum(0))
+    ncomps = projection.shape[1]
 
-    ncomps = len(projection)
     names = ["Ch%d:Proj" % i for i in range(ncomps)]
     return {'data': projection, 'names': names}
 
@@ -553,3 +553,9 @@ def fetMarkers(spikes_data, markers_time, contact=0):
 
     names = ["Ch0:t%.1f" % t for t in markers_time]
     return {'data': marker_amplitudes, 'names': names}
+
+def register(feature_func):
+    """feature function must take the spike data array and return a feature dictionary with at least two keys:
+    data and names"""
+
+    globals()['fet' + feature_func.func_name] = add_mask(feature_func)
