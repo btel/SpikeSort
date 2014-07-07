@@ -12,12 +12,14 @@ try:
     from sklearn import cluster as skcluster
     from sklearn import mixture
     from sklearn import decomposition
+    from sklearn import neighbors
 except ImportError:
     try:
         #import scikits.learn < 0.9
         from scikits.learn import cluster as skcluster
         from scikits.learn import mixture
         from scikits.learn import decomposition
+        from scikits.learn import neighbors 
     except ImportError:
         pass
 
@@ -124,7 +126,7 @@ def gmm(data, k=2, cvtype='full'):
     return cl
 
 
-def manual(data, *args, **kwargs):
+def manual(data, n_spikes='all', *args, **kwargs):
     """Sort spikes manually by cluster cutting
 
     Opens a new window in which you can draw cluster of arbitrary
@@ -134,7 +136,20 @@ def manual(data, *args, **kwargs):
     -----
     Only two first features are plotted
     """
-    return manual_sort._cluster(data[:, :2], **kwargs)
+    if n_spikes=='all':
+        return manual_sort._cluster(data[:, :2], **kwargs)
+    else:
+        idx = np.argsort(np.random.rand(data.shape[0]))[:n_spikes]
+        labels_subsampled = manual_sort._cluster(data[idx, :2], **kwargs) 
+        try:
+            neigh = neighbors.KNeighborsClassifier(15)
+        except NameError:
+            raise NotImplementedError(
+                "scikits.learn must be installed to use subsampling")
+        neigh.fit(data[idx, :2], labels_subsampled)
+        return neigh.predict(data[:, :2])
+
+
 
 
 def none(data):
