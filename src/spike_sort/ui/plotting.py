@@ -11,6 +11,8 @@ from matplotlib.pyplot import show, figure, close
 import spike_sort
 cmap = plt.cm.jet
 
+import _mpl_helpers # performance boosters
+
 
 def label_color(labels):
     """Map labels to number range [0, 1]"""
@@ -140,7 +142,7 @@ def featuresgraph(features_dict, color='k', size=1, datarange=None, fig=None, n_
     _, n_feats = features.shape
     if fig is None:
         fig = plt.gcf()
-    axes = [[fig.add_subplot(n_feats, n_feats, i * n_feats + j + 1)
+    axes = [[fig.add_subplot(n_feats, n_feats, i * n_feats + j + 1, projection='thin')
              for i in range(n_feats)] for j in range(n_feats)]
     
     if not n_spikes == 'all':
