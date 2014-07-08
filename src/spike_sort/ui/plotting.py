@@ -161,10 +161,8 @@ def featuresgraph(features_dict, color='k', size=1, datarange=None, fig=None, n_
 
             else:
                 ax.set_frame_on(False)
-
-                ax.hist(features[:, i], 20,
-                        datarange, ec="none", fc=color,
-                        alpha=0.5, normed=True)
+                n, bins = np.histogram(features[:, i], 20, datarange, normed=True)
+                ax.plot(bins[:-1], n, '-', color=color, drawstyle='steps')
                 if datarange:
                     ax.set_xlim(datarange)
             ax.set_xticks([])
