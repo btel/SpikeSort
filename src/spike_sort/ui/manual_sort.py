@@ -4,7 +4,7 @@ from matplotlib.widgets import Lasso
 from matplotlib.path import Path
 from matplotlib.colors import colorConverter
 from matplotlib.collections import RegularPolyCollection  # , LineCollection
-
+from matplotlib import gridspec
 from matplotlib.pyplot import figure
 from numpy import nonzero
 
@@ -88,10 +88,33 @@ def manual_sort(features_dict, feat_idx):
 
 def _cluster(data, names=None, markersize=1):
     fig_cluster = figure(figsize=(6, 6))
-    ax_cluster = fig_cluster.add_subplot(111,
+    gs = gridspec.GridSpec(2,2, width_ratios=[4,1], height_ratios=[4,1],
+                           hspace=0, wspace=0)
+    ax_cluster = fig_cluster.add_subplot(gs[0,0],
                                          xlim=(-0.1, 1.1),
                                          ylim=(-0.1, 1.1),
                                          autoscale_on=True)
+    ax_marginal_x = fig_cluster.add_subplot(gs[1,0], sharex=ax_cluster,
+                                            autoscale_on=False,
+                                            frame_on=False)
+    ax_marginal_y = fig_cluster.add_subplot(gs[0,1], sharey=ax_cluster,
+                                            autoscale_on=False,
+                                            frame_on=False)
+
+    nx, binx = np.histogram(data[:, 0], 40) 
+    ny, biny = np.histogram(data[:, 1], 40) 
+    nx = np.append(nx, [0])
+    ny = np.append(ny, [0])
+
+    ax_marginal_x.plot(binx, nx, 'k', drawstyle='steps', clip_on=False)
+    ax_marginal_x.set_ylim((nx.max(), 0))
+    ax_marginal_x.set_xticks([])
+    ax_marginal_x.set_yticks([])
+    ax_marginal_y.plot(ny, biny, 'k', drawstyle='steps', clip_on=False)
+    ax_marginal_y.set_xlim((0, ny.max()))
+    ax_marginal_y.set_xticks([])
+    ax_marginal_y.set_yticks([])
+
     lman = LassoManager(ax_cluster, data, names, markersize=markersize)
 
     while lman.ind is None:
