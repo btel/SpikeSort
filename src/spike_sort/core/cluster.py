@@ -147,7 +147,7 @@ def manual(data, n_spikes='all', *args, **kwargs):
         idx = np.argsort(np.random.rand(data.shape[0]))[:n_spikes]
         labels_subsampled = manual_sort._cluster(data[idx, :2], **kwargs) 
         try:
-            neigh = neighbors.KNeighborsClassifier(15)
+            neigh = neighbors.KNeighborsClassifier(5)
         except NameError:
             raise NotImplementedError(
                 "scikits.learn must be installed to use subsampling")
