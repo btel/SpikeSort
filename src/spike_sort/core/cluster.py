@@ -84,7 +84,7 @@ def k_means_plus(data, K=2, whiten=False):
 
     clusters = skcluster.k_means(data, n_clusters=K)[1]
 
-    return clusters
+    return clusters.astype(int)
 
 
 def gmm(data, k=2, cvtype='full'):
