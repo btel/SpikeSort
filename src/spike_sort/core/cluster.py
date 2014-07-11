@@ -87,7 +87,7 @@ def k_means_plus(data, K=2, whiten=False):
     return clusters.astype(int)
 
 
-def gmm(data, k=2, cvtype='full'):
+def gmm(data, k=2, n_spikes='all', cvtype='full'):
     """Cluster based on gaussian mixture models
 
     Parameters
@@ -121,7 +121,12 @@ def gmm(data, k=2, cvtype='full'):
         raise NotImplementedError(
             "scikits.learn must be installed to use gmm")
 
-    clf.fit(data)
+    if n_spikes == 'all':
+        clf.fit(data)
+    else:
+        idx = np.argsort(np.random.rand(data.shape[0]))[:n_spikes]
+        clf.fit(data[idx, :]) 
+
     cl = clf.predict(data)
     return cl
 
