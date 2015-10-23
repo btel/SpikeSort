@@ -241,7 +241,7 @@ different design and use case:
 References
 ----------
 
-.. _tutorial.h5: http://itb.biologie.hu-berlin.de/~bartosz/spikesort/_downloads/tutorial.h5
+.. _tutorial.h5: https://www.unic.cnrs-gif.fr/owncloud/index.php/s/fQC80tp6PWoUh2F/download
 
 .. _Wikipedia: http://en.wikipedia.org/wiki/Spike_sorting
 
