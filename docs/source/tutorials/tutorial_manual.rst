@@ -131,7 +131,7 @@ To start this tutorial you will need:
       >>> from spike_sort.ui import plotting
       >>> plotting.plot_spikes(sp_waves, n_spikes=200)
    
-   .. plot:: source/pyplots/tutorial_spikes.py
+   .. plot:: pyplots/tutorial_spikes.py
    
    It is apparent from the plot that the spike waveforms of a few different cells
    and also some artifacts were detected. In order to separate these activities, 
@@ -177,7 +177,7 @@ To start this tutorial you will need:
   
       >>> plotting.plot_features(sp_feats)
       
-   .. plot:: source/pyplots/tutorial_features.py
+   .. plot:: pyplots/tutorial_features.py
 
 4. Cluster spikes
 -----------------
@@ -213,7 +213,7 @@ To start this tutorial you will need:
    
       >>> plotting.plot_features(sp_feats, clust_idx)
       
-   .. plot:: source/pyplots/tutorial_clusters.py
+   .. plot:: pyplots/tutorial_clusters.py
 
    or you can see the spike waveshapes:
    
@@ -222,7 +222,7 @@ To start this tutorial you will need:
       >>> plotting.plot_spikes(sp_waves, clust_idx, n_spikes=200)
       >>> plotting.show()
 
-   .. plot:: source/pyplots/tutorial_cells.py
+   .. plot:: pyplots/tutorial_cells.py
       
    If you are not satisfied with the results or you think you might do better, 
    you can also try manual sorting using cluster cutting method::
