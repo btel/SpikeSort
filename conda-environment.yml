@@ -3,11 +3,15 @@ dependencies:
 - alabaster=0.7.7=py27_0
 - babel=2.2.0=py27_0
 - cairo=1.12.18=6
+- cloog=0.18.0=0
 - cycler=0.10.0=py27_0
 - docutils=0.12=py27_0
 - fontconfig=2.11.1=5
 - freetype=2.5.5=0
+- gcc=4.8.5=3
+- gmp=5.1.2=2
 - hdf5=1.8.15.1=2
+- isl=0.12.2=0
 - jinja2=2.8=py27_0
 - libgfortran=1.0=0
 - libpng=1.6.17=0
@@ -15,6 +19,8 @@ dependencies:
 - markupsafe=0.23=py27_0
 - matplotlib=1.5.1=np110py27_0
 - mkl=11.3.1=0
+- mpc=1.0.1=0
+- mpfr=3.1.2=0
 - numexpr=2.4.6=np110py27_1
 - numpy=1.10.4=py27_0
 - numpydoc=0.5=py27_1
