@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#coding=utf-8
+# -*- coding: utf-8 -*-
 
 from spike_sort.io.filters import PyTablesFilter
 from spike_sort import extract
@@ -21,7 +21,7 @@ sp_waves = extract.extract_spikes(raw, spt, sp_win)
 sp_feats = features.combine(
      (
       features.fetP2P(sp_waves),
-      features.fetPCs(sp_waves)
+      features.fetPCA(sp_waves)
      )
 )
    

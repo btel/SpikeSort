@@ -131,7 +131,7 @@ To start this tutorial you will need:
       >>> from spike_sort.ui import plotting
       >>> plotting.plot_spikes(sp_waves, n_spikes=200)
    
-   .. plot:: pyplots/tutorial_spikes.py
+   .. figure:: images_manual/tutorial_spikes.png
    
    It is apparent from the plot that the spike waveforms of a few different cells
    and also some artifacts were detected. In order to separate these activities, 
@@ -144,7 +144,7 @@ To start this tutorial you will need:
    that may be used to differentiate between the waveshapes. Module 
    :py:mod:`~spike_sort.core.features` defines several of such features, for example
    peak-to-peak amplitude (:py:func:`fetP2P`) and projections on principal 
-   components (:py:func:`fetPCs`). Now, we will calculate peak-to-peak amplitudes
+   components (:py:func:`fetPCA`). Now, we will calculate peak-to-peak amplitudes
    and PC projections on each of the contact, and then combine them into a single
    object:
    
@@ -154,7 +154,7 @@ To start this tutorial you will need:
       >>> sp_feats = features.combine(
       ...      (
       ...       features.fetP2P(sp_waves),
-      ...       features.fetPCs(sp_waves)
+      ...       features.fetPCA(sp_waves)
       ...      )
       ... )
    
@@ -177,7 +177,7 @@ To start this tutorial you will need:
   
       >>> plotting.plot_features(sp_feats)
       
-   .. plot:: pyplots/tutorial_features.py
+   .. figure:: images_manual/tutorial_features.png
 
 4. Cluster spikes
 -----------------
@@ -213,7 +213,7 @@ To start this tutorial you will need:
    
       >>> plotting.plot_features(sp_feats, clust_idx)
       
-   .. plot:: pyplots/tutorial_clusters.py
+   .. figure:: images_manual/tutorial_clusters.png
 
    or you can see the spike waveshapes:
    
@@ -222,7 +222,7 @@ To start this tutorial you will need:
       >>> plotting.plot_spikes(sp_waves, clust_idx, n_spikes=200)
       >>> plotting.show()
 
-   .. plot:: pyplots/tutorial_cells.py
+   .. figure:: images_manual/tutorial_cells.png
       
    If you are not satisfied with the results or you think you might do better, 
    you can also try manual sorting using cluster cutting method::

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#coding=utf-8
+# -*- coding: utf-8 -*-
 
 from spike_sort.io.filters import PyTablesFilter
 from spike_sort import extract

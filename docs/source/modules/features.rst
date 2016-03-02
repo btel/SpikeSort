@@ -24,7 +24,7 @@ The following features are implemented:
 
    .. autosummary:: 
    
-      fetPCs
+      fetPCA
       fetP2P
       fetSpIdx
       fetSpTime
