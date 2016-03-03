@@ -1,4 +1,9 @@
-import _diptst
+try:
+    import _diptst
+except ImportError:
+    _diptst = None
+    
+
 import numpy as np
 from scipy import stats as st
 
@@ -85,6 +90,8 @@ def dip(data):
     data : float or array
         DIP statistic. If the input data is flat, returns float
     """
+    if not _diptst:
+        raise NotImplemented, "module unavailable"
     sdata = np.sort(data)
     return _diptst.diptst1(sdata)[0]
 
