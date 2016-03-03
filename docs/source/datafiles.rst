@@ -14,7 +14,7 @@ written consent of the authors.
 Tutorial data
 -------------
 
-`tutorial.h5 <https://www.unic.cnrs-gif.fr/owncloud/index.php/s/fQC80tp6PWoUh2F/download>`_
+`tutorial.h5 <https://github.com/btel/SpikeSort/releases/download/v0.12/tutorial.h5>`_
 
 This is a single dataset of extracellular spikes recorded with a
 tetrode in stimulus-driven paradigm. For more information see

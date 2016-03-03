@@ -241,7 +241,7 @@ different design and use case:
 References
 ----------
 
-.. _tutorial.h5: https://www.unic.cnrs-gif.fr/owncloud/index.php/s/fQC80tp6PWoUh2F/download
+.. _tutorial.h5: https://github.com/btel/SpikeSort/releases/download/v0.12/tutorial.h5
 
 .. _Wikipedia: http://en.wikipedia.org/wiki/Spike_sorting
 
