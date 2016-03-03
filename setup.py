@@ -4,10 +4,17 @@
 import setuptools
 
 from numpy.distutils.core import setup, Extension
- 
-diptst_ext = Extension(name = 'spike_sort.stats._diptst',
-                       sources = ['src/spike_sort/stats/diptst/diptst.f',
+
+ext_modules = []
+
+import os
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+
+if not on_rtd:
+    diptst_ext = Extension(name = 'spike_sort.stats._diptst',
+                        sources = ['src/spike_sort/stats/diptst/diptst.f',
                                   'src/spike_sort/stats/diptst/diptst.pyf'])
+    ext_modules.append(diptst_ext)
 
 
 setup(name='SpikeSort',
@@ -20,7 +27,7 @@ setup(name='SpikeSort',
       author='Bartosz Telenczuk and Dmytro Bielievtsov',
       author_email='bartosz.telenczuk@gmail.com',
       url='http://spikesort.org',
-      ext_modules = [diptst_ext],
+      ext_modules = ext_modules,
       classifiers = [
           "Development Status :: 4 - Beta",
           "Environment :: Console",
