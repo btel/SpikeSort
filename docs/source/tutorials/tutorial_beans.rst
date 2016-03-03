@@ -306,6 +306,6 @@ Adding projections on 3 Principal Components to the feature list::
 |
 |
 
-.. _data file: https://www.unic.cnrs-gif.fr/owncloud/index.php/s/fQC80tp6PWoUh2F/download
+.. _data file: https://github.com/btel/SpikeSort/releases/download/v0.12/tutorial.h5
 
 
